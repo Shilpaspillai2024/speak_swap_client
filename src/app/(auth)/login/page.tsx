@@ -1,107 +1,133 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import Link from "next/link";
+import React, { useState } from "react";
 
 const LoginPage = () => {
-  const [role, setRole] = useState('user'); // Default selected role
+  const [role, setRole] = useState("user");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Login attempt:", { role, email, password });
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100 ">
-     
-      <div className="flex w-full max-w-5xl bg-white bg-opacity-30 backdrop-blur-lg shadow-2xl overflow-hidden rounded-3xl">
-        {/* Left Panel */}
-        <div className="hidden md:flex flex-col justify-between w-1/2 bg-gradient-to-br from-indigo-500 to-purple-500 text-white p-8">
-          <div>
-            <h1 className="text-4xl font-bold">Welcome to SpeakSwap</h1>
-            <p className="mt-4 text-sm text-gray-200">
-              "Empowering conversations, one connection at a time."
-            </p>
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs">
-              &copy; 2024 SpeakSwap. All rights reserved.
-            </p>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
+      <img
+        src="/assets/first_3d.png"
+        alt="3D Image"
+        className="absolute top-1/4 left-0 transform -translate-y-1/4 w-2/4 h-auto object-contain"
+      />
+
+      <div className="max-w-lg w-full space-y-4 ml-52 bg-gradient-to-br from-sky-50 via-emerald-100 to-blue-200 px-4 py-6 rounded-xl shadow-2xl">
+        <div>
+          <h3 className="text-center text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md italic">
+            Sign in to <span className="italic">Speak Swap</span>
+          </h3>
+          <p className="text-center mt-2 text-sm text-gray-600">
+            Welcome back! Please sign in to continue.
+          </p>
         </div>
 
-        {/* Right Panel */}
-        <div className="w-full md:w-1/2 p-8">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-6">
-            SignIn to continue
-          </h2>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <input type="hidden" name="remember" defaultValue="true" />
 
-          {/* Role Selection */}
-          <div className="mb-6">
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-              Select Role
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="block w-full p-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 outline-none"
-            >
-              <option value="user">User</option>
-              <option value="tutor">Tutor</option>
-             
-            </select>
-          </div>
+          <div className="rounded-md shadow-sm -space-y-px">
+            {/* Role Selection */}
+            <div className="mb-4">
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Select Role
+              </label>
+              <select
+                id="role"
+                name="role"
+                required
+                className="block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-2xl focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="user">User</option>
+                <option value="admin">Tutor</option>
+              </select>
+            </div>
 
-          {/* Login Form */}
-          <form className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
+            
+            <div className="mb-4">
+              <label
+                htmlFor="email-address"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Username
               </label>
               <input
+                id="email-address"
+                name="email"
                 type="email"
-                id="email"
-                placeholder="Enter your email"
-                className="mt-1 block w-full p-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-xl relative block w-full px-3 py-2 mb-4 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            
+            <div className="mt-4 mb-6">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <input
-                type="password"
                 id="password"
-                placeholder="Enter your password"
-                className="mt-1 block w-full p-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="appearance-none rounded-xl relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+          </div>
 
+          
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <Link
+                href="/forgot_password"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Forgot your password?
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center">
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-3 rounded-3xl font-medium hover:opacity-90 focus:ring-2 focus:ring-purple-500"
+              className="group relative w-32 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-teal-700 hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Login as {role.charAt(0).toUpperCase() + role.slice(1)}
+              Sign in
             </button>
-          </form>
-
-
-          <button
-            className="w-full flex items-center justify-center bg-white bg-opacity-80 border border-gray-300 rounded-full py-3 mt-4 text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500"
-          >
-            <img
-              src="https://www.svgrepo.com/show/355037/google.svg"
-              alt="Google Icon"
-              className="h-6 w-6 mr-2"
-            />
-            SignIn with Google
-          </button>
-
-          {/* Forgot Password & Registration */}
-          <div className="flex justify-between items-center mt-6 text-sm">
-            <button className="text-indigo-500 hover:underline">Forgot Password?</button>
-            <p className="text-gray-500">
-              New here?{' '}
-              <button className="text-purple-500 hover:underline">Register</button>
-            </p>
+            <div className="flex justify-end w-full mt-4">
+              <Link
+                href="/signup"
+                className="font-medium text-indigo-600 hover:text-indigo-500 text-sm"
+              >
+                Don't have an account? Sign up
+              </Link>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
