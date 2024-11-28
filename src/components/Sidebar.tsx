@@ -3,7 +3,7 @@ import { FaUsers, FaChalkboardTeacher, FaClipboardList, FaCreditCard, FaHeadset 
 
 const Sidebar = () => {
   return (
-    <div className="w-64 h-screen bg-[#9A8C98] text-white p-6">
+    <div className="w-64 h-screen bg-[#4d4d6d] text-white p-6">
       <div className="space-y-6">
         <Link href="/admin/users" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
           <FaUsers size={20} />
