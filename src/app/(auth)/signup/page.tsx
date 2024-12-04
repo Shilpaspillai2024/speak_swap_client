@@ -39,6 +39,7 @@ const UserSignup: React.FC = () => {
 
   const [countries, setCountries] = useState<any[]>([]);
   const [languages, setLanguages] = useState<any[]>([]);
+  const [rawInput,setRawInput]  =useState("")
   const { token } = userSignupStore();
   const router = useRouter();
 
@@ -187,15 +188,14 @@ const UserSignup: React.FC = () => {
   };
 
   const handleMultiSelectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
+    setRawInput(e.target.value);
 
-    const selectedLanguages = inputValue
-      .split(",")
-      .map((lang) => lang.trim())
-      .filter((lang) => lang !== "");
-
-    setFormData((prev) => ({ ...prev, knownLanguages: selectedLanguages }));
   };
+  const handleBlur=()=>{
+    setFormData((prev)=>({
+      ...prev,knownLanguages:rawInput.split(",").map((lang)=>lang.trim()).filter((lang)=>lang !=="")
+    }))
+  }
 
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -405,8 +405,9 @@ const UserSignup: React.FC = () => {
                   type="text"
                   id="knownLanguages"
                   name="knownLanguages"
-                  value={formData.knownLanguages}
+                  value={rawInput}
                   onChange={handleMultiSelectChange}
+                  onBlur={handleBlur}
                   placeholder="Enter known languages, separated by commas"
                   className="mt-1 block w-full p-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 outline-none"
                 />

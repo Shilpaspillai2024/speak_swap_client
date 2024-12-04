@@ -131,3 +131,20 @@ export const uploadPicture = async (data: updatePicture) => {
     );
   }
 };
+
+
+export const postLogin =async(email:string,password:string)=>{
+  try {
+
+    const response=await axios.post(`${BACKEND_URL}/login`,{email,password},{
+      headers:{
+        'Content-Type':'application/json'
+    },
+    withCredentials:true,
+    })
+    return response.data
+    
+  } catch (error) {
+    
+  }
+}

@@ -6,7 +6,7 @@ import AdminNavbar from "@/components/AdminNavbar";
 import AdminProtectedRoute from "@/HOC/AdminProtectedRoute";
 
 const AdminDashboard = () => {
-  // Dummy data
+  
   const stats = {
     users: 1200,
     tutors: 50,

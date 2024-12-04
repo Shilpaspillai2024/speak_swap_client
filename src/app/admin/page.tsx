@@ -23,6 +23,23 @@ const LoginPage = () => {
     }
   }, [isAdminAuthenticated, router]);
 
+
+
+  const handleEmailChange=(e:React.ChangeEvent<HTMLInputElement>)=>{
+      setEmail(e.target.value)
+      if(errors.email){
+        setErrors((prevErrors)=>({...prevErrors,email:""}))
+      }
+   }
+
+  const handlePasswordChange=(e:React.ChangeEvent<HTMLInputElement>)=>{
+       setPassword(e.target.value)
+       if(errors.password){
+        setErrors((prevErrors)=>({...prevErrors,password:""}))
+       }
+  }
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -102,7 +119,7 @@ const LoginPage = () => {
                 type="email"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 placeholder="Enter your email"
                 className="mt-1 block w-full p-3 bg-white text-black bg-opacity-20 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               />
@@ -121,7 +138,7 @@ const LoginPage = () => {
                 type="password"
                 id="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
                 placeholder="Enter your password"
                 className="mt-1 block w-full p-3 bg-white text-black bg-opacity-20 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               />

@@ -1,17 +1,17 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import useAdminAuthStore from "@/store/adminAuthStore";
+import userAuthStore from "@/store/userAuthStore";
 import Loading from "@/components/Loading";
 
-const protectedRoute = (WrappedComponent: React.ComponentType<any>) => {
+const UserProtectedRoute = (WrappedComponent: React.ComponentType<any>) => {
   return function ProtectedComponent(props: any) {
     const {
-      isAdminAuthenticated,
+      isUserAuthenticated,
       isLoading,
-      initAdminAuth,
-      adminLogout,
+      initAuth,
+      Logout,
       checkTokenValidity,
-    } = useAdminAuthStore();
+    } = userAuthStore();
 
     
     const router = useRouter();
@@ -20,10 +20,10 @@ const protectedRoute = (WrappedComponent: React.ComponentType<any>) => {
 
     useEffect(() => {
       const checkAuth = async () => {
-        await initAdminAuth();
+        await initAuth();
       };
       checkAuth();
-    }, [initAdminAuth]);
+    }, [initAuth]);
 
 
 
@@ -31,28 +31,28 @@ const protectedRoute = (WrappedComponent: React.ComponentType<any>) => {
     useEffect(() => {
       const tokenCheckInterval = setInterval(() => {
         if (!checkTokenValidity()) {
-          adminLogout();
-          router.push("/admin");
+          Logout();
+          router.push("/login");
         }
-      }, 60000); 
+      }, 60000); // Check every minute
 
       return () => clearInterval(tokenCheckInterval);
-    }, [checkTokenValidity, adminLogout, router]);
+    }, [checkTokenValidity, Logout, router]);
 
 
 
     useEffect(() => {
-      if (!isLoading && !isAdminAuthenticated) {
-        router.push("/admin");
+      if (!isLoading && !isUserAuthenticated) {
+        router.push("/login");
       }
-    }, [isLoading, isAdminAuthenticated, router]);
+    }, [isLoading, isUserAuthenticated, router]);
 
     if (isLoading) {
       return <Loading />;
     }
 
     // Only render wrapped component if authenticated
-    if (!isAdminAuthenticated) {
+    if (!isUserAuthenticated) {
       return null; // Prevent rendering until authentication is confirmed
     }
 
@@ -60,4 +60,4 @@ const protectedRoute = (WrappedComponent: React.ComponentType<any>) => {
   };
 };
 
-export default protectedRoute;
+export default UserProtectedRoute;

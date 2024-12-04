@@ -61,7 +61,7 @@ const useAdminAuthStore = create<AdminAuthState>()(
             set({ admin, isAdminAuthenticated: true, isLoading: false });
           } else {
             get().adminLogout();
-            console.error("Invalid or expired token, logging out");
+           
           }
         },
 
