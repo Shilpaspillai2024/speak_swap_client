@@ -2,27 +2,29 @@
 
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import { setPassword } from "@/services/userApi";  
-import userSignupStore from "@/store/userSignupStore";
+import { setPassword as sendUserPassword} from "@/services/userApi";
+import { setPassword as sendTutorPassword } from "@/services/tutorApi";
 import { signupValidationSchema } from "@/utils/Validation";
-import {z} from 'zod'
-
+import { userSignupStore,tutorSignupStore } from "@/store/userSignupStore";
+import { z } from "zod";
 
 interface SetPasswordProps {
   onNextStep: () => void;
   onPrevStep: () => void;
+  role:"user" |"tutor";
 }
 
 const SetPassword: React.FC<SetPasswordProps> = ({
   onNextStep,
   onPrevStep,
+  role
 }) => {
   const [password, setPasswordState] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const { token } = userSignupStore(); 
+  const { token } = role === "user" ? userSignupStore() : tutorSignupStore();
+  const setPassword = role === "user" ? sendUserPassword : sendTutorPassword;
 
-  
   const handleSetPassword = async () => {
     if (password !== confirmPassword) {
       setErrorMessage("Passwords do not match.");
@@ -30,32 +32,34 @@ const SetPassword: React.FC<SetPasswordProps> = ({
     }
 
     try {
-
-      const validationPassword={
-        password,confirmPassword
+      const validationPassword = {
+        password,
+        confirmPassword,
       };
-      signupValidationSchema.shape.passwordSetupSchema.parse(validationPassword)
-        
-      await setPassword({ token, password ,confirmPassword});
+      signupValidationSchema.shape.passwordSetupSchema.parse(
+        validationPassword
+      );
+
+      await setPassword({ token, password, confirmPassword });
       toast.success("Password set successfully!");
-      onNextStep();  
+      onNextStep();
     } catch (error: any) {
-      if(error instanceof z.ZodError)
-      {
-      
+      if (error instanceof z.ZodError) {
         setErrorMessage(error.errors[0]?.message || "Failed to set password.");
-           }
-         else{
-             setErrorMessage("An unexpected error occurred.");
-       }
-       toast.error(errorMessage);
+      } else {
+        setErrorMessage("An unexpected error occurred.");
       }
+      toast.error(errorMessage);
+    }
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700"
+        >
           Password
         </label>
         <input
@@ -70,7 +74,10 @@ const SetPassword: React.FC<SetPasswordProps> = ({
       </div>
 
       <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="confirmPassword"
+          className="block text-sm font-medium text-gray-700"
+        >
           Confirm Password
         </label>
         <input

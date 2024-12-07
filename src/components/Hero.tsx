@@ -1,7 +1,16 @@
+'use client'
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const Hero = () => {
+
+
+  const router=useRouter()
+
+  const getStarted=()=>{
+    router.push("/login")
+  }
     return (
         <div className="bg-customGray py-16">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4">
@@ -16,7 +25,8 @@ const Hero = () => {
               Start your online language exchange journey and connect with native speakers worldwide. 
               Practice speaking naturally and make friends across cultures.
             </p>
-            <button className="bg-green-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-green-600">
+            <button className="bg-green-500 text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-green-600"
+            onClick={getStarted}>
               Get Started
             </button>
           </div>

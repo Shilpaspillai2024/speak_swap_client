@@ -13,8 +13,8 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
+      <div className="bg-gradient-to-br from-sky-50 via-emerald-100 to-blue-200 p-8 rounded shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center">Forgot Password</h1>
         {message && <p className="text-sm text-green-500 mb-4">{message}</p>}
         <form onSubmit={handleForgotPassword}>
@@ -31,9 +31,9 @@ const ForgotPassword = () => {
           />
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+            className="w-full text-white bg-teal-700 hover:bg-teal-900  py-2 rounded"
           >
-            Send Reset Link
+            Send Otp
           </button>
         </form>
       </div>

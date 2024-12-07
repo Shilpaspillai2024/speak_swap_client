@@ -11,15 +11,15 @@ const Navbar = () => {
           <Image
             src="/assets/speaklogo.png"
             alt="speak_swap_logo"
-            width={100}
-            height={40}
+            width={70}
+            height={50}
           />
         </Link>
 
         <div className="flex space-x-6 text-customTeal ml-12 font-bold">
           <Link href="/about">About Us</Link>
-          <Link href="/tutor_home">Become A Tutor</Link>
-          <Link href="/tutor">Find Tutor</Link>
+          <Link href="/tutor">Become A Tutor</Link>
+          <Link href="/tutor_market">Find Tutor</Link>
         </div>
       </div>
 

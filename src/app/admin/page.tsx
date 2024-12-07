@@ -78,9 +78,9 @@ const LoginPage = () => {
     return <Loading />;
   }
 
-  if (isAdminAuthenticated) {
-    return null;
-  }
+  // if (isAdminAuthenticated) {
+  //   return null;
+  // }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
       <div className="flex w-full max-w-5xl bg-white bg-opacity-10 backdrop-blur-lg shadow-2xl overflow-hidden rounded-3xl">

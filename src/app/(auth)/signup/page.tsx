@@ -11,7 +11,7 @@ import {
   uploadPicture,
 } from "@/services/userApi";
 import { toast } from "react-toastify";
-import userSignupStore from "@/store/userSignupStore";
+import {userSignupStore} from "@/store/userSignupStore";
 import SetPassword from "@/components/SetPassword";
 import { signupValidationSchema } from "@/utils/Validation";
 import { SignupErrors } from "@/utils/Types";
@@ -324,8 +324,8 @@ const UserSignup: React.FC = () => {
 
           {/* step 2 otp verification */}
           {currentStep === 2 && (
-            <OtpVerification
-              onNextStep={() => setCurrentStep(3)}
+            <OtpVerification role="user"
+              onNextStep={() => setCurrentStep(3)} 
               
             />
           )}
@@ -333,9 +333,9 @@ const UserSignup: React.FC = () => {
           {/* step 3 password setup */}
 
           {currentStep === 3 && (
-            <SetPassword
+            <SetPassword role="user"
               onNextStep={() => setCurrentStep(4)}
-              onPrevStep={handlePrevStep}
+              onPrevStep={handlePrevStep} 
             />
           )}
 

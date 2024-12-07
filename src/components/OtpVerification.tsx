@@ -1,24 +1,27 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { sendOtp, verifyOtp } from "@/services/userApi";
-import userSignupStore from "@/store/userSignupStore";
+import {sendOtp as sendUserOtp,verifyOtp as verifyUserOtp } from "@/services/userApi";
+import { sendOtp as sendTutorOtp,verifyOtp as verifyTutorOtp } from "@/services/tutorApi";
+
+import { userSignupStore,tutorSignupStore } from "@/store/userSignupStore";
 
 interface OtpVerificationProps {
   onNextStep: () => void;
- 
+  role: "user" | "tutor"; 
 }
 
-const OtpVerification: React.FC<OtpVerificationProps> = ({
-  onNextStep,
- 
-}) => {
-  const [otp, setOtp] = useState<string[]>(["", "", "", ""]); 
+const OtpVerification: React.FC<OtpVerificationProps> = ({ onNextStep,role }) => {
+  const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
   const [otpSent, setOtpSent] = useState(false);
-  const { token } = userSignupStore();
-  const [timer, setTimer] = useState(60); 
+  const [timer, setTimer] = useState(60);
+
+  const { token } = role === "user" ? userSignupStore() : tutorSignupStore();
+
+  const sendOtp = role === "user" ? sendUserOtp : sendTutorOtp;
+  const verifyOtp = role === "user" ? verifyUserOtp : verifyTutorOtp;
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (otpSent && timer > 0) {
@@ -44,7 +47,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       await sendOtp(token);
       toast.success("OTP sent successfully!");
       setOtpSent(true);
-      setTimer(60); 
+      setTimer(60);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to send OTP.");
     }
@@ -53,7 +56,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
   // Function to verify OTP
   const handleVerifyOtp = async () => {
     try {
-      await verifyOtp({ token, otp: otp.join("") }); 
+      await verifyOtp({ token, otp: otp.join("") });
       toast.success("OTP verified successfully!");
       onNextStep();
     } catch (error: any) {
@@ -61,37 +64,38 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     }
   };
 
-  // Function to handle OTP input change
-  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleOtpChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const newOtp = [...otp];
-    newOtp[index] = e.target.value.slice(0, 1); 
+    newOtp[index] = e.target.value.slice(0, 1);
     setOtp(newOtp);
-    
-   
+
     if (e.target.value) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       nextInput?.focus();
     }
   };
 
-  // Function to focus on the previous input field
-  const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+  const handleBackspace = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
     if (e.key === "Backspace" && otp[index] === "") {
       const prevInput = document.getElementById(`otp-${index - 1}`);
       prevInput?.focus();
     }
   };
 
-  
   const handleResendOtp = () => {
-    setOtp(["", "", "", ""]); 
+    setOtp(["", "", "", ""]);
     setTimer(60);
     handleSendOtp();
   };
 
   return (
     <div className="space-y-6">
-   
       {otpSent && (
         <>
           <div className="flex space-x-2 justify-center">
@@ -149,11 +153,8 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
           Resend OTP in {timer}s
         </div>
       )}
-
-     
     </div>
   );
 };
 
 export default OtpVerification;
-

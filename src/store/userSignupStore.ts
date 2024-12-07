@@ -11,5 +11,12 @@ interface SignupState{
     clearToken:()=>set({token:""})
 }))
 
+const tutorSignupStore = create<SignupState>((set) => ({
+    token: "",
+    setToken: (token: string) => set({ token }),
+    clearToken: () => set({ token: "" }),
+  }));
+  
 
-export default userSignupStore
+
+export { userSignupStore,tutorSignupStore}
