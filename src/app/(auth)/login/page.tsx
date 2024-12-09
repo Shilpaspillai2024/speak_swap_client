@@ -68,9 +68,9 @@ const LoginPage = () => {
       toast.error("invalid credentials");
     }
   };
-  if (isLoading) {
-    return <Loading />;
-  }
+  // if (isLoading) {
+  //   return <Loading />;
+  // }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
       <img

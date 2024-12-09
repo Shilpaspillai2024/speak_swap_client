@@ -1,10 +1,14 @@
 import Link from 'next/link';
-import { FaUsers, FaChalkboardTeacher, FaClipboardList, FaCreditCard, FaHeadset } from 'react-icons/fa';
+import { FaUsers, FaChalkboardTeacher, FaClipboardList, FaCreditCard, FaHeadset,FaHome } from 'react-icons/fa';
 
 const Sidebar = () => {
   return (
     <div className="w-64 h-screen bg-[#4d4d6d] text-white p-6">
       <div className="space-y-6">
+      <Link href="/admin/dashboard" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
+          <FaHome size={20} />
+          <span>Dashboard</span>
+        </Link>
         <Link href="/admin/users" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
           <FaUsers size={20} />
           <span>Users</span>

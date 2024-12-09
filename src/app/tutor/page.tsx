@@ -1,18 +1,26 @@
+'use client'
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 
 const TuturLanding=()=> {
+  const router=useRouter()
+
+  const handleClick=()=>{
+    router.push("/tutor/login")
+    
+  }
     return (
       <div className="font-sans bg-gray-900 text-white">
         {/* Header */}
         <header className="bg-[#1E1E1E] px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">SpeakSwap</h1>
+        <Link href="/"><h1 className="text-2xl font-bold">SpeakSwap</h1></Link>  
           <nav className="space-x-6">
-            <a href="#how-it-works" className="hover:underline">
+            <Link href="#how-it-works" className="hover:underline">
               How it Works
-            </a>
+            </Link>
             <Link href="/tutor/login" className="hover:underline">
               Login As Tutor
             </Link>
@@ -30,7 +38,7 @@ const TuturLanding=()=> {
                 Teach the World. Earn with Flexibility.
               </h2>
               <p className="mb-6">Share your expertise and connect with global learners.</p>
-              <button className="px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-500">
+              <button className="px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-500" onClick={handleClick}>
                 Get Started
               </button>
             </div>

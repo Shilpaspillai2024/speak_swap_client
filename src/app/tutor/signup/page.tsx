@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import OtpVerification from "@/components/OtpVerification";
 import SetPassword from "@/components/SetPassword";
 import { tutorBasicDetails } from "@/services/tutorApi";
@@ -70,7 +71,7 @@ const TutorRegister = () => {
   };
 
   const handleFinalStep = () => {
-    router.push("/success");
+    router.push("/tutor/success");
   };
 
   return (
@@ -93,12 +94,12 @@ const TutorRegister = () => {
               onSubmit={handleNextStep}
               className="bg-gradient-to-r from-[#F0F8FF] to-[#A6D0D9] p-8 rounded-lg shadow-lg w-full sm:w-1/2 h-full flex flex-col justify-between"
             >
-              <h2 className="text-3xl font-bold mb-6 text-center text-gray-700">
+              <h2 className="text-3xl font-bold mb-3 text-center text-gray-700">
                 Tutor Register
               </h2>
 
-              <div className="mb-2">
-                <label className="block mb-2 font-semibold text-gray-600">
+              <div className="mb-1">
+                <label className="block mb-1 font-semibold text-gray-600">
                   Name
                 </label>
                 <input
@@ -115,8 +116,8 @@ const TutorRegister = () => {
                 </p>
               </div>
 
-              <div className="mb-2">
-                <label className="block mb-2 font-semibold text-gray-600">
+              <div className="mb-1">
+                <label className="block mb-1 font-semibold text-gray-600">
                   Email
                 </label>
                 <input
@@ -134,7 +135,7 @@ const TutorRegister = () => {
               </div>
 
               <div className="mb-2">
-                <label className="block mb-2 font-semibold text-gray-600">
+                <label className="block mb-1 font-semibold text-gray-600">
                   Phone
                 </label>
                 <input
@@ -153,10 +154,18 @@ const TutorRegister = () => {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-2 rounded-3xl font-medium hover:opacity-90 focus:ring-2 focus:ring-purple-500"
+                className="w-full bg-gradient-to-r from-teal-500 to-indigo-500 text-white py-2 rounded-3xl font-medium hover:opacity-90 focus:ring-2 focus:ring-purple-500"
               >
                 Register
               </button>
+              <div className="mt-1 flex justify-end">
+                <Link
+                  href="/tutor/login"
+                  className="text-sm text-purple-950 hover:underline mt-1"
+                >
+                  SignIn
+                </Link>
+              </div>
             </form>
           )}
 

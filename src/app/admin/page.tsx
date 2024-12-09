@@ -74,9 +74,9 @@ const LoginPage = () => {
     
   };
 
-  if (isLoading) {
-    return <Loading />;
-  }
+  // if (isLoading) {
+  //   return <Loading />;
+  // }
 
   // if (isAdminAuthenticated) {
   //   return null;

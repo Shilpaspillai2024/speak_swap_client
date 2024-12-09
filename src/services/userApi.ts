@@ -148,3 +148,40 @@ export const postLogin =async(email:string,password:string)=>{
     
   }
 }
+
+
+export const forgotPassword=async(email:string):Promise<{ message: string }>=>{
+  try {
+    const response=await axios.post(`${BACKEND_URL}/forgot-password`,{email})
+    return response.data
+    
+  } catch (error:any) {
+    throw error.response?.data?.error || "Error occured while sending otp";
+    
+  }
+}
+
+
+export const verifyForgotOtp=async(email:string,otp:string): Promise<string>=>{
+  try {
+    const response=await axios.post(`${BACKEND_URL}/verify-otp`,{email,otp})
+    return response.data.message
+    
+  } catch (error:any) {
+    throw error.response?.data?.error || "Error occured while verifying otp";
+    
+  }
+}
+
+
+export const resetPassword=async(email:string,newPassword:string,confirmPassword:string):Promise<string>=>{
+  try {
+    const response=await axios.post(`${BACKEND_URL}/reset-password`,{email,newPassword,confirmPassword})
+    return response.data.message
+    
+  } catch (error:any) {
+    throw error.response?.data?.error || "Error occured while verifying otp";
+    
+  }
+}
+

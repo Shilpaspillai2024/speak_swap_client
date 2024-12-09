@@ -1,5 +1,5 @@
 "use client";
-import { forgotPassword } from "@/services/userApi";
+import { forgotPassword } from "@/services/tutorApi";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
@@ -24,7 +24,7 @@ const ForgotPassword = () => {
       const response = await forgotPassword(email);
       if (response) {
         toast.success("OTP sent to your email");
-        router.push(`/forgot/verify?email=${encodeURIComponent(email)}`);
+        router.push(`/tutor/forgot/verify?email=${encodeURIComponent(email)}`);
         
       }
     } catch (error) {

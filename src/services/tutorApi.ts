@@ -81,7 +81,7 @@ export const tutorProfileSetup = async (data: tutorProfile) => {
   try {
     const formData = new FormData();
 
-   
+    formData.append("token",data.token);
     formData.append("dob", data.dob);
     formData.append("gender", data.gender);
     formData.append("country", data.country);
@@ -115,3 +115,55 @@ export const tutorProfileSetup = async (data: tutorProfile) => {
     throw error.response?.data?.error || "Error occured while setting password";
   }
 };
+
+
+export const tutorLogin =async(email:string,password:string)=>{
+  try {
+
+    const response=await axios.post(`${BACKEND_URL}/tutor/login`,{email,password},{
+      headers:{
+        'Content-Type':'application/json'
+    },
+    withCredentials:true,
+    })
+    return response.data
+    
+  } catch (error) {
+    
+  }
+}
+
+export const forgotPassword=async(email:string):Promise<{ message: string }>=>{
+  try {
+    const response=await axios.post(`${BACKEND_URL}/tutor/forgot-password`,{email})
+    return response.data
+    
+  } catch (error:any) {
+    throw error.response?.data?.error || "Error occured while sending otp";
+    
+  }
+}
+
+
+export const verifyForgotOtp=async(email:string,otp:string): Promise<string>=>{
+  try {
+    const response=await axios.post(`${BACKEND_URL}/tutor/verify-otp`,{email,otp})
+    return response.data.message
+    
+  } catch (error:any) {
+    throw error.response?.data?.error || "Error occured while verifying otp";
+    
+  }
+}
+
+
+export const resetPassword=async(email:string,newPassword:string,confirmPassword:string):Promise<string>=>{
+  try {
+    const response=await axios.post(`${BACKEND_URL}/tutor/reset-password`,{email,newPassword,confirmPassword})
+    return response.data.message
+    
+  } catch (error:any) {
+    throw error.response?.data?.error || "Error occured while verifying otp";
+    
+  }
+}

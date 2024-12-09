@@ -83,3 +83,23 @@ const languageDetailsSchema = z.object({
     languageDetails: languageDetailsSchema,
     interestDetails: interestDetailsSchema,
   });
+
+  export const resetpasswordSetupSchema = z.object({
+    newPassword: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters long" })
+      .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+      .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
+      .regex(/\d/, { message: "Password must contain at least one number" })
+      .regex(/[@$!%*?&]/, { message: "Password must contain at least one special character" }),
+  
+      confirmPassword: z
+      .string()
+      .trim()
+      .nonempty("Confirm Password is required")
+      .min(6, "Password must be at least 6 characters long"),
+  }).refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+  

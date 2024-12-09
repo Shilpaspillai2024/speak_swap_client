@@ -2,21 +2,25 @@
 
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-
+import tutorAuthStore from "@/store/tutorAuthStore";
 import { loginSchema } from "@/utils/Validation";
 import { LoginErrors } from "@/utils/Types";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-
+import { tutorLogin } from "@/services/tutorApi";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setErrors] = useState<LoginErrors>({});
- 
+  const { isTutorAuthenticated, setTutorAuth } = tutorAuthStore();
   const router = useRouter();
 
-
+  useEffect(() => {
+    if (isTutorAuthenticated) {
+      router.push("/tutor/dashboard");
+    }
+  }, [isTutorAuthenticated, router]);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -35,105 +39,102 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
- 
+    if (!email || !password) {
+      setErrors({ general: "All fields must be filled" });
+      return;
+    }
+
+    setErrors({});
+    const validationResult = loginSchema.safeParse({ email, password });
+
+    if (!validationResult.success) {
+      const fieldErrors = validationResult.error.format();
+      setErrors({
+        email: fieldErrors.email?._errors[0],
+        password: fieldErrors.password?._errors[0],
+      });
+      return;
+    }
+
+    const response = await tutorLogin(email, password);
+    if (response) {
+      toast.success("Login Successful");
+      setTutorAuth(response.tutor, response.accessToken);
+      router.push("/tutor/dashboard");
+    } else {
+      toast.error("Invalid credentials");
+    }
   };
- 
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
-      <img
-        src="/assets/first_3d.png"
-        alt="3D Image"
-        className="absolute top-1/4 left-0 transform -translate-y-1/4 w-2/4 h-auto object-contain"
-      />
-
-      <div className="max-w-lg w-full space-y-4 ml-52 bg-gradient-to-br from-sky-50 via-emerald-100 to-blue-200 px-4 py-6 rounded-xl shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-700 to-blue-50 relative">
+    <div className="absolute top-0 left-0 w-full h-full bg-tutor-pattern opacity-10 z-[-1]"></div>
+  
+    <div className="max-w-lg w-full bg-white p-8 rounded-2xl shadow-md z-10">
+      <h2 className="text-center text-3xl font-bold text-gray-700 mb-4">
+        Welcome Back, Tutor!
+      </h2>
+      <p className="text-center text-sm text-gray-500">
+        Please sign in to access your dashboard.
+      </p>
+      {error.general && (
+        <p className="text-center text-red-500 mt-2">{error.general}</p>
+      )}
+      <form onSubmit={handleSubmit} className="mt-6">
         <div>
-          <h3 className="text-center text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md italic">
-            Sign in As Tutor
-          </h3>
-          <p className="text-center mt-2 text-sm text-gray-600">
-            Welcome back! Please sign in to continue.
-          </p>
+          <label className="block text-sm font-medium text-gray-600">
+            Email
+          </label>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={handleEmailChange}
+            className="w-full mt-2 px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+          />
+          {error.email && (
+            <p className="text-red-500 text-xs mt-1">{error.email}</p>
+          )}
         </div>
-
-        {error.general && (
-          <div className="text-red-500 mb-4">{error.general}</div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <input type="hidden" name="remember" defaultValue="true" />
-
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="mb-4">
-              <label
-                htmlFor="email-address"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Username
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-xl relative block w-full px-3 py-2 mb-4 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={handleEmailChange}
-              />
-              <p className="text-red-600 text-xs min-h-[1em]">{error.email}</p>
-            </div>
-
-            <div className="mt-4 mb-6">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-xl relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={handlePsswordChange}
-              />
-              <p className="text-red-600 text-xs min-h-[1em]">
-                {error.password}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <button
-              type="submit"
-              className="group relative w-32 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-teal-700 hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Sign in
-            </button>
-            <div className="flex justify-between w-full mt-4">
-              <Link
-                href="/forgot"
-                className="font-medium text-indigo-600 hover:text-indigo-500 text-sm"
-              >
-                Forgot Password
-              </Link>
-              <Link
-                href="/tutor/signup"
-                className="font-medium text-indigo-600 hover:text-indigo-500 text-sm"
-              >
-                Don't have an account? Sign up
-              </Link>
-            </div>
-          </div>
-        </form>
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-600">
+            Password
+          </label>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={handlePsswordChange}
+            className="w-full mt-2 px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+          />
+          {error.password && (
+            <p className="text-red-500 text-xs mt-1">{error.password}</p>
+          )}
+        </div>
+        <button
+          type="submit"
+          className="w-full mt-6 py-3 bg-teal-500 text-white rounded-full hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-1 shadow-md"
+        >
+          Login
+        </button>
+      </form>
+      <div className="mt-6 flex justify-between items-center">
+        <Link
+          href="/tutor/forgot"
+          className="text-sm text-teal-500 hover:underline"
+        >
+          Forgot Password?
+        </Link>
+        <Link
+          href="/tutor/signup"
+          className="text-sm text-teal-500 hover:underline"
+        >
+          Create an account
+        </Link>
       </div>
     </div>
+  </div>
+  
   );
 };
 

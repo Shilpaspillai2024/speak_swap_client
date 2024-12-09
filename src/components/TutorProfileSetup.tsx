@@ -72,6 +72,7 @@ const TutorProfileSetup = ({
       introductionVideo: formData.introductionVideo,
     };
     try {
+     
       const response=await tutorProfileSetup(data)
       toast.success("Profile details added successfully")
       onNextStep();

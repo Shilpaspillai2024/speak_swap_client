@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import OtpVerification from "@/components/OtpVerification";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -319,6 +319,15 @@ const UserSignup: React.FC = () => {
               >
                 Next
               </button>
+
+              <div className="mt-1 flex justify-end">
+                <Link
+                  href="/login"
+                  className="text-lg text-purple-950 hover:underline mt-1"
+                >
+                  SignIn
+                </Link>
+            </div>
             </form>
           )}
 
