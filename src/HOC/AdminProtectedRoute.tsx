@@ -27,7 +27,7 @@ const protectedRoute = (WrappedComponent: React.ComponentType<any>) => {
 
 
 
-    // Token validity check interval
+   
     useEffect(() => {
       const tokenCheckInterval = setInterval(() => {
         if (!checkTokenValidity()) {
@@ -51,9 +51,9 @@ const protectedRoute = (WrappedComponent: React.ComponentType<any>) => {
       return <Loading />;
     }
 
-    // Only render wrapped component if authenticated
+    
     if (!isAdminAuthenticated) {
-      return null; // Prevent rendering until authentication is confirmed
+      return null; 
     }
 
     return <WrappedComponent {...props} />;

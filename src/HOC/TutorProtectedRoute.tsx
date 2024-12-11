@@ -31,8 +31,9 @@ const TutorProtectedRoute = (WrappedComponent: React.ComponentType<any>) => {
     useEffect(() => {
       const tokenCheckInterval = setInterval(() => {
         if (!checkTokenValidity()) {
+          console.log("Token is expired or invalid")
           Logout();
-          router.push("/tutor/login");
+          router.push("/tutor")
         }
       }, 60000); 
 
@@ -43,18 +44,16 @@ const TutorProtectedRoute = (WrappedComponent: React.ComponentType<any>) => {
 
     useEffect(() => {
       if (!isLoading && !isTutorAuthenticated) {
-        router.push("/tutor/login");
+        router.push("/tutor");
       }
     }, [isLoading, isTutorAuthenticated, router]);
 
-    if (isLoading) {
-      return <Loading />;
-    }
+    if (isLoading) return <Loading />;
+    
 
    
-    if (!isTutorAuthenticated) {
-      return null; 
-    }
+    if (!isTutorAuthenticated) return null; 
+    
 
     return <WrappedComponent {...props} />;
   };

@@ -128,10 +128,20 @@ export const tutorLogin =async(email:string,password:string)=>{
     })
     return response.data
     
-  } catch (error) {
+  } catch (error:any) {
+    if (error.response && error.response.data) {
+      const message = error.response.data?.message || "Login failed";
+      return { error: message };
+      
+    }
+
+    
+    return { error: "An unexpected error occurred. Please try again." };
+  }
+    
     
   }
-}
+
 
 export const forgotPassword=async(email:string):Promise<{ message: string }>=>{
   try {

@@ -16,7 +16,7 @@ const TutorNavbar = () => {
   
   const handleLogout = () => {
     clearTutorAuth();
-    router.push('/Logout');
+    router.push('/tutor');
   };
 
   return (

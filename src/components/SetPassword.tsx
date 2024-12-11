@@ -7,6 +7,7 @@ import { setPassword as sendTutorPassword } from "@/services/tutorApi";
 import { signupValidationSchema } from "@/utils/Validation";
 import { userSignupStore,tutorSignupStore } from "@/store/userSignupStore";
 import { z } from "zod";
+import { passwordErrors } from "@/utils/Types";
 
 interface SetPasswordProps {
   onNextStep: () => void;
@@ -21,13 +22,15 @@ const SetPassword: React.FC<SetPasswordProps> = ({
 }) => {
   const [password, setPasswordState] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState<passwordErrors>({});
   const { token } = role === "user" ? userSignupStore() : tutorSignupStore();
   const setPassword = role === "user" ? sendUserPassword : sendTutorPassword;
 
   const handleSetPassword = async () => {
+
+    setErrorMessage({})
     if (password !== confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+      setErrorMessage({general:"Passwords do not match."});
       return;
     }
 
@@ -45,11 +48,16 @@ const SetPassword: React.FC<SetPasswordProps> = ({
       onNextStep();
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        setErrorMessage(error.errors[0]?.message || "Failed to set password.");
+        const fieldErrors = error.flatten().fieldErrors;
+        setErrorMessage({
+          password: fieldErrors.password?.[0] || "",
+          confirmPassword: fieldErrors.confirmPassword?.[0] || "",
+          general: "",
+        });
       } else {
-        setErrorMessage("An unexpected error occurred.");
+        setErrorMessage({ general: "An unexpected error occurred." });
       }
-      toast.error(errorMessage);
+      toast.error("please correct the errors");
     }
   };
 
@@ -67,10 +75,15 @@ const SetPassword: React.FC<SetPasswordProps> = ({
           id="password"
           name="password"
           value={password}
-          onChange={(e) => setPasswordState(e.target.value)}
+          onChange={(e) => {setPasswordState(e.target.value);if (errorMessage.password)
+            setErrorMessage({ ...errorMessage, password: "" });}}
           placeholder="Enter your password"
           className="mt-1 block w-full p-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 outline-none"
         />
+
+{errorMessage.password && (
+          <p className="text-red-500 text-sm mt-1">{errorMessage.password}</p>
+        )}
       </div>
 
       <div>
@@ -85,14 +98,19 @@ const SetPassword: React.FC<SetPasswordProps> = ({
           id="confirmPassword"
           name="confirmPassword"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={(e) => {setConfirmPassword(e.target.value); if (errorMessage.confirmPassword)
+            setErrorMessage({ ...errorMessage, confirmPassword: "" });}}
           placeholder="Confirm your password"
           className="mt-1 block w-full p-3 bg-white bg-opacity-50 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 outline-none"
         />
+
+{errorMessage.confirmPassword && (
+          <p className="text-red-500 text-sm mt-1">{errorMessage.confirmPassword}</p>
+        )}
       </div>
 
-      {errorMessage && (
-        <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
+      {errorMessage.general && (
+        <div className="text-red-500 text-sm mt-2">{errorMessage.general}</div>
       )}
 
       <button

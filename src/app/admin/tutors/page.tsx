@@ -5,7 +5,7 @@ import AdminNavbar from "@/components/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
 
 
-const AdminUserPage = () => {
+const AdminTutorPage = () => {
 
 
   return (
@@ -18,16 +18,16 @@ const AdminUserPage = () => {
    
    
       <div className="container mx-auto p-4 bg-[#f5f5f5]">
-        <h1 className="text-2xl font-bold mb-4">User Management</h1>
+        <h1 className="text-2xl font-bold mb-4">Tutor Management</h1>
 
         <table className="min-w-full table-auto bg-white border border-gray-300 rounded-lg shadow-sm text-white">
           <thead>
             <tr className="bg-[#4d4d6d]">
               <th className="py-2 px-4 text-left">Si.no</th>
               <th className="py-2 px-4 text-left">Email</th>
+              <th className="py-2 px-4 text-left">Name</th>
               <th className="py-2 px-4 text-left">Country</th>
-              <th className="py-2 px-4 text-left">Native Language</th>
-              <th className="py-2 px-4 text-left">Learning Language</th>
+              <th className="py-2 px-4 text-left">Teaching Language</th>
               <th className="py-2 px-4 text-left">Status</th>
               <th className="py-2 px-4 text-left">Action</th>
             </tr>
@@ -44,4 +44,4 @@ const AdminUserPage = () => {
   );
 };
 
-export default AdminUserPage;
+export default AdminTutorPage;

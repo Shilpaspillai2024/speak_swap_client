@@ -53,15 +53,35 @@ const tutorAuthStore = create<TutorAuthState>()(
           });
         },
 
-        initAuth: async () => {
-          const tutor = JSON.parse(localStorage.getItem("tutor") || "null");
-          const token = localStorage.getItem("tutorAccessToken");
+        // initAuth: async () => {
+        //   const tutor = JSON.parse(localStorage.getItem("tutor") || "null");
+        //   const token = localStorage.getItem("tutorAccessToken");
 
-          if (tutor && token && get().checkTokenValidity()) {
-            set({ tutor, isTutorAuthenticated: true, isLoading: false });
-          } else {
-            get().Logout();
+        //   if (tutor && token && get().checkTokenValidity()) {
+        //     set({ tutor, isTutorAuthenticated: true, isLoading: false });
+        //   } else {
+        //     get().Logout();
           
+        //   }
+        // },
+
+
+        initAuth: async () => {
+          const token = localStorage.getItem("tutorAccessToken");
+        
+          if (!token) {
+            console.warn("No token found during initAuth.");
+            get().Logout(); 
+            return;
+          }
+        
+          const tutor = JSON.parse(localStorage.getItem("tutor") || "null");
+        
+          if (tutor && get().checkTokenValidity()) {
+            set({ tutor, token, isTutorAuthenticated: true, isLoading: false });
+          } else {
+            console.warn("Token is invalid or tutor data is missing.");
+            get().Logout(); 
           }
         },
 

@@ -15,6 +15,11 @@ export interface SignupErrors{
        [key:string]:string |undefined;
     
 }
+export interface passwordErrors{
+    password?:string,
+    confirmPassword?:string,
+    general?:string
+}
 
 export interface passwordSetErrors{
     newPassword?:string,

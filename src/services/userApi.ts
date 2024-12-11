@@ -180,7 +180,25 @@ export const resetPassword=async(email:string,newPassword:string,confirmPassword
     return response.data.message
     
   } catch (error:any) {
-    throw error.response?.data?.error || "Error occured while verifying otp";
+    throw error.response?.data?.error || "Error occured in reset password";
+    
+  }
+}
+
+
+export const fetchUsers=async(token:string)=>{
+  try {
+    const response=await axios.get(`${BACKEND_URL}/users`,{
+      headers:{
+        Authorization:`Bearer ${token}`
+      },
+    })
+    return response.data
+    
+  } catch (error:any) {
+    console.log('Error infetching user details')
+    throw error.response?.data?.error || "Error occured while fetching the details";
+    
     
   }
 }

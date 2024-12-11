@@ -27,14 +27,14 @@ const UserProtectedRoute = (WrappedComponent: React.ComponentType<any>) => {
 
 
 
-    // Token validity check interval
+  
     useEffect(() => {
       const tokenCheckInterval = setInterval(() => {
         if (!checkTokenValidity()) {
           Logout();
-          router.push("/login");
+          router.push("/");
         }
-      }, 60000); // Check every minute
+      }, 60000); 
 
       return () => clearInterval(tokenCheckInterval);
     }, [checkTokenValidity, Logout, router]);
@@ -43,7 +43,7 @@ const UserProtectedRoute = (WrappedComponent: React.ComponentType<any>) => {
 
     useEffect(() => {
       if (!isLoading && !isUserAuthenticated) {
-        router.push("/login");
+        router.push("/");
       }
     }, [isLoading, isUserAuthenticated, router]);
 
@@ -51,9 +51,9 @@ const UserProtectedRoute = (WrappedComponent: React.ComponentType<any>) => {
       return <Loading />;
     }
 
-    // Only render wrapped component if authenticated
+    
     if (!isUserAuthenticated) {
-      return null; // Prevent rendering until authentication is confirmed
+      return null; 
     }
 
     return <WrappedComponent {...props} />;
