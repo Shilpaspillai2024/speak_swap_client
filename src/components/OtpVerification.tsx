@@ -2,20 +2,29 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import {sendOtp as sendUserOtp,verifyOtp as verifyUserOtp } from "@/services/userApi";
-import { sendOtp as sendTutorOtp,verifyOtp as verifyTutorOtp } from "@/services/tutorApi";
+import {
+  sendOtp as sendUserOtp,
+  verifyOtp as verifyUserOtp,
+} from "@/services/userApi";
+import {
+  sendOtp as sendTutorOtp,
+  verifyOtp as verifyTutorOtp,
+} from "@/services/tutorApi";
 
-import { userSignupStore,tutorSignupStore } from "@/store/userSignupStore";
+import { userSignupStore, tutorSignupStore } from "@/store/userSignupStore";
 
 interface OtpVerificationProps {
   onNextStep: () => void;
-  role: "user" | "tutor"; 
+  role: "user" | "tutor";
 }
 
-const OtpVerification: React.FC<OtpVerificationProps> = ({ onNextStep,role }) => {
+const OtpVerification: React.FC<OtpVerificationProps> = ({
+  onNextStep,
+  role,
+}) => {
   const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
   const [otpSent, setOtpSent] = useState(false);
-  const [timer, setTimer] = useState(60);
+  const [timer, setTimer] = useState(0);
 
   const { token } = role === "user" ? userSignupStore() : tutorSignupStore();
 
@@ -23,19 +32,59 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ onNextStep,role }) =>
   const verifyOtp = role === "user" ? verifyUserOtp : verifyTutorOtp;
 
   useEffect(() => {
+    const savedOtpTime = localStorage.getItem("otpTimestamp");
+    const savedOtpTimer = localStorage.getItem("otpTimer");
+
+    console.log("Saved OTP Timestamp:", savedOtpTime);
+    console.log("Saved OTP Timer:", savedOtpTimer);
+
+    if (savedOtpTime) {
+      const elapsedTime = Math.floor(
+        (Date.now() - Number(savedOtpTime)) / 1000
+      );
+      const remainingTime = 60 - elapsedTime;
+      console.log("Elapsed Time:", elapsedTime, "Remaining Time:", remainingTime);
+      if (remainingTime > 0) {
+        setOtpSent(true);
+        setTimer(remainingTime);
+        localStorage.setItem("otpTimer", remainingTime.toString());
+      } else {
+        localStorage.removeItem("otpTimestamp");
+        localStorage.removeItem("otpTimer");
+        setOtpSent(false);
+        setTimer(0);
+      }
+    } else if(savedOtpTimer) {
+      
+      console.log("Using saved timer value from localStorage:", savedOtpTimer);
+        setOtpSent(true);
+        setTimer(Number(savedOtpTimer));
+      
+    }
+  }, []);
+
+  
+
+  useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (otpSent && timer > 0) {
       interval = setInterval(() => {
-        setTimer((prevTimer) => prevTimer - 1);
+        setTimer((prevTimer) => {
+          const newTimer = prevTimer - 1;
+          if (newTimer <= 0) {
+            clearInterval(interval!);
+            localStorage.removeItem("otpTimestamp"); 
+            localStorage.removeItem("otpTimer"); 
+          } else {
+            localStorage.setItem("otpTimer", newTimer.toString()); 
+          }
+          return newTimer;
+        });
       }, 1000);
     }
 
-    if (timer === 0 && interval !== null) {
-      clearInterval(interval);
-    }
-
     return () => {
-      if (interval !== null) {
+      if (interval) {
         clearInterval(interval);
       }
     };
@@ -48,6 +97,8 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ onNextStep,role }) =>
       toast.success("OTP sent successfully!");
       setOtpSent(true);
       setTimer(60);
+      localStorage.setItem("otpTimestamp", Date.now().toString());
+      localStorage.setItem("otpTimer", "60");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to send OTP.");
     }
@@ -58,6 +109,9 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ onNextStep,role }) =>
     try {
       await verifyOtp({ token, otp: otp.join("") });
       toast.success("OTP verified successfully!");
+
+      localStorage.removeItem("otpTimestamp");
+      localStorage.removeItem("otpTimer");
       onNextStep();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Invalid OTP.");
@@ -89,8 +143,11 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ onNextStep,role }) =>
   };
 
   const handleResendOtp = () => {
+    localStorage.removeItem("otpTimestamp");
+    localStorage.removeItem("otpTimer");
     setOtp(["", "", "", ""]);
-    setTimer(60);
+
+    // setTimer(60);
     handleSendOtp();
   };
 

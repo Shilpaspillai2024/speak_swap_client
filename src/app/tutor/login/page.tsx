@@ -8,10 +8,12 @@ import { LoginErrors } from "@/utils/Types";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { tutorLogin } from "@/services/tutorApi";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setErrors] = useState<LoginErrors>({});
   const { isTutorAuthenticated, setTutorAuth } = tutorAuthStore();
   const router = useRouter();
@@ -22,18 +24,20 @@ const LoginPage = () => {
     }
   }, [isTutorAuthenticated, router]);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
-    
-      setErrors((prevErrors) => ({ ...prevErrors, email: "" ,general:""}));
-    
+
+    setErrors((prevErrors) => ({ ...prevErrors, email: "", general: "" }));
   };
 
   const handlePsswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
-  
-     setErrors((prevErrors) => ({ ...prevErrors, password: "" ,general:""}));
-    
+
+    setErrors((prevErrors) => ({ ...prevErrors, password: "", general: "" }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,7 +61,7 @@ const LoginPage = () => {
     }
 
     const response = await tutorLogin(email, password);
-    
+
     if (response?.error) {
       setErrors({ general: response.error });
       toast.error(response.error);
@@ -98,17 +102,25 @@ const LoginPage = () => {
               <p className="text-red-500 text-xs mt-1">{error.email}</p>
             )}
           </div>
-          <div className="mt-4">
+          <div className="relative mt-4 ">
             <label className="block text-sm font-medium text-gray-600">
               Password
             </label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={handlePsswordChange}
               className="w-full mt-2 px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
             />
+
+            <button
+              type="button"
+              className="absolute inset-y-1 right-3 mt-5 flex items-center text-gray-500"
+              onClick={togglePasswordVisibility}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
             {error.password && (
               <p className="text-red-500 text-xs mt-1">{error.password}</p>
             )}

@@ -1,26 +1,66 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { forgotPassword, verifyForgotOtp } from '@/services/userApi';
-import { toast } from 'react-toastify';
-import { useSearchParams, useRouter } from 'next/navigation';
+"use client";
+import React, { useState, useEffect } from "react";
+import { forgotPassword, verifyForgotOtp } from "@/services/userApi";
+import { toast } from "react-toastify";
+import { useSearchParams, useRouter } from "next/navigation";
 
 const VerifyOtp = () => {
-  const searchParams=useSearchParams()
-  const email=searchParams.get("email")
-  const [otp, setOtp] = useState<string[]>(['', '', '', '']);
-  const [message, setMessage] = useState('');
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email");
+  const [otp, setOtp] = useState<string[]>(["", "", "", ""]);
+  const [message, setMessage] = useState("");
   const [isOtpVerified, setIsOtpVerified] = useState(false);
-  const [timer, setTimer] = useState(60);
+  const [timer, setTimer] = useState<number>(() => {
+    const savedTimer = localStorage.getItem("otpTimer");
+    const savedTime = localStorage.getItem("otpTime");
+    
+   
+    if (!savedTimer || !savedTime) {
+      localStorage.setItem("otpTimer", "60");
+      localStorage.setItem("otpTime", Math.floor(Date.now() / 1000).toString());
+      return 60;
+    }
+    
+   
+    const remainingTime = Number(savedTimer);
+    const startTime = Number(savedTime);
+    const currentTime = Math.floor(Date.now() / 1000);
+    const elapsedTime = currentTime - startTime;
+    
+    return remainingTime > elapsedTime ? remainingTime - elapsedTime : 0;
+  });
 
-const router=useRouter()
-
+  const router = useRouter();
 
   useEffect(() => {
+    if (timer === 0) {
+      localStorage.removeItem("otpTimer");
+      localStorage.removeItem("otpTime");
+      return;
+    }
+
     const interval = setInterval(() => {
-      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+      setTimer((prev) => {
+        if (prev > 0) {
+          const newTimer = prev - 1;
+          localStorage.setItem("otpTimer", newTimer.toString());
+          return newTimer;
+        }
+        clearInterval(interval);
+        localStorage.removeItem("otpTimer");
+        localStorage.removeItem("otpTime");
+        return 0;
+      });
     }, 1000);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [timer]);
+
+  const formatTime = (time: number): string => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   const handleInputChange = (value: string, index: number) => {
     if (isNaN(Number(value))) return;
@@ -36,41 +76,40 @@ const router=useRouter()
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const fullOtp = otp.join('');
+    const fullOtp = otp.join("");
     if (fullOtp.length < 4) {
-      setMessage('Please enter a valid 4-digit OTP');
+      setMessage("Please enter a valid 4-digit OTP");
       return;
     }
     if (!email) {
-      toast.error('Email is missing. Please refresh the page and try again.');
+      toast.error("Email is missing. Please refresh the page and try again.");
       return;
     }
     try {
-      await verifyForgotOtp(email,fullOtp);
+      await verifyForgotOtp(email, fullOtp);
       setIsOtpVerified(true);
-      router.push(`/forgot/resetpassword?email=${encodeURIComponent(email)}`)
-      toast.success('OTP verified successfully');
+      router.push(`/forgot/resetpassword?email=${encodeURIComponent(email)}`);
+      toast.success("OTP verified successfully");
     } catch (error) {
-      toast.error('Invalid OTP. Please try again.');
+      toast.error("Invalid OTP. Please try again.");
     }
   };
 
-  const handleResendOtp = async() => {
+  const handleResendOtp = async () => {
     if (!email) {
-      toast.error('Email not available for resending OTP.');
+      toast.error("Email not available for resending OTP.");
       return;
     }
     try {
-      await  forgotPassword(email)
+      await forgotPassword(email);
       setOtp(["", "", "", ""]);
       setTimer(60);
-      toast.info('OTP resent to your email');
-      
+      localStorage.setItem("otpTimer", "60");
+      localStorage.setItem('otpTime', Math.floor(Date.now() / 1000).toString());
+      toast.info("OTP resent to your email");
     } catch (error) {
-      toast.error('Failed to resend OTP. Please try again later.');
+      toast.error("Failed to resend OTP. Please try again later.");
     }
-   
-    
   };
 
   return (
@@ -99,21 +138,31 @@ const router=useRouter()
             Verify OTP
           </button>
         </form>
-        {timer > 0 ? (
-          <p className="mt-4 text-gray-600">Resend OTP in {timer}s</p>
-        ) : (
-          <button
-            onClick={handleResendOtp}
-            className="mt-4 text-teal-700 hover:text-teal-900"
-          >
-            Resend OTP
-          </button>
-        )}
+
+      
+        <div className="mt-4 text-center">
+          {timer > 0 ? (
+            <div className="flex flex-col items-center space-y-2">
+              
+              <div className="text-2xl font-bold text-teal-700">
+                {formatTime(timer)}
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={handleResendOtp}
+              className="text-teal-700 hover:text-teal-900 font-medium"
+            >
+              Resend OTP
+            </button>
+          )}
+        </div>
+
         {isOtpVerified && (
           <div className="mt-4">
             <a
               href="/forgot/resetpassword"
-              className="text-teal-700 hover:text-teal-900"
+              className="text-teal-700 text-xl hover:text-teal-900"
             >
               Click here to reset your password
             </a>

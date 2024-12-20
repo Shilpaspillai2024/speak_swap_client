@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { postLogin } from "@/services/userApi";
 import { loginSchema } from "@/utils/Validation";
@@ -8,12 +9,14 @@ import { LoginErrors } from "@/utils/Types";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import userAuthStore from "@/store/userAuthStore";
+import { FaEye,FaEyeSlash } from "react-icons/fa";
 import Loading from "@/components/Loading";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setErrors] = useState<LoginErrors>({});
+  const [showPassword,setShowPassword]=useState(false)
   const { isUserAuthenticated, setUserAuth, isLoading } = userAuthStore();
   const router = useRouter();
 
@@ -22,6 +25,11 @@ const LoginPage = () => {
       router.push("/dashboard");
     }
   }, [isUserAuthenticated, router]);
+
+  const togglePasswordVisibility=()=>{
+
+    setShowPassword(!showPassword)
+  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -58,19 +66,25 @@ const LoginPage = () => {
     } else {
       setErrors({});
     }
-    const response = await postLogin(email, password);
 
-    if (response) {
+    try {
+      const data = await postLogin(email, password);
+    if (data) {
       toast.success("login Successfull");
-      setUserAuth(response.user, response.accessToken);
+      setUserAuth(data.user, data.accessToken);
       router.push("/dashboard");
-    } else {
-      toast.error("invalid credentials");
+    } 
+      
+    } catch (error:any) {
+     
+      if (error.message) {
+        toast.error(error.message); 
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     }
   };
-  // if (isLoading) {
-  //   return <Loading />;
-  // }
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
       <img
@@ -118,7 +132,7 @@ const LoginPage = () => {
               <p className="text-red-600 text-xs min-h-[1em]">{error.email}</p>
             </div>
 
-            <div className="mt-4 mb-6">
+            <div className="relative mt-4 mb-6">
               <label
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700"
@@ -128,7 +142,7 @@ const LoginPage = () => {
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? "text" :"password"}
                 autoComplete="current-password"
                 required
                 className="appearance-none rounded-xl relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
@@ -136,6 +150,9 @@ const LoginPage = () => {
                 value={password}
                 onChange={handlePsswordChange}
               />
+              <button type="button" className="absolute inset-y-0 right-3 flex items-center text-gray-500" onClick={togglePasswordVisibility}>
+                {showPassword? <FaEyeSlash/>:<FaEye/>}
+              </button>
               <p className="text-red-600 text-xs min-h-[1em]">
                 {error.password}
               </p>

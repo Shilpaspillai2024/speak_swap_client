@@ -8,10 +8,12 @@ import Loading from "@/components/Loading";
 import { loginSchema } from "@/utils/Validation";
 import { LoginErrors } from "@/utils/Types";
 import { toast } from "react-toastify";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<LoginErrors>({});
   const { isAdminAuthenticated, setAdminAuth, isLoading } = useAdminAuthStore();
 
@@ -23,22 +25,23 @@ const LoginPage = () => {
     }
   }, [isAdminAuthenticated, router]);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (errors.email) {
+      setErrors((prevErrors) => ({ ...prevErrors, email: "" }));
+    }
+  };
 
-  const handleEmailChange=(e:React.ChangeEvent<HTMLInputElement>)=>{
-      setEmail(e.target.value)
-      if(errors.email){
-        setErrors((prevErrors)=>({...prevErrors,email:""}))
-      }
-   }
-
-  const handlePasswordChange=(e:React.ChangeEvent<HTMLInputElement>)=>{
-       setPassword(e.target.value)
-       if(errors.password){
-        setErrors((prevErrors)=>({...prevErrors,password:""}))
-       }
-  }
-
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    if (errors.password) {
+      setErrors((prevErrors) => ({ ...prevErrors, password: "" }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,26 +64,18 @@ const LoginPage = () => {
     } else {
       setErrors({});
     }
-   
-      const response = await loginAdmin(email, password);
 
-      if (response) {
-        toast.success("login Successfull");
-        setAdminAuth(response.isAdmin, response.accessToken);
-        router.push("/admin/dashboard");
-      } else {
-        toast.error("invalid credentials");
-      }
-    
+    const response = await loginAdmin(email, password);
+
+    if (response.error) {
+      toast.error(response.error);
+    } else {
+      toast.success("Login Successfull");
+      setAdminAuth(response.isAdmin, response.accessToken);
+      router.push("/admin/dashboard");
+    }
   };
 
-  // if (isLoading) {
-  //   return <Loading />;
-  // }
-
-  // if (isAdminAuthenticated) {
-  //   return null;
-  // }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
       <div className="flex w-full max-w-5xl bg-white bg-opacity-10 backdrop-blur-lg shadow-2xl overflow-hidden rounded-3xl">
@@ -127,7 +122,7 @@ const LoginPage = () => {
               <p className="text-red-600 text-xs min-h-[1em]">{errors.email}</p>
             </div>
 
-            <div>
+            <div className="relative">
               <label
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700"
@@ -135,13 +130,20 @@ const LoginPage = () => {
                 Password
               </label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
                 onChange={handlePasswordChange}
                 placeholder="Enter your password"
                 className="mt-1 block w-full p-3 bg-white text-black bg-opacity-20 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-3 mt-2 flex items-center text-gray-500"
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
 
               <p className="text-red-600 text-xs min-h-[1em]">
                 {errors.password}

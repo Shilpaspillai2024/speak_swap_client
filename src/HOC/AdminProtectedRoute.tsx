@@ -19,26 +19,19 @@ const protectedRoute = (WrappedComponent: React.ComponentType<any>) => {
 
 
     useEffect(() => {
-      const checkAuth = async () => {
+      const checkAuthAndToken = async () => {
         await initAdminAuth();
-      };
-      checkAuth();
-    }, [initAdminAuth]);
+        const isTokenValid=await checkTokenValidity();
+        if(!isTokenValid){
+          adminLogout()
+          router.push("/admin")
+        }
+      }
+      checkAuthAndToken();
 
-
+      },[initAdminAuth, checkTokenValidity, adminLogout, router])
 
    
-    useEffect(() => {
-      const tokenCheckInterval = setInterval(() => {
-        if (!checkTokenValidity()) {
-          adminLogout();
-          router.push("/admin");
-        }
-      }, 60000); 
-
-      return () => clearInterval(tokenCheckInterval);
-    }, [checkTokenValidity, adminLogout, router]);
-
 
 
     useEffect(() => {

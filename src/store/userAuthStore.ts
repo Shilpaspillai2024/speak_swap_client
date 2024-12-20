@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"
+import { refreshToken } from "@/services/userApi";
 
 interface UserAuthState {
   user: any | null;
@@ -11,7 +12,8 @@ interface UserAuthState {
   setUser: (user: any) => void;
   Logout: () => void;
   initAuth: () => Promise<void>;
-  checkTokenValidity: () => boolean;
+  refreshAccessToken:()=>Promise<boolean>
+  checkTokenValidity: () =>Promise<boolean>;
 }
 
 const userAuthStore = create<UserAuthState>()(
@@ -25,8 +27,7 @@ const userAuthStore = create<UserAuthState>()(
 
         setUserAuth: (user, token) => {
           if (token) {
-            localStorage.setItem("user", JSON.stringify(user));
-            localStorage.setItem("userAccessToken", token);
+          
             set({
               user,
               token,
@@ -43,8 +44,7 @@ const userAuthStore = create<UserAuthState>()(
         },
         Logout: () => {
           console.log("Logging out...");
-          localStorage.removeItem("user");
-          localStorage.removeItem("userAccessToken");
+          
           set({
             user: null,
             token: null,
@@ -54,19 +54,33 @@ const userAuthStore = create<UserAuthState>()(
         },
 
         initAuth: async () => {
-          const user = JSON.parse(localStorage.getItem("user") || "null");
-          const token = localStorage.getItem("userAccessToken");
+        const{token,checkTokenValidity,refreshAccessToken,user}=get();
+        console.log("Initializing user Auth. Current Token:", token);
 
-          if (user && token && get().checkTokenValidity()) {
-            set({ user, isUserAuthenticated: true, isLoading: false });
-          } else {
+
+        if(!token){
+          console.warn("No token found.Logging out....");
+          get().Logout();
+          return;
+        }
+
+        const isValid=await checkTokenValidity();
+        if(!isValid){
+          const isRefreshed=await refreshAccessToken()
+          if(!isRefreshed){
             get().Logout();
-          
+            return;
           }
+        }
+          set({
+            user,
+            isUserAuthenticated:true,
+            isLoading:false,
+          });
         },
 
-        checkTokenValidity: () => {
-          const token = localStorage.getItem("userAccessToken");
+        checkTokenValidity:async () => {
+         const {token}=get();
          
           if (!token) {
             console.error("Token is missing");
@@ -82,6 +96,27 @@ const userAuthStore = create<UserAuthState>()(
             return false;
           }
         },
+
+
+
+        refreshAccessToken:async()=>{
+          try {
+            const data=await refreshToken()
+            if(data?.accesToken){
+              set({token:data.accesToken,
+                isUserAuthenticated:true
+              });
+              return true;
+            }
+            return false;
+            
+          } catch (error) {
+            console.error("Token refresh error:", error);
+            get().Logout();
+            return false;
+            
+          }
+        }
       }),
       {
         name: "user-auth",

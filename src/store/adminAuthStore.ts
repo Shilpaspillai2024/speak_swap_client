@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode";
+import { refreshToken } from "@/services/adminApi";
 
 interface AdminAuthState {
   admin: any | null;
@@ -11,7 +12,8 @@ interface AdminAuthState {
   setAdmin: (admin: any) => void;
   adminLogout: () => void;
   initAdminAuth: () => Promise<void>;
-  checkTokenValidity: () => boolean;
+  refreshAccessToken:()=>Promise<boolean>;
+  checkTokenValidity: () =>Promise<boolean>;
 }
 
 const useAdminAuthStore = create<AdminAuthState>()(
@@ -25,12 +27,10 @@ const useAdminAuthStore = create<AdminAuthState>()(
 
         setAdminAuth: (admin, token) => {
           if (token) {
-            localStorage.setItem("admin", JSON.stringify(admin));
-            localStorage.setItem("adminAccessToken", token);
             set({
               admin,
               token,
-              isAdminAuthenticated: true,
+              isAdminAuthenticated:true,
               isLoading: false,
             });
           } else {
@@ -43,8 +43,7 @@ const useAdminAuthStore = create<AdminAuthState>()(
         },
         adminLogout: () => {
           console.log("Logging out...");
-          localStorage.removeItem("admin");
-          localStorage.removeItem("adminAccessToken");
+        
           set({
             admin: null,
             token: null,
@@ -53,21 +52,40 @@ const useAdminAuthStore = create<AdminAuthState>()(
           });
         },
 
+      
+
         initAdminAuth: async () => {
-          const admin = JSON.parse(localStorage.getItem("admin") || "null");
-          const token = localStorage.getItem("adminAccessToken");
+          const { token, checkTokenValidity, refreshAccessToken, admin } = get();
+          console.log("Initializing Admin Auth. Current Token:", token);
 
-          if (admin && token && get().checkTokenValidity()) {
-            set({ admin, isAdminAuthenticated: true, isLoading: false });
-          } else {
-            get().adminLogout();
-           
+          if (!token) {
+              console.warn("No token found. Logging out...");
+              get().adminLogout();
+              return;
           }
-        },
+      
+          const isValid = await checkTokenValidity();
+      
+          if (!isValid) {
+             
+              const isRefreshed = await refreshAccessToken();
+              if (!isRefreshed) {
+                 
+                  get().adminLogout();
+                  return;
+              }
+          }
+      
+          set({
+              admin,
+              isAdminAuthenticated: true,
+              isLoading: false,
+          });
+      },
+      
 
-        checkTokenValidity: () => {
-          const token = localStorage.getItem("adminAccessToken");
-         
+        checkTokenValidity:async () => {
+         const {token} =get();
           if (!token) {
             console.error("Token is missing");
             return false;
@@ -76,12 +94,35 @@ const useAdminAuthStore = create<AdminAuthState>()(
           try {
             const decodedToken: any = jwtDecode(token);
             const currentTime = Date.now() / 1000;
-            return decodedToken.exp > currentTime;
+            console.log("Current Time:", currentTime, "Token Expiry Time:", decodedToken.exp);
+            return decodedToken.exp > currentTime
+             
+           
+       
           } catch (error) {
             console.error("Error decoding token:", error);
             return false;
           }
         },
+
+
+        refreshAccessToken:async()=>{
+          try {
+            const response=await refreshToken()
+            if(response?.accessToken){
+              set({token:response.accessToken,
+                isAdminAuthenticated:true});
+              return true;
+            }
+            return false
+            
+          } catch (error) {
+            console.error("Token refresh error:", error);
+            get().adminLogout();
+            return false;
+            
+          }
+        }
       }),
       {
         name: "admin-auth",

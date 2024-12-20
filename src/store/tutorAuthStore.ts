@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode";
+import { refreshToken } from "@/services/tutorApi";
 
 interface TutorAuthState {
   tutor: any | null;
@@ -11,7 +12,8 @@ interface TutorAuthState {
   setTutor: (tutor: any) => void;
   Logout: () => void;
   initAuth: () => Promise<void>;
-  checkTokenValidity: () => boolean;
+  refreshAccessToken:()=>Promise<boolean>;
+  checkTokenValidity: () => Promise<boolean>;
 }
 
 const tutorAuthStore = create<TutorAuthState>()(
@@ -25,8 +27,7 @@ const tutorAuthStore = create<TutorAuthState>()(
 
         setTutorAuth: (tutor, token) => {
           if (token) {
-            localStorage.setItem("tutor", JSON.stringify(tutor));
-            localStorage.setItem("tutorAccessToken", token);
+           
             set({
               tutor,
               token,
@@ -43,8 +44,6 @@ const tutorAuthStore = create<TutorAuthState>()(
         },
         Logout: () => {
           console.log("Logging out...");
-          localStorage.removeItem("tutor");
-          localStorage.removeItem("tutorAccessToken");
           set({
             tutor: null,
             token: null,
@@ -53,40 +52,34 @@ const tutorAuthStore = create<TutorAuthState>()(
           });
         },
 
-        // initAuth: async () => {
-        //   const tutor = JSON.parse(localStorage.getItem("tutor") || "null");
-        //   const token = localStorage.getItem("tutorAccessToken");
-
-        //   if (tutor && token && get().checkTokenValidity()) {
-        //     set({ tutor, isTutorAuthenticated: true, isLoading: false });
-        //   } else {
-        //     get().Logout();
-          
-        //   }
-        // },
-
 
         initAuth: async () => {
-          const token = localStorage.getItem("tutorAccessToken");
-        
+       
+          const{token,checkTokenValidity,refreshAccessToken,tutor}=get()
           if (!token) {
             console.warn("No token found during initAuth.");
             get().Logout(); 
             return;
           }
         
-          const tutor = JSON.parse(localStorage.getItem("tutor") || "null");
-        
-          if (tutor && get().checkTokenValidity()) {
-            set({ tutor, token, isTutorAuthenticated: true, isLoading: false });
-          } else {
-            console.warn("Token is invalid or tutor data is missing.");
-            get().Logout(); 
+         
+          const isValid=await checkTokenValidity();
+          if(!isValid){
+            const isRefreshed=await refreshAccessToken()
+            if(!isRefreshed){
+              get().Logout();
+              return;
+            }
           }
-        },
-
-        checkTokenValidity: () => {
-          const token = localStorage.getItem("tutorAccessToken");
+            set({
+              tutor,
+              isTutorAuthenticated:true,
+              isLoading:false,
+            });
+          },
+  
+        checkTokenValidity:async () => {
+          const {token}=get();
          
           if (!token) {
             console.error("Token is missing");
@@ -102,6 +95,26 @@ const tutorAuthStore = create<TutorAuthState>()(
             return false;
           }
         },
+
+
+        refreshAccessToken:async()=>{
+          try {
+            const data=await refreshToken()
+            if(data?.accesToken){
+              set({token:data.accesToken,
+                isTutorAuthenticated:true
+              });
+              return true;
+            }
+            return false;
+            
+          } catch (error) {
+            console.error("Token refresh error:", error);
+            get().Logout();
+            return false;
+            
+          }
+        }
       }),
       {
         name: "tutor-auth",

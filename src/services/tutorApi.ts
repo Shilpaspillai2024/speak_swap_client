@@ -1,4 +1,5 @@
 import axios from "axios";
+import tutorAxiosInstance from "./tutorAxiosInstance";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -120,11 +121,11 @@ export const tutorProfileSetup = async (data: tutorProfile) => {
 export const tutorLogin =async(email:string,password:string)=>{
   try {
 
-    const response=await axios.post(`${BACKEND_URL}/tutor/login`,{email,password},{
+    const response=await tutorAxiosInstance.post(`/tutor/login`,{email,password},{
       headers:{
         'Content-Type':'application/json'
     },
-    withCredentials:true,
+    
     })
     return response.data
     
@@ -141,6 +142,25 @@ export const tutorLogin =async(email:string,password:string)=>{
     
     
   }
+
+
+
+
+  export const refreshToken=async()=>{
+    try {
+  
+      const response=await tutorAxiosInstance.post(`/refresh-token`)
+      return response.data
+      
+    } catch (error) {
+      console.error("Errror refreshing token:",error);
+      return null
+      
+    }
+  
+  
+  };
+  
 
 
 export const forgotPassword=async(email:string):Promise<{ message: string }>=>{

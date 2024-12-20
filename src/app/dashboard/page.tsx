@@ -26,14 +26,9 @@ const UserDashboard = () => {
   
 
   useEffect(() => {
-    const token = localStorage.getItem("userAccessToken");
-    if (!token) {
-      toast.error("Token is missing.");
-      return;
-    }
     const loadUsers = async () => {
       try {
-        const data = await fetchUsers(token as string);
+        const data=await fetchUsers();
         setUsers(data);
       } catch (error) {
         console.log("Error during fetching users:", error);

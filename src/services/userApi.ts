@@ -1,4 +1,5 @@
 import axios from "axios";
+import userAxiosInstance from "./userAxiosInstance";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -136,18 +137,43 @@ export const uploadPicture = async (data: updatePicture) => {
 export const postLogin =async(email:string,password:string)=>{
   try {
 
-    const response=await axios.post(`${BACKEND_URL}/login`,{email,password},{
+    const response=await userAxiosInstance.post(`/login`,{email,password},{
       headers:{
         'Content-Type':'application/json'
     },
-    withCredentials:true,
+   
     })
     return response.data
     
-  } catch (error) {
+  } catch (error:any) {
+    if (axios.isAxiosError(error)) {
+
+      
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message); 
+      }
+    }
+    throw error
     
+  
   }
 }
+
+
+export const refreshToken=async()=>{
+  try {
+
+    const response=await userAxiosInstance.post(`/refresh-token`)
+    return response.data
+    
+  } catch (error) {
+    console.error("Errror refreshing token:",error);
+    return null
+    
+  }
+
+
+};
 
 
 export const forgotPassword=async(email:string):Promise<{ message: string }>=>{
@@ -186,13 +212,10 @@ export const resetPassword=async(email:string,newPassword:string,confirmPassword
 }
 
 
-export const fetchUsers=async(token:string)=>{
+export const fetchUsers=async():Promise<any>=>{
   try {
-    const response=await axios.get(`${BACKEND_URL}/users`,{
-      headers:{
-        Authorization:`Bearer ${token}`
-      },
-    })
+    const response=await userAxiosInstance.get(`/users`)
+    console.log("Fetched users:", response.data);
     return response.data
     
   } catch (error:any) {
