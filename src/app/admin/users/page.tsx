@@ -4,6 +4,7 @@ import AdminNavbar from "@/components/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
 import { blockUnblockUser, getAllUser } from "@/services/adminApi";
 import { IUser } from "@/Types/user";
+import { toast } from "react-toastify";
 
 
 
@@ -49,6 +50,7 @@ const AdminUserPage = () => {
       const response=await blockUnblockUser(userId,updateStatus)
 
       setUsers((prevUsers)=>prevUsers.map((user)=>user._id ===userId ?{...user,isActive:updateStatus}:user))
+      toast.success(`User ${updateStatus ? "unblocked" : "blocked"} successfully.`);
       console.log(`User ${userId} successfully ${updateStatus ? "unblocked" : "blocked"}`);
     } catch (error) {
       console.error("Error toggling user status:", error);

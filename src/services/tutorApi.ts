@@ -130,18 +130,19 @@ export const tutorLogin =async(email:string,password:string)=>{
     return response.data
     
   } catch (error:any) {
-    if (error.response && error.response.data) {
-      const message = error.response.data?.message || "Login failed";
-      return { error: message };
-      
-    }
+    if (axios.isAxiosError(error)) {
 
+      
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message); 
+      }
+    }
+    throw error
     
-    return { error: "An unexpected error occurred. Please try again." };
+  
   }
     
-    
-  }
+ }
 
 
 
@@ -149,7 +150,7 @@ export const tutorLogin =async(email:string,password:string)=>{
   export const refreshToken=async()=>{
     try {
   
-      const response=await tutorAxiosInstance.post(`/refresh-token`)
+      const response=await tutorAxiosInstance.post(`/tutor/refresh-token`)
       return response.data
       
     } catch (error) {
@@ -197,3 +198,5 @@ export const resetPassword=async(email:string,newPassword:string,confirmPassword
     
   }
 }
+
+

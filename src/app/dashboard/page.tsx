@@ -8,19 +8,13 @@ import { toast } from "react-toastify";
 import userAuthStore from "@/store/userAuthStore";
 import Loading from "@/components/Loading";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { IUser } from "@/Types/user";
 
-interface User {
-  fullName: string;
-  profilePhoto: string;
-  isActive: boolean;
-  country: string;
-  nativeLanguage: string;
-  learnLanguage: string;
-  knownLanguages: string[];
-}
+
 
 const UserDashboard = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
   const { isLoading, isUserAuthenticated, Logout } = userAuthStore();
   const router = useRouter();
   
@@ -77,8 +71,8 @@ const UserDashboard = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {users.map((user, index) => (
-          <div
-            key={index}
+          <Link href={`/user/profile/${user._id}`} key={index}>
+            <div
             className="flex bg-white shadow-md rounded-2xl border border-gray-200 p-4"
           >
             <img
@@ -114,7 +108,8 @@ const UserDashboard = () => {
                 </p>
               </div>
             </div>
-          </div>
+            </div>
+          </Link>
         ))}
       </div>
     </div>

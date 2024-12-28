@@ -100,8 +100,8 @@ const tutorAuthStore = create<TutorAuthState>()(
         refreshAccessToken:async()=>{
           try {
             const data=await refreshToken()
-            if(data?.accesToken){
-              set({token:data.accesToken,
+            if(data?.accessToken){
+              set({token:data.accessToken,
                 isTutorAuthenticated:true
               });
               return true;

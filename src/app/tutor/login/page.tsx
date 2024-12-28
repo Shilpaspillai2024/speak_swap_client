@@ -9,17 +9,19 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { tutorLogin } from "@/services/tutorApi";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Loading from "@/components/Loading";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setErrors] = useState<LoginErrors>({});
-  const { isTutorAuthenticated, setTutorAuth } = tutorAuthStore();
+  const { isTutorAuthenticated, setTutorAuth,isLoading } = tutorAuthStore();
   const router = useRouter();
 
+  
   useEffect(() => {
-    if (isTutorAuthenticated) {
+   if (isTutorAuthenticated) {
       router.push("/tutor/dashboard");
     }
   }, [isTutorAuthenticated, router]);
@@ -58,20 +60,25 @@ const LoginPage = () => {
         password: fieldErrors.password?._errors[0],
       });
       return;
+    }else{
+      setErrors({})
     }
 
-    const response = await tutorLogin(email, password);
 
-    if (response?.error) {
-      setErrors({ general: response.error });
-      toast.error(response.error);
-    } else {
-      toast.success("Login Successful");
-      setTutorAuth(response.tutor, response.accessToken);
-      router.push("/tutor/dashboard");
-    }
+    try {
+      const response = await tutorLogin(email, password);
+      if(response){
+        toast.success("Login Successful");
+        setTutorAuth(response.tutor, response.accessToken);
+        router.push("/tutor/dashboard");
+      }
+      
+    } catch (error:any) {
+      const errorMessage = error.message || "An unexpected error occurred. Please try again.";
+      setErrors({ general: errorMessage });
+      toast.error(errorMessage);
+  }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-700 to-blue-50 relative">
       <div className="absolute top-0 left-0 w-full h-full bg-tutor-pattern opacity-10 z-[-1]"></div>

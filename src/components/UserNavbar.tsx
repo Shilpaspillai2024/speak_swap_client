@@ -31,11 +31,11 @@ const UserNavbar = () => {
 
      
       <div className="flex items-center space-x-4 text-customTeal px-1 font-bold">
-        <Link href="/community">Community</Link>
+        <Link href="/dashboard">Community</Link>
         <Link href="/tutor">Tutor</Link>
         <Link href="/mysessions">MySessions</Link>
         <Link href="/messages">Messages</Link>
-        <Link href="/profile">Profile</Link>
+        <Link href="/dashboard/profile">Profile</Link>
 
 
        

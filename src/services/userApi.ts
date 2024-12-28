@@ -1,5 +1,7 @@
 import axios from "axios";
 import userAxiosInstance from "./userAxiosInstance";
+import { IUser } from "@/Types/user";
+
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -226,3 +228,52 @@ export const fetchUsers=async():Promise<any>=>{
   }
 }
 
+export const fetchUserProfile=async(id:string)=>{
+
+
+  try {
+    const response=await userAxiosInstance.get(`/user/${id}`)
+    console.log("user response",response)
+    return response.data;
+    
+  } catch (error:any) {
+    console.log('Error infetching user profile details')
+    throw error.response?.data?.error || "Error occured while fetching the profile details";
+    
+    
+  }
+}
+
+
+export const fetchProfile=async()=>{
+  try {
+    const response=await userAxiosInstance.get(`/profile`);
+    return response.data
+    
+  } catch (error:any) {
+    console.log('Error infetching user profile details')
+    throw error.response?.data?.error || "Error occured while fetching the profile details";
+    
+  }
+}
+
+
+//update user
+
+export const updateProfileDetails=async(updateData:Partial<IUser>)=>{
+
+
+  try {
+
+    const response=await userAxiosInstance.put(`/update`,updateData)
+
+    if (response.status !== 200) {
+      throw new Error(response.data?.message || "Failed to update profile");
+    }
+
+    return response.data
+    
+  } catch (error:any) {
+    throw new Error(error.response?.data?.message || "An error occurred while updating the profile");
+  }
+}

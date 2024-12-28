@@ -61,3 +61,58 @@ export const blockUnblockUser=async(userId:string,isActive:boolean)=>{
     throw error; 
   }
 }
+
+
+export const getTutors=async()=>{
+  try {
+    const response=await axiosInstance.get('/admin/tutors/alltutors')
+    console.log('api response:',response.data)
+    
+    return response.data.tutor || []
+    
+  } catch (error) {
+    console.error("error in fetching tutors:",error);
+    throw error;
+  }
+}
+
+
+export const getPendingTutors=async()=>{
+  try {
+    const response=await axiosInstance.get('/admin/tutors/pending-tutors')
+    return response.data.tutors || []
+    
+  } catch (error) {
+    console.error("error in fetching tutors:",error);
+    throw error;
+  }
+}
+
+export const tutorVerify=async(tutorId: string, action: 'approved' | 'rejected')=>{
+
+
+  try {
+
+    const response=await axiosInstance.patch(`/admin/tutors/verify/${tutorId}/status`,{
+      status:action,
+
+    })
+    console.log(response.data.message);
+   return response.data
+    
+  } catch (error) {
+    console.error("Error updating tutor status:", error);
+  }
+}
+
+
+export const blockUnblockTutor=async(tutorId:string,isActive:boolean)=>{
+  try {
+    const response=await axiosInstance.patch(`/admin/tutors/${tutorId}`,{isActive})
+    return response.data
+    
+  } catch (error) {
+    console.error("Error in block/unblock tutor:", error);
+    throw error; 
+  }
+}

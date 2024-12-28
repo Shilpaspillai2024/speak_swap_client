@@ -9,7 +9,7 @@ export interface IUser {
   isActive:boolean;
   country:string;
   nativeLanguage:string;
-  knownLanguages:String;
+  knownLanguages:String[];
   learnLanguage:string;
   learnProficiency:string;
   talkAbout:string;

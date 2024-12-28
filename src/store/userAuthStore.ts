@@ -102,8 +102,8 @@ const userAuthStore = create<UserAuthState>()(
         refreshAccessToken:async()=>{
           try {
             const data=await refreshToken()
-            if(data?.accesToken){
-              set({token:data.accesToken,
+            if(data?.accessToken){
+              set({token:data.accessToken,
                 isUserAuthenticated:true
               });
               return true;
