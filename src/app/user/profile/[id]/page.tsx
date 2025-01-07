@@ -8,16 +8,21 @@ import { toast } from "react-toastify";
 import { IUser } from "@/Types/user";
 import axios from "axios";
 import { MessageCircle, ArrowLeft, Globe, Book, MessageSquare, Target, Heart } from "lucide-react";
+import userAuthStore from "@/store/userAuthStore";
+import socketStore from "@/store/socketStore";
 
 const UserProfile = () => {
   const router = useRouter();
   const [user, setUser] = useState<IUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const { id } = useParams();
 
+  const { id } = useParams();
+  const loggedInUser=userAuthStore.getState().user;
+  const loggedInUserId=loggedInUser?._id;
+
+  
   useEffect(() => {
     if (!id) return;
-
     const loadUserProfile = async () => {
       try {
         const userData = await fetchUserProfile(id as string);
@@ -38,6 +43,43 @@ const UserProfile = () => {
     loadUserProfile();
   }, [id]);
 
+  console.log("outside Invoking createChat with id:", id);
+
+const handleMessageClick =async()=>{
+
+     try {
+      let participants=[
+      
+        { participantId: loggedInUserId as string, role: "user" as const}, 
+        { participantId: id as string, role: "user" as const}, 
+      
+    ]
+
+     const chatId=await socketStore.getState().createChat(participants)
+    
+
+    if (chatId) {
+        router.push(`/user/chat/${chatId}`);
+      } else {
+        throw new Error("No chat ID returned");
+      }
+    
+    
+    
+  } catch (error:any) {
+    console.error("Error creating chat:", error.response || error);
+
+    toast.error(
+      error?.response?.data?.error ||
+      error?.response?.statusText ||
+      error?.message ||
+      "Unable to start a chat. Please try again."
+  );
+  }
+
+}
+  
+  
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -66,9 +108,14 @@ const UserProfile = () => {
             <ArrowLeft className="w-5 h-5" />
             Back to Dashboard
           </button>
-          <button
+          {/* <button
             className="flex items-center gap-2 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-md transition-colors"
-            onClick={() => router.push(`/user/chat/${id}`)}
+            onClick={()=>router.push(`/user/chat/${id}`)}
+          > */}
+
+               <button
+            className="flex items-center gap-2 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-md transition-colors"
+            onClick={handleMessageClick}
           >
             <MessageCircle className="w-5 h-5" />
             Message

@@ -18,7 +18,7 @@ export interface ITutor {
     introductionVideo:string;
     createdAt:Date;
     updatedAt:Date;
-    status:"pending" | "approved" | "rejected"
-
+    status:"pending" | "approved" | "rejected";
+    role: "tutor";
     
 }

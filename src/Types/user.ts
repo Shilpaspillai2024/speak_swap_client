@@ -17,6 +17,6 @@ export interface IUser {
   whyChat:string;
   profilePhoto:string;
   isVerified:boolean;
-  
+  role: "user" ;
   }
   

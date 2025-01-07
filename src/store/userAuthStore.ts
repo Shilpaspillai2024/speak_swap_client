@@ -27,7 +27,7 @@ const userAuthStore = create<UserAuthState>()(
 
         setUserAuth: (user, token) => {
           if (token) {
-          
+          console.log("setting user:",{user,token});
             set({
               user,
               token,
@@ -38,6 +38,7 @@ const userAuthStore = create<UserAuthState>()(
             console.error("No token provided.");
           }
         },
+      
 
         setUser: (user) => {
           set({ user });
