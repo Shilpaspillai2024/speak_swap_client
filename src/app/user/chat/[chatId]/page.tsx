@@ -6,11 +6,17 @@ import socketStore, { Message } from "@/store/socketStore";
 import { toast } from "react-toastify";
 import format from "date-fns/format";
 import UserNavbar from "@/components/UserNavbar";
+import { getChatById } from "@/services/chatApi";
+import userAuthStore from "@/store/userAuthStore";
+
 
 const ChatPage = () => {
   const { chatId } = useParams();
   const [message, setMessage] = useState("");
  
+  const loggedInUser=userAuthStore.getState().user;
+  const loggedInUserId=loggedInUser?._id;
+  
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -22,7 +28,7 @@ const ChatPage = () => {
     currentChatId,
     recipientName,
     recipientProfilePicture,
-    senderId,
+   
   } = socketStore();
 
  
@@ -44,13 +50,40 @@ const ChatPage = () => {
   }, [messages]);
 
 
- 
+
+  useEffect(() => {
+    const fetchChatDetails = async () => {
+      try {
+        const chat = await getChatById(chatId as string, 'user');
+        if (chat) {
+          const recipient = chat.participants.find(
+            (participant:any) => participant.participantId._id !== loggedInUserId
+          );
+  
+          if (recipient) {
+            socketStore.setState({
+              recipientName: recipient.participantId.fullName,
+              recipientProfilePicture: recipient.participantId.profilePhoto,
+              recipientId:recipient.participantId._id,
+              recipientRole:recipient.participantId.role,
+            });
+          }
+        }
+        console.log("Chat fetched using getChatById:", chat);
+      } catch (error) {
+        console.error("Error fetching chat details:", error);
+        toast.error("Failed to fetch chat details");
+      }
+    };
+  
+    fetchChatDetails();
+  }, [chatId]);
 
   useEffect(() => {
     if (socket) {
       const handleNewMessage = (newMessage: Message) => {
         console.log("New message received:", newMessage);
-
+       
         
         socketStore.getState().fetchMessages(chatId as string);
       };
@@ -122,14 +155,14 @@ const ChatPage = () => {
                   <div
                     key={msg.id || index}
                     className={`flex ${
-                      msg.senderId === senderId
+                      msg.senderId === loggedInUserId
                         ? "justify-end"
                         : "justify-start"
                     }`}
                   >
                     <div
                       className={`max-w-[70%] p-3 rounded-xl ${
-                        msg.senderId === senderId
+                        msg.senderId === loggedInUserId
                           ? "bg-blue-500 text-white ml-auto"
                           : "bg-gray-200"
                       }`}

@@ -1,19 +1,24 @@
-'use client'
-import React, { useState} from "react";
-import Link from "next/link";
-import Image from "next/image";
-import tutorAuthStore from "@/store/tutorAuthStore";
-import { useRouter } from "next/navigation";
-import { FaUserCircle } from "react-icons/fa";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import tutorAuthStore from '@/store/tutorAuthStore';
+import { useRouter } from 'next/navigation';
+import { FaUserCircle } from 'react-icons/fa';
 
 const TutorNavbar = () => {
   const clearTutorAuth = tutorAuthStore((state) => state.Logout);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const tutor=tutorAuthStore.getState().tutor;
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
+  const tutor = tutorAuthStore.getState().tutor;
 
-  
+  useEffect(() => {
+    setMounted(true); 
+  }, []);
+
   const handleLogout = () => {
     clearTutorAuth();
     router.push('/tutor');
@@ -22,18 +27,25 @@ const TutorNavbar = () => {
   return (
     <div className="flex justify-between items-center p-1 bg-teal-600">
       <div className="flex items-center">
-      <Link href="/"><h1 className="text-2xl font-bold text-white">SpeakSwap</h1></Link>  
+        <Link href="/">
+          <h1 className="text-2xl font-bold text-white">SpeakSwap</h1>
+        </Link>
       </div>
 
       <div className="flex space-x-6 text-white mr-10 font-bold">
-        
         <div className="relative">
           <div className="flex flex-col items-center cursor-pointer" onClick={() => setMenuOpen((prev) => !prev)}>
-            
-        {tutor ?.profilePhoto?(
-            <img src={tutor.profilePhoto} alt="profile" className="w-10 h-10 rounded-full" /> 
-          ):(
-            <FaUserCircle size={38} /> )}
+            {mounted && tutor?.profilePhoto ? (
+              <Image
+                src={tutor.profilePhoto}
+                alt="profile"
+                width={38}
+                height={38}
+                className="w-10 h-10 rounded-full"
+              />
+            ) : (
+              <FaUserCircle size={38} />
+            )}
             <span>{tutor?.name}</span>
           </div>
 

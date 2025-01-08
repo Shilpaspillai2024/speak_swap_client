@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { io, Socket } from "socket.io-client";
 import { fetchChatList, fetchMessages, sendMessage, markMessageAsRead,createChat, getChatUsers, updateLastMessage} from "@/services/chatApi";
 import userAuthStore from "./userAuthStore";
@@ -65,7 +64,7 @@ interface SocketState {
 }
 
 const socketStore = create<SocketState>()(
-  persist(
+  
     (set, get) => ({
       socket: null,
       isConnected: false,
@@ -190,13 +189,18 @@ const socketStore = create<SocketState>()(
         }
       },
 
- joinChat: (chatId: string) => {
+joinChat: (chatId: string) => {
     const socket = get().socket;
     if (socket?.connected) {
       socket.emit('joinRoom', chatId);
       console.log('Joined chat room:', chatId);
-    }
+    } 
   },
+
+
+
+
+
 
   initializeChat: async (chatId: string) => {
     try {
@@ -226,11 +230,16 @@ const socketStore = create<SocketState>()(
   
       const currentUserId = get().recipientId;
       const recipient = participants.find(p => p._id === currentUserId);
-      
+    
+
+
+
+
 
       console.log("recipient",recipient)
       if (recipient) {
         set({
+         
           recipientId: recipient._id,
           recipientRole: recipient.role,
           recipientName: recipient.fullName || 'Unknown',
@@ -240,12 +249,15 @@ const socketStore = create<SocketState>()(
   
 
       set(state => ({
+      
         chatList: state.chatList.map(chat => 
           chat.id === chatId 
             ? { ...chat, participants }
             : chat
         )
       }));
+
+     
 
     
        await get().fetchMessages(chatId);
@@ -265,6 +277,9 @@ const socketStore = create<SocketState>()(
      
       set({ chatList: chats, error: null });
       console.log("Updated chatList in state:", get().chatList);
+      for (const chat of chats) {
+        await get().initializeChat(chat.id);
+      }
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to fetch chat list' });
     }
@@ -289,44 +304,73 @@ const socketStore = create<SocketState>()(
       const role = get().getRole();
       const socket=get().socket;
       const senderId=get().senderId;
-      const recipientId=get().recipientId;
-      const recipientRole=get().recipientRole;
+
+      
+
+     // const recipientId=get().recipientId;
+     // const recipientRole=get().recipientRole;
    
-      console.log("recipientid",recipientId);
-      console.log('rcipentrole,',recipientRole);
+      //console.log("recipientid",recipientId);
+     // console.log('rcipentrole,',recipientRole);
 
 
     const timestamp = new Date().toISOString() 
-      if (!recipientId || !recipientRole) {
-        throw new Error("Recipient information missing");
-      }
+      // if (!recipientId || !recipientRole) {
+      //   throw new Error("Recipient information missing");
+      // }
   
-      const newMessage = await sendMessage({ chatId, message,recipientId,
-        recipientRole}, role);
-    
-      if(socket && socket.connected){
-         console.log("Emitting message through socket")
-         socket.emit('sendMessage',{
+      // const newMessage = await sendMessage({ chatId, message,recipientId,
+      //   recipientRole}, role);
 
-          chatId,
-          message,
-          senderId,
-          recipientId,
-          recipientRole,
-          timestamp,
-         },(response:any)=>{
-          console.log("Scoket mesaeg response",response)
-         });
-        }else{
-          console.warn("Socket not connected for real-time message");
-        }
+        const newMessage = await sendMessage({ chatId, message}, role);
+
+        set((state) => {
+          return {
+            chatList: state.chatList.map(chat => 
+              chat.id === chatId ? { ...chat, lastMessage: newMessage, unreadCount: (chat.unreadCount || 0) + 1 } : chat
+            ),
+          };
+        });
+    
+      // if(socket && socket.connected){
+      //    console.log("Emitting message through socket")
+      //    socket.emit('sendMessage',{
+
+      //     chatId,
+      //     message,
+      //     senderId,
+      //     recipientId,
+      //     recipientRole,
+      //     timestamp,
+      //    },(response:any)=>{
+      //     console.log("Scoket mesaeg response",response)
+      //    });
+      //   }else{
+      //     console.warn("Socket not connected for real-time message");
+      //   }
+
+
+        if(socket && socket.connected){
+          console.log("Emitting message through socket")
+          socket.emit('sendMessage',{
+ 
+           chatId,
+           message,
+           senderId,
+           timestamp,
+          },(response:any)=>{
+           console.log("Scoket mesaeg response",response)
+          });
+         }else{
+           console.warn("Socket not connected for real-time message");
+         }
 
         await updateLastMessage(chatId,message,role,timestamp);
 
-        set((state) => ({ 
-          messages: [...state.messages, newMessage],
-          error: null
-        }));
+        // set((state) => ({ 
+        //   messages: [...state.messages, newMessage],
+        //   error: null
+        // }));
       
       get().updateChatList(newMessage);
     } catch (error) {
@@ -402,11 +446,8 @@ const socketStore = create<SocketState>()(
  
 
 }),
-{
-  name: "chat-store", 
-  partialize: (state) => ({ chatList: state.chatList }),
-}
-  )
+
+
 
 );
 

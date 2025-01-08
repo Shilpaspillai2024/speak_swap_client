@@ -82,6 +82,7 @@ export const getChatById = async (chatId: string, role: "user" | "tutor") => {
   try {
     const instance = role === "user" ? userAxiosInstance : tutorAxiosInstance;
     const response = await instance.get(`/chat/${chatId}`);
+    console.log("response of get chatByid",response)
     return response.data;
   } catch (error: any) {
     throw error.response?.data?.error || "Error fetching chat";
@@ -92,8 +93,7 @@ export const sendMessage = async (
   data: {
     chatId: string;
     message: string;
-    recipientId: string;
-    recipientRole: string;
+    
   },
   role: "user" | "tutor"
 ) => {
@@ -111,24 +111,26 @@ export const sendMessage = async (
       throw new Error("Sender not authenticated");
     }
 
-    const recipientId = socketStore.getState().recipientId;
-    const recipientRole = socketStore.getState().recipientRole;
+    // const recipientId = socketStore.getState().recipientId;
+    // const recipientRole = socketStore.getState().recipientRole;
 
-    console.log("reciepientid", recipientId);
+    // console.log("reciepientid", recipientId);
+
+    // const response = await instance.post(`/message/send`, {
+    //   ...data,
+    //   senderId,
+    //   senderRole,
+    //   recipientId,
+    //   recipientRole,
+    // });
+
     const response = await instance.post(`/message/send`, {
       ...data,
       senderId,
       senderRole,
-      recipientId,
-      recipientRole,
+      
     });
-    console.log("Sending message payload:", {
-      ...data,
-      senderId,
-      senderRole,
-      recipientId,
-      recipientRole,
-    });
+   
 
     return response.data;
   } catch (error: any) {
@@ -141,7 +143,7 @@ export const fetchMessages = async (chatId: string, role: "user" | "tutor") => {
     console.log("calling fecth mesage from chat api");
     const instance = role === "user" ? userAxiosInstance : tutorAxiosInstance;
     const response = await instance.get(`/message/${chatId}`);
-    console.log(response);
+    console.log("response of fecthmessages",response);
     return response.data;
   } catch (error: any) {
     throw error.response?.data?.error || "Error in fetching messages";

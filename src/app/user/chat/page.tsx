@@ -5,23 +5,37 @@ import socketStore from '@/store/socketStore';
 import UserNavbar from '@/components/UserNavbar';
 import { User, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { fetchChatList } from '@/services/chatApi';
+import userAuthStore from '@/store/userAuthStore';
+
+
 
 const ChatList = () => {
   const router = useRouter();
-  const { chatList, fetchChatList, senderId } = socketStore();
+   
+  const loggedInUser=userAuthStore.getState().user;
+  const loggedInUserId=loggedInUser?._id;
+  
+   const [chatList, setChatList] = useState<any[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log("chatList before fecth",socketStore.getState().chatList)
+  const role = socketStore.getState().getRole(); 
+ 
+  
+
+  console.log("role is",role)
+  
 
   useEffect(() => {
     const loadChats = async () => {
       try {
-        const role = socketStore.getState().getRole(); // Log this
-        console.log('Current role:', role);
+        
         setIsLoading(true);
-        await fetchChatList();
-        console.log("chatList after fetch:", socketStore.getState().chatList);
+       const response= await fetchChatList(role);
+       console.log("response of chatlist",response);
+       setChatList(response)
       } catch (error) {
         console.error('Error loading chats:', error);
         setError('Failed to load chats. Please try again.');
@@ -31,10 +45,12 @@ const ChatList = () => {
     };
 
     loadChats();
-  }, [fetchChatList]);
+  }, []);
 
   const navigateToChat = async (chatId: string) => {
     try {
+      console.log('Clicked chat ID:', chatId);
+     
       await socketStore.getState().initializeChat(chatId);
       router.push(`/user/chat/${chatId}`);
     } catch (error) {
@@ -44,16 +60,16 @@ const ChatList = () => {
 
   const getParticipantName = (chat: any) => {
     const otherParticipant = chat.participants.find(
-      (p: any) => p._id !== senderId
+      (p: any) => p.participantId._id !==loggedInUserId
     );
-    return otherParticipant?.name || otherParticipant?.fullName || 'Unknown User';
+    return otherParticipant?.participantId.fullName || 'Unknown User';
   };
 
   const getParticipantImage = (chat: any) => {
     const otherParticipant = chat.participants.find(
-      (p: any) => p._id !== senderId 
+      (p: any) => p.participantId._id !==loggedInUserId
     );
-    return otherParticipant?.profilePicture || otherParticipant?.profilePhoto;
+    return otherParticipant?.participantId.profilePhoto
   };
 
   if (isLoading) {
@@ -62,25 +78,6 @@ const ChatList = () => {
         <UserNavbar />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-        </div>
-      </>
-    );
-  }
-
-  if (error) {
-    return (
-      <>
-        <UserNavbar />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <button
-              onClick={() => fetchChatList()}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Retry
-            </button>
-          </div>
         </div>
       </>
     );
@@ -105,8 +102,8 @@ const ChatList = () => {
               ) : (
                 chatList.map((chat,index) => (
                    <div
-                    key={chat.id}
-                  onClick={() => navigateToChat(chat.id)}
+                    key={chat._id}
+                  onClick={() => navigateToChat(chat._id)}
                   className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
                  >
                     <div className="flex items-center space-x-4">

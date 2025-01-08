@@ -200,3 +200,15 @@ export const resetPassword=async(email:string,newPassword:string,confirmPassword
 }
 
 
+export const fetchProfile=async()=>{
+  try {
+    const response=await tutorAxiosInstance.get(`/tutor/profile`);
+    return response.data
+    
+  } catch (error:any) {
+    console.log('Error infetching user profile details')
+    throw error.response?.data?.error || "Error occured while fetching the profile details";
+    
+  }
+}
+
