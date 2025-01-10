@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode";
 import { refreshToken } from "@/services/adminApi";
+import { logoutAdmin } from "@/services/adminApi";
 
 interface AdminAuthState {
   admin: any | null;
@@ -41,8 +42,9 @@ const useAdminAuthStore = create<AdminAuthState>()(
         setAdmin: (admin) => {
           set({ admin });
         },
-        adminLogout: () => {
+        adminLogout: async() => {
           console.log("Logging out...");
+          await logoutAdmin();
         
           set({
             admin: null,
@@ -110,12 +112,14 @@ const useAdminAuthStore = create<AdminAuthState>()(
           try {
             const response=await refreshToken()
             if(response?.accessToken){
-              set({token:response.accessToken,
-                isAdminAuthenticated:true});
-              return true;
-            }
-            return false
-            
+              set({
+                token:response.accessToken,
+                isAdminAuthenticated:true
+             
+            });
+            return true;
+          }
+          return false;
           } catch (error) {
             console.error("Token refresh error:", error);
             get().adminLogout();

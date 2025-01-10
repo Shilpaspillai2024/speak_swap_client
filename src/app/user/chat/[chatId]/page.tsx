@@ -5,10 +5,9 @@ import { Send, User } from "lucide-react";
 import socketStore, { Message } from "@/store/socketStore";
 import { toast } from "react-toastify";
 import format from "date-fns/format";
-import UserNavbar from "@/components/UserNavbar";
 import { getChatById } from "@/services/chatApi";
 import userAuthStore from "@/store/userAuthStore";
-
+import ChatList from "../page";
 
 const ChatPage = () => {
   const { chatId } = useParams();
@@ -32,9 +31,7 @@ const ChatPage = () => {
   } = socketStore();
 
  
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+ 
 
   useEffect(() => {
     if (chatId && (!currentChatId || currentChatId !== chatId)) {
@@ -45,10 +42,19 @@ const ChatPage = () => {
     }
   }, [chatId, currentChatId, initializeChat]);
 
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: "smooth",
+        block: "end"
+      });
+    }
+  };
+
+  
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
 
 
   useEffect(() => {
@@ -121,14 +127,15 @@ const ChatPage = () => {
 
   return (
     <>
-      <UserNavbar />
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto p-4 max-w-4xl">
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+    
+
+      <ChatList/>
+   
             {/* Chat Header */}
-            <div className="border-b p-4 flex items-center space-x-4">
-              <div className="bg-gray-200 p-2 rounded-full">
-             
+
+            <div className="col-span-8 flex flex-col h-[calc(100vh-120px)]">
+            <div className="border-b p-4 bg-white">
+            <div className="flex items-center space-x-4">
               {recipientProfilePicture ? (
             <img
               src={recipientProfilePicture}
@@ -143,13 +150,14 @@ const ChatPage = () => {
               <div>
               <h2 className="font-semibold">{recipientName || 'Unknown'}</h2>
                 <p className="text-sm text-gray-500">
-                  {socket?.connected ? "Connected" : "Connecting..."}
+                  {socket?.connected ? "Online" : "Offline"}
                 </p>
               </div>
             </div>
 
             {/* Messages Container */}
-            <div className="h-[calc(100vh-300px)] overflow-y-auto p-4">
+           
+            <div className="flex-1 overflow-y-auto p-4 ">
               <div className="flex flex-col space-y-4">
                 {messages.map((msg, index) => (
                   <div
@@ -185,6 +193,9 @@ const ChatPage = () => {
             </div>
 
             <div className="border-t p-4 bg-white">
+
+
+           
               <div className="flex items-center gap-2">
                 <input
                   type="text"
@@ -204,8 +215,7 @@ const ChatPage = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+       
     </>
   );
 };

@@ -111,19 +111,6 @@ export const sendMessage = async (
       throw new Error("Sender not authenticated");
     }
 
-    // const recipientId = socketStore.getState().recipientId;
-    // const recipientRole = socketStore.getState().recipientRole;
-
-    // console.log("reciepientid", recipientId);
-
-    // const response = await instance.post(`/message/send`, {
-    //   ...data,
-    //   senderId,
-    //   senderRole,
-    //   recipientId,
-    //   recipientRole,
-    // });
-
     const response = await instance.post(`/message/send`, {
       ...data,
       senderId,
@@ -176,14 +163,18 @@ export const updateLastMessage = async (
   chatId: string,
   lastMessage: string,
   role: "user" | "tutor",
-  timestamp:string
+  timestamp:string,
+  userId:string,
+  unreadCount:number,
 ) => {
   try {
     const instance = role === "user" ? userAxiosInstance : tutorAxiosInstance;
     const response = await instance.put("/chat/updateLastMessage", {
       chatId,
       message:lastMessage,
-      timestamp
+      timestamp,
+      userId,
+      unreadCount,
     });
     return response.data;
   } catch (error: any) {

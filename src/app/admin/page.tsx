@@ -65,15 +65,19 @@ const LoginPage = () => {
       setErrors({});
     }
 
+try{
     const response = await loginAdmin(email, password);
 
-    if (response.error) {
-      toast.error(response.error);
-    } else {
-      toast.success("Login Successfull");
+
+    console.log("login response",response)
+      if (response) {
+      toast.success("Login Successful");
       setAdminAuth(response.isAdmin, response.accessToken);
       router.push("/admin/dashboard");
     }
+  } catch (error: any) {
+    toast.error(error.message || "Login failed");
+  }
   };
 
   return (

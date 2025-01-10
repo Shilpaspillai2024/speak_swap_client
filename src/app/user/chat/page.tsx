@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import socketStore from '@/store/socketStore';
-import UserNavbar from '@/components/UserNavbar';
 import { User, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fetchChatList } from '@/services/chatApi';
@@ -22,30 +21,61 @@ const ChatList = () => {
   const [error, setError] = useState<string | null>(null);
 
   const role = socketStore.getState().getRole(); 
- 
+  const socket=socketStore.getState().socket;
   
 
   console.log("role is",role)
   
 
-  useEffect(() => {
-    const loadChats = async () => {
-      try {
-        
-        setIsLoading(true);
-       const response= await fetchChatList(role);
-       console.log("response of chatlist",response);
-       setChatList(response)
-      } catch (error) {
-        console.error('Error loading chats:', error);
-        setError('Failed to load chats. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const loadChats = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetchChatList(role);
+      setChatList(response);
+    } catch (error) {
+      console.error('Error loading chats:', error);
+      setError('Failed to load chats. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadChats();
   }, []);
+
+  useEffect(() => {
+    if (socket) {
+      const handleNewMessage = (newMessage: any) => {
+        setChatList(prevChats => {
+          return prevChats.map(chat => {
+            if (chat._id === newMessage.chatId) {
+              return {
+                ...chat,
+                lastMessage: {
+                  message: newMessage.message,
+                  timestamp: newMessage.timestamp
+                }
+              };
+            }
+            return chat;
+          });
+        });
+
+       
+        loadChats();
+      };
+
+      socket.on("receiveMessage", handleNewMessage);
+      
+      socket.on("messageSent", handleNewMessage);
+
+      return () => {
+        socket.off("receiveMessage", handleNewMessage);
+        socket.off("messageSent", handleNewMessage);
+      };
+    }
+  }, [socket]);
 
   const navigateToChat = async (chatId: string) => {
     try {
@@ -75,7 +105,7 @@ const ChatList = () => {
   if (isLoading) {
     return (
       <>
-        <UserNavbar />
+      
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
         </div>
@@ -85,15 +115,16 @@ const ChatList = () => {
 
   return (
     <>
-      <UserNavbar />
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto p-4 max-w-4xl">
-          <div className="bg-white rounded-xl shadow-lg">
-            <div className="p-4 border-b">
+    
+           <div className="col-span-4 border-r flex flex-col h-[calc(100vh-120px)]">
+           <div className="h-full flex flex-col">
+            <div className="p-4 border-b bg-white">
               <h1 className="text-xl font-semibold">Chats</h1>
             </div>
+
+            <div className="flex-1 overflow-y-auto ">
             
-            <div className="divide-y">
+          
               {chatList.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
                   <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -133,11 +164,14 @@ const ChatList = () => {
                           <p className="text-sm text-gray-500 truncate max-w-[70%]">
                             {chat.lastMessage?.message || 'No messages yet'}
                           </p>
-                          {chat.unreadCount ? (
+
+                          {/* {chat.unreadCount ? (
                             <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
                               {chat.unreadCount}
                             </span>
-                          ) : null}
+                          ) : null} */}
+
+
                         </div>
                       </div>
                     </div>
@@ -145,9 +179,9 @@ const ChatList = () => {
                 ))
               )}
             </div>
-          </div>
+         </div>
         </div>
-      </div>
+     
     </>
   );
 };
