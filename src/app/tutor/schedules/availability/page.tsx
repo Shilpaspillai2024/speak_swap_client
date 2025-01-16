@@ -3,10 +3,28 @@ import React, { useState, useEffect } from "react";
 import { Clock, Calendar, Plus, Trash2 } from "lucide-react";
 import TutorNavbar from "@/components/TutorNavbar";
 import TutorSidebar from "@/components/TutorSidebar";
+import { setAvailability,deleteSlot,getAvailability} from "@/services/tutorApi";
+import tutorAuthStore from "@/store/tutorAuthStore";
+import { toast } from "react-toastify";
 
-// You'll need to implement these API functions
+
 const saveTutorAvailability = async (schedule: any) => {
-  // Add API call here
+  const tutorId=tutorAuthStore.getState().tutor._id;
+  console.log("tutorID",tutorId)
+
+  console.log("Schedule",schedule);
+  try {
+
+    const response=await setAvailability(tutorId,schedule)
+    console.log("availability set success fully")
+    return response;
+    
+  } catch (error) {
+   console.log("something went wrong try againg")
+    throw new Error("Failed to save tutor availability");
+  }
+
+ 
 };
 
 const TutorSchedule = () => {
@@ -20,12 +38,36 @@ const TutorSchedule = () => {
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
   const [timeZone, setTimeZone] = useState<string>("");
+  const tutorId=tutorAuthStore.getState().tutor._id;
+
+  console.log("tutorId",tutorId)
+  
 
   useEffect(() => {
-    // Get user's timezone
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    setTimeZone(userTimeZone);
-  }, []);
+    console.log("Fetching availability for tutorId:", tutorId); 
+    const fetchTutorAvailability = async () => {
+      try {
+        const response = await getAvailability(tutorId);
+        console.log("response in availabilty page",response)
+        if (response) {
+          setSchedule(response || []);
+        }
+      } catch (error) {
+        toast.error("Failed to load availability");
+      }
+    };
+
+
+    //  Get user's timezone
+                // const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                // setTimeZone(userTimeZone);
+    // Set the user's timezone this for testing purpose
+    const australianTimeZone = "Australia/Sydney";  
+    setTimeZone(australianTimeZone);
+
+    fetchTutorAvailability();
+  }, [tutorId]);
+
 
   const daysOfWeek = [
     "Monday",
@@ -43,60 +85,76 @@ const TutorSchedule = () => {
       return;
     }
 
+    const formatTime=(time:string)=>{
+      const date=new Date();
+      const[hours,minutes]=time.split(":").map(Number);
+      date.setHours(hours,minutes);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+
+
+  const formattedStartTime = formatTime(startTime);
+  const formattedEndTime = formatTime(endTime);
     setSchedule((prev) => {
       const daySchedule = prev.find((s) => s.day === selectedDay);
       if (daySchedule) {
-        // Add new slot to existing day
+        
         return prev.map((s) =>
           s.day === selectedDay
             ? {
                 ...s,
-                slots: [...s.slots, { startTime, endTime }],
+                slots: [...s.slots, { startTime:formattedStartTime, endTime:formattedEndTime }],
               }
             : s
         );
       } else {
-        // Create new day entry
+        
         return [
           ...prev,
           {
             day: selectedDay,
-            slots: [{ startTime, endTime }],
+            slots: [{ startTime: formattedStartTime, endTime: formattedEndTime }],
           },
         ];
       }
     });
 
-    // Reset inputs
+   
     setStartTime("");
     setEndTime("");
   };
 
-  const removeTimeSlot = (day: string, index: number) => {
-    setSchedule((prev) =>
-      prev
-        .map((s) => {
-          if (s.day === day) {
-            return {
+  const removeTimeSlot=async(day:string,index:number)=>{
+
+    try {
+      await deleteSlot(tutorId,day,index)
+      setSchedule((prev)=>
+
+        prev.map((s)=>{
+          if(s.day ===day){
+            return{
               ...s,
               slots: s.slots.filter((_, i) => i !== index),
             };
           }
           return s;
         })
-        .filter((s) => s.slots.length > 0)
-    );
+         .filter((s) => s.slots.length > 0)
+      );
+      toast.success("Slot deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete slot");
+    }
+
   };
 
   const handleSave = async () => {
     try {
-      await saveTutorAvailability({
-        schedule,
-        timeZone,
-      });
-      alert("Schedule saved successfully!");
+      await saveTutorAvailability({schedule,timeZone});
+      toast.success("Schedule saved successfully!");
     } catch (error) {
-      alert("Failed to save schedule");
+      toast.error("Failed to save schedule");
     }
   };
 

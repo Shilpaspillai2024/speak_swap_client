@@ -88,6 +88,8 @@ const socketStore = create<SocketState>()((set, get) => ({
         throw new Error("Socket URL is not defined");
       }
 
+
+
       const existingSocket = get().socket;
       if (existingSocket?.connected) {
         console.log("Socket already connected");
@@ -98,9 +100,15 @@ const socketStore = create<SocketState>()((set, get) => ({
       return new Promise<void>((resolve, reject) => {
         const socket = io(url, {
           transports: ["websocket"],
+          upgrade:false,
           reconnection: true,
           reconnectionDelay: 1000,
+          withCredentials: true,
+         
         });
+
+        console.log("Socket connection status:", socket.connected);
+        console.log("Socket transport:", socket.io.engine.transport.name);
 
         socket.on("connect", () => {
           console.log("Socket connected:", socket.id);

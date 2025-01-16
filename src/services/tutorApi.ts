@@ -212,3 +212,44 @@ export const fetchProfile=async()=>{
   }
 }
 
+export const setAvailability=async(tutorId:string,schedule: any)=>{
+
+  console.log("schedule from tutorapi frontend:",schedule)
+  try {
+    const response=await tutorAxiosInstance.put(`/tutor/${tutorId}/availability`,
+    schedule
+  )
+    return response.data;
+    
+  } catch (error:any) {
+    throw new Error(`Error setting availability: ${(error).response?.data?.message || error.message}`);
+    
+  }
+
+}
+
+export const deleteSlot=async(tutorId: string, day: string, slotIndex: number):Promise<void>=>{
+
+
+  try {
+
+    const response=await tutorAxiosInstance.delete(`/tutor/${tutorId}/availability/${day}/${slotIndex}`);
+    
+  } catch (error:any) {
+    throw new Error(error.response?.data?.message || "Failed to delete slot"); 
+  }
+} 
+
+
+export const getAvailability=async(tutorId:string)=>{
+ 
+  try {
+    
+    const response=await tutorAxiosInstance.get(`/tutor/${tutorId}/availability`);
+    console.log("tutor avilability geting from tutorapi",response.data)
+    return response.data;
+  } catch (error:any) {
+    throw new Error(error.response?.data?.message || "Failed to fetch availability")
+  }
+}
+
