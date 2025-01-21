@@ -1,6 +1,7 @@
 import axios from "axios";
 import userAxiosInstance from "./userAxiosInstance";
-import { IUser } from "@/Types/user";
+import { IUser } from "@/types/user";
+import { ITutor } from "@/types/tutor";
 
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -275,5 +276,97 @@ export const updateProfileDetails=async(updateData:Partial<IUser>)=>{
     
   } catch (error:any) {
     throw new Error(error.response?.data?.message || "An error occurred while updating the profile");
+  }
+}
+
+
+// get list Alltutors
+
+export const listTutorsForUser=async():Promise<ITutor[]>=>{
+  console.log("calling utors")
+  try {
+    const response =await userAxiosInstance.get(`/tutors`)
+    console.log("Fetched tutors:", response.data);
+    return response.data
+  } catch (error:any) {
+    console.log('Error infetching user details')
+    throw error.response?.data?.error || "Error occured while fetching the details";
+    
+    
+  }
+}
+
+
+export const tutorProfile=async(tutorId:string):Promise<ITutor | null>=>{
+  try {
+    const response=await userAxiosInstance.get(`/tutors/${tutorId}`)
+    console.log("tutor propfile response",response)
+    return response.data;
+    
+  } catch (error:any) {
+    console.log('Error infetching tutor profile details')
+    throw error.response?.data?.error || "Error occured while fetching the profile details";
+    
+    
+  }
+}
+
+
+export const createBooking=async(tutorId: string, selectedDay: string, selectedSlot: { startTime: string, endTime: string }, sessionFee: number) => {
+  try {
+
+    const response=await userAxiosInstance.post(`/booking/create`,{
+      tutorId,
+      selectedDay,
+      selectedSlot,
+      sessionFee
+    })
+
+    console.log("response of create booking",response)
+    return response.data;
+    
+  } catch (error:any) {
+    console.log('Error in booking creation')
+    throw error.response?.data?.error || "Error occured while booking";
+  }
+}
+
+export const verifyPayment=async(response: any, bookingId: string)=>{
+  try {
+
+    const verifyResponse=await userAxiosInstance.post('/booking/verify-payment',{
+      paymentId: response.razorpay_payment_id,
+      orderId: response.razorpay_order_id,
+      signature: response.razorpay_signature,
+      bookingId: bookingId,
+
+    })
+    console.log('Payment verification successful:', verifyResponse.data);
+    
+  } catch (error:any) {
+    console.log('Error in payment verify')
+    throw error.response?.data?.error || "Error occured while verify";
+  }
+}
+
+export const getBookingDetails=async(bookingId:string)=>{
+   try {
+
+
+    const response = await userAxiosInstance.get(`/booking/${bookingId}`);  
+    console.log("bookingdetails",response)
+    return response.data;
+    
+   } catch (error) {
+    throw new Error('Error fetching booking details');
+   }
+}
+
+export const getBookedSlots=async(tutorId:string,selectedDay:string)=>{
+  try {
+    const response=await userAxiosInstance.get(`/booking/booked-slots/${tutorId}/${selectedDay}`)
+    return response.data;
+  } catch (error) {
+    throw new Error("Error fetching booked slots");
   }
 }

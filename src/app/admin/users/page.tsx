@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "@/components/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
 import { blockUnblockUser, getAllUser } from "@/services/adminApi";
-import { IUser } from "@/Types/user";
+import { IUser } from "@/types/user";
 import { toast } from "react-toastify";
 
 

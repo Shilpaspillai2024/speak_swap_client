@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import AdminNavbar from "@/components/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
-import { ITutor } from "@/Types/tutor";
+import { ITutor } from "@/types/tutor";
 import { useState } from "react";
 import { getPendingTutors,tutorVerify } from "@/services/adminApi";
 

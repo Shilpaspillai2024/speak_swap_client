@@ -9,7 +9,7 @@ import userAuthStore from "@/store/userAuthStore";
 import Loading from "@/components/Loading";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { IUser } from "@/Types/user";
+import { IUser } from "@/types/user";
 import { Search } from "lucide-react";
 
 const UserDashboard = () => {

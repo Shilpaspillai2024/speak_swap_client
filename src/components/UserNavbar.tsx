@@ -5,7 +5,7 @@ import Image from 'next/image';
 import userAuthStore from '@/store/userAuthStore';
 import { useRouter } from 'next/navigation';
 import { FaUserCircle } from 'react-icons/fa';
-import { IUser } from '@/Types/user';
+import { IUser } from '@/types/user';
 
 const UserNavbar = () => {
   const clearUserAuth = userAuthStore((state) => state.Logout);
@@ -36,8 +36,8 @@ const UserNavbar = () => {
 
       <div className="flex items-center space-x-4 text-customTeal font-bold">
         <Link href="/dashboard">Community</Link>
-        <Link href="/tutor">Tutor</Link>
-        <Link href="/mysessions">MySessions</Link>
+        <Link href="/dashboard/tutor">Tutor</Link>
+        <Link href="/dashboard/mysessions">MySessions</Link>
         <Link href="/user/chat">Messages</Link>
         <Link href="/dashboard/profile">Profile</Link>
 

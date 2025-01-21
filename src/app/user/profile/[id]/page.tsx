@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { fetchUserProfile } from "@/services/userApi";
 import { toast } from "react-toastify";
-import { IUser } from "@/Types/user";
+import { IUser } from "@/types/user";
 import axios from "axios";
 import { MessageCircle, ArrowLeft, Globe, Book, MessageSquare, Target, Heart } from "lucide-react";
 import userAuthStore from "@/store/userAuthStore";

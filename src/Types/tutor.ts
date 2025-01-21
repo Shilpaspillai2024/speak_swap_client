@@ -20,5 +20,19 @@ export interface ITutor {
     updatedAt:Date;
     status:"pending" | "approved" | "rejected";
     role: "tutor";
+    timeZone:string;
+    availability: IAvailability[];
+    hourlyRate:number;
     
 }
+
+export interface ITimeSlot {
+    startTime: string;
+    endTime: string;
+  }
+  
+  
+ export interface IAvailability {
+    day: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+    slots: ITimeSlot[];
+  }

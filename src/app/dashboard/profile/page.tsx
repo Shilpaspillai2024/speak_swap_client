@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { IUser } from '@/Types/user';
+import { IUser } from '@/types/user';
 import { fetchProfile, updateProfileDetails } from '@/services/userApi';
 import UserNavbar from '@/components/UserNavbar';
 import { toast } from 'react-toastify';

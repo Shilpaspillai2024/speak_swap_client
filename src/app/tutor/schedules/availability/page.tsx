@@ -38,6 +38,7 @@ const TutorSchedule = () => {
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
   const [timeZone, setTimeZone] = useState<string>("");
+  
   const tutorId=tutorAuthStore.getState().tutor._id;
 
   console.log("tutorId",tutorId)
@@ -174,6 +175,8 @@ const TutorSchedule = () => {
                   Your current timezone: {timeZone}
                 </p>
               </div>
+
+             
 
               <div className="bg-teal-50 rounded-lg p-6 mb-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">

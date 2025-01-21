@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "@/components/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
 import { getTutors, blockUnblockTutor } from "@/services/adminApi";
-import { ITutor } from "@/Types/tutor";
+import { ITutor } from "@/types/tutor";
 import { toast } from "react-toastify";
 
 const AdminTutorPage = () => {

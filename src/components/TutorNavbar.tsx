@@ -6,7 +6,7 @@ import Image from 'next/image';
 import tutorAuthStore from '@/store/tutorAuthStore';
 import { useRouter } from 'next/navigation';
 import { FaUserCircle } from 'react-icons/fa';
-import { ITutor } from '@/Types/tutor';
+import { ITutor } from '@/types/tutor';
 
 
 const TutorNavbar = () => {
