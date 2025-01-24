@@ -1,48 +1,46 @@
 import React, { useState } from 'react';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import useAdminAuthStore from '@/store/adminAuthStore';
 
 const AdminNavbar = () => {
-
+  const [menuOpen, setMenuOpen] = useState(false);
   const clearAdminAuth = useAdminAuthStore((state) => state.adminLogout);
+  const router = useRouter();
 
-  const [menuOpen,setMenuOpen]=useState(false)
-
-  const router=useRouter()
-
-  const handleLogout=()=>{
+  const handleLogout = () => {
     clearAdminAuth();
-    router.push('/admin')
+    router.push('/admin');
+  };
 
-  }
   return (
-    <div className="w-full bg-[#22223B] text-white p-2 flex justify-between items-center shadow-lg">
-      <div className="text-2xl font-bold">SpeakSwap</div>
-
-      <div className='relative'>
-
-        <div className=' flex flex-col items-center cursor-pointer' onClick={()=>setMenuOpen((prev)=>!prev)}>
-
-       
-    
-        <FaUserCircle size={38} />
-        <span className="mt-2 text-sm">Admin</span>
+    <nav className="w-full bg-gradient-to-r from-[#1a1a2e] to-[#16213e] text-white p-4 flex justify-between items-center shadow-2xl">
+      <div className="flex items-center space-x-4">
+        <div className="text-2xl font-bold text-white tracking-wider">SpeakSwap</div>
       </div>
-
-        {/* Logout Menu */}
+      
+      <div className="relative">
+        <div 
+          className="flex flex-col items-center cursor-pointer hover:opacity-80 transition" 
+          onClick={() => setMenuOpen(prev => !prev)}
+        >
+          <FaUserCircle size={40} className="text-blue-300" />
+          <span className="mt-1 text-sm text-gray-300">Admin</span>
+        </div>
+        
         {menuOpen && (
-          <div className="absolute top-14 right-0 bg-white text-black rounded shadow-lg">
+          <div className="absolute top-20 right-0 bg-white text-gray-800 rounded-lg shadow-2xl border border-gray-200 z-50 overflow-hidden">
             <button
               onClick={handleLogout}
-              className="px-4 py-2 text-sm w-full hover:bg-gray-200"
+              className="flex items-center w-full px-4 py-3 text-sm hover:bg-red-50 transition"
             >
+              <FaSignOutAlt className="mr-2" />
               Logout
             </button>
           </div>
         )}
-        </div>
-    </div>
+      </div>
+    </nav>
   );
 };
 

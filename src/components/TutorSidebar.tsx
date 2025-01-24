@@ -27,7 +27,7 @@ const TutorSidebar = () => {
                 <FaClock size={16} />
                 <span>Set Availability</span>
               </Link>
-              <Link href="/tutor/schedules/view-classes" className="flex items-center space-x-2 text-base hover:text-indigo-400">
+              <Link href="/tutor/schedules/myschedules" className="flex items-center space-x-2 text-base hover:text-indigo-400">
                 <FaCalendarAlt size={16} />
                 <span>View Scheduled Classes</span>
               </Link>
@@ -38,9 +38,9 @@ const TutorSidebar = () => {
           <FaComments size={20} />
           <span>Messages</span>
         </Link>
-        <Link href="/tutor/payments" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
+        <Link href="/tutor/wallet" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
           <FaCreditCard size={20} />
-          <span>Payments</span>
+          <span>Tutor Wallet</span>
         </Link>
         <Link href="/tutor/profile" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
           <FaUser size={20} />

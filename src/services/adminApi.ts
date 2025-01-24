@@ -107,6 +107,31 @@ export const blockUnblockTutor = async (tutorId: string, isActive: boolean) => {
   }
 };
 
+
+export const getAllBookings =async()=>{
+  try {
+    
+    const response = await axiosInstance.get(`/admin/bookings`);
+    console.log("response of booking in admin",response.data)
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetching bookings", error);
+    throw error;
+  }
+}
+
+
+export const getBookingDetails=async(bookingId:string)=>{
+  try {
+     
+    const response =await axiosInstance.get(`/admin/bookings/${bookingId}`);
+    console.log("response of bookingdetails from admin by bookingid",response.data)
+    return response.data;
+  } catch (error) {
+    
+  }
+}
+
 export const logoutAdmin = async () => {
   try {
     const response = await axiosInstance.post(`/admin/logout`);

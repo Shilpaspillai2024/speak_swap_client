@@ -7,7 +7,6 @@ import { setAvailability,deleteSlot,getAvailability} from "@/services/tutorApi";
 import tutorAuthStore from "@/store/tutorAuthStore";
 import { toast } from "react-toastify";
 
-
 const saveTutorAvailability = async (schedule: any) => {
   const tutorId=tutorAuthStore.getState().tutor._id;
   console.log("tutorID",tutorId)
@@ -18,13 +17,12 @@ const saveTutorAvailability = async (schedule: any) => {
     const response=await setAvailability(tutorId,schedule)
     console.log("availability set success fully")
     return response;
-    
+
   } catch (error) {
    console.log("something went wrong try againg")
     throw new Error("Failed to save tutor availability");
   }
 
- 
 };
 
 const TutorSchedule = () => {
@@ -38,14 +36,13 @@ const TutorSchedule = () => {
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
   const [timeZone, setTimeZone] = useState<string>("");
-  
+
   const tutorId=tutorAuthStore.getState().tutor._id;
 
   console.log("tutorId",tutorId)
-  
 
   useEffect(() => {
-    console.log("Fetching availability for tutorId:", tutorId); 
+    console.log("Fetching availability for tutorId:", tutorId);
     const fetchTutorAvailability = async () => {
       try {
         const response = await getAvailability(tutorId);
@@ -58,17 +55,15 @@ const TutorSchedule = () => {
       }
     };
 
-
     //  Get user's timezone
                 // const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                 // setTimeZone(userTimeZone);
     // Set the user's timezone this for testing purpose
-    const australianTimeZone = "Australia/Sydney";  
+    const australianTimeZone = "Australia/Sydney";
     setTimeZone(australianTimeZone);
 
     fetchTutorAvailability();
   }, [tutorId]);
-
 
   const daysOfWeek = [
     "Monday",
@@ -93,14 +88,12 @@ const TutorSchedule = () => {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
     }
 
-
-
   const formattedStartTime = formatTime(startTime);
   const formattedEndTime = formatTime(endTime);
     setSchedule((prev) => {
       const daySchedule = prev.find((s) => s.day === selectedDay);
       if (daySchedule) {
-        
+
         return prev.map((s) =>
           s.day === selectedDay
             ? {
@@ -110,7 +103,7 @@ const TutorSchedule = () => {
             : s
         );
       } else {
-        
+
         return [
           ...prev,
           {
@@ -121,7 +114,6 @@ const TutorSchedule = () => {
       }
     });
 
-   
     setStartTime("");
     setEndTime("");
   };
@@ -175,8 +167,6 @@ const TutorSchedule = () => {
                   Your current timezone: {timeZone}
                 </p>
               </div>
-
-             
 
               <div className="bg-teal-50 rounded-lg p-6 mb-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">
@@ -284,3 +274,4 @@ const TutorSchedule = () => {
 };
 
 export default TutorSchedule;
+

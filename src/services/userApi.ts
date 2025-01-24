@@ -339,6 +339,9 @@ export const verifyPayment=async(response: any, bookingId: string)=>{
       orderId: response.razorpay_order_id,
       signature: response.razorpay_signature,
       bookingId: bookingId,
+      tutorId: response.tutorId, 
+      amount: response.amount,   
+      creditedBy:response.creditedBy  ,
 
     })
     console.log('Payment verification successful:', verifyResponse.data);
@@ -368,5 +371,20 @@ export const getBookedSlots=async(tutorId:string,selectedDay:string)=>{
     return response.data;
   } catch (error) {
     throw new Error("Error fetching booked slots");
+  }
+}
+
+
+// fetch booking details for user
+
+export const userbookingDetails=async()=>{
+  try {
+    
+    const response =await userAxiosInstance.get(`/booking/user/bookings`)
+    console.log("response of booking",response)
+    return response.data;
+    
+  } catch (error) {
+    throw new Error("Error fetching booking details");
   }
 }

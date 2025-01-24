@@ -22,6 +22,7 @@ import {
   getBookedSlots,
 } from "@/services/userApi";
 import { toast } from "react-toastify";
+import userAuthStore from "@/store/userAuthStore";
 
 const TutorProfilePage = () => {
   const [tutor, setTutor] = React.useState<ITutor | null>(null);
@@ -34,6 +35,9 @@ const TutorProfilePage = () => {
     endTime: string;
   } | null>(null);
 
+  const user=userAuthStore().user;
+
+  console.log("user from store",user)
   const [bookedSlots, setBookedSlots] = React.useState<string[]>([]);
   const { tutorId } = useParams();
 
@@ -140,7 +144,17 @@ const TutorProfilePage = () => {
         handler: function (response: any) {
           console.log("Razorpay Response:", response);
 
-          verifyPayment(response, bookingId)
+          // verifyPayment(response, bookingId)
+
+          verifyPayment(
+            {
+              ...response,
+              tutorId: tutorId,
+              amount: sessionFeeInUSD,
+              creditedBy:user.fullName,
+            },
+            bookingId
+          )
             .then(() => {
               router.push(
                 `/dashboard/tutor/${tutorId}/sucess?bookingId=${bookingId}`

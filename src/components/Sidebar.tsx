@@ -1,58 +1,107 @@
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { FaUsers, FaChalkboardTeacher, FaClipboardList, FaCreditCard, FaHeadset,FaHome,FaChevronDown} from 'react-icons/fa';
-import { useState } from 'react';
+import { 
+  FaUsers, 
+  FaChalkboardTeacher, 
+  FaClipboardList, 
+  FaCreditCard, 
+  FaHeadset,
+  FaHome,
+  FaChevronDown
+} from 'react-icons/fa';
 
 const Sidebar = () => {
+  const [tutorSubmenu, setTutorSubmenu] = useState(false);
 
-  const [tutorSubmenu,setTutorSubmenu]=useState(false)
+  const sidebarLinks = [
+    {
+      icon: <FaHome size={20} />,
+      label: 'Dashboard',
+      href: '/admin/dashboard'
+    },
+    {
+      icon: <FaUsers size={20} />,
+      label: 'Users',
+      href: '/admin/users'
+    },
+    {
+      icon: <FaChalkboardTeacher size={20} />,
+      label: 'Tutors',
+      submenu: [
+        {
+          label: 'All Tutors',
+          href: '/admin/tutors'
+        },
+        {
+          label: 'Tutor Applications',
+          href: '/admin/tutors/tutorapplications'
+        }
+      ]
+    },
+    {
+      icon: <FaClipboardList size={20} />,
+      label: 'Bookings',
+      href: '/admin/bookings'
+    },
+    {
+      icon: <FaCreditCard size={20} />,
+      label: 'Payments',
+      href: '/admin/payments'
+    },
+    {
+      icon: <FaHeadset size={20} />,
+      label: 'Support',
+      href: '/admin/support'
+    }
+  ];
+
   return (
-    <div className="w-64 h-screen bg-[#4d4d6d] text-white p-6">
-      <div className="space-y-6">
-      <Link href="/admin/dashboard" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
-          <FaHome size={20} />
-          <span>Dashboard</span>
-        </Link>
-        <Link href="/admin/users" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
-          <FaUsers size={20} />
-          <span>Users</span>
-        </Link>
-           {/* Tutors Section with Submenu */}
-           <div>
-          <div
-            className="flex items-center justify-between text-lg cursor-pointer hover:text-indigo-400"
-            onClick={() => setTutorSubmenu(!tutorSubmenu)}
-          >
-            <div className="flex items-center space-x-2">
-              <FaChalkboardTeacher size={20} />
-              <span>Tutors</span>
-            </div>
-            <FaChevronDown size={16} className={`transition-transform ${tutorSubmenu ? 'rotate-180' : ''}`} />
+    <aside className="h-full min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] text-white p-6 shadow-2xl items-stretch">
+      <div className="space-y-4">
+        {sidebarLinks.map((link, index) => (
+          <div key={index}>
+            {link.submenu ? (
+              <div>
+                <div
+                  className="flex items-center justify-between text-lg cursor-pointer hover:text-blue-300 transition"
+                  onClick={() => setTutorSubmenu(!tutorSubmenu)}
+                >
+                  <div className="flex items-center space-x-2">
+                    {link.icon}
+                    <span>{link.label}</span>
+                  </div>
+                  <FaChevronDown 
+                    size={16} 
+                    className={`transition-transform ${tutorSubmenu ? 'rotate-180' : ''}`} 
+                  />
+                </div>
+                {tutorSubmenu && (
+                  <div className="ml-6 mt-2 space-y-2">
+                    {link.submenu.map((sublink, subindex) => (
+                      <Link 
+                        key={subindex} 
+                        href={sublink.href} 
+                        className="block text-sm hover:text-blue-300 transition"
+                      >
+                        {sublink.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link 
+                href={link.href} 
+                className="flex items-center space-x-2 text-lg hover:text-blue-300 transition"
+              >
+                {link.icon}
+                <span>{link.label}</span>
+              </Link>
+            )}
           </div>
-          {tutorSubmenu && (
-            <div className="ml-6 mt-2 space-y-2">
-              <Link href="/admin/tutors" className="block text-sm hover:text-indigo-400">
-                All Tutors
-              </Link>
-              <Link href="/admin/tutors/tutorapplications" className="block text-sm hover:text-indigo-400">
-                Tutor Applications
-              </Link>
-            </div>
-          )}
-        </div>
-        <Link href="/admin/bookings" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
-          <FaClipboardList size={20} />
-          <span>Bookings</span>
-        </Link>
-        <Link href="/admin/payments" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
-          <FaCreditCard size={20} />
-          <span>Payments</span>
-        </Link>
-        <Link href="/admin/support" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
-          <FaHeadset size={20} />
-          <span>Support</span>
-        </Link>
+        ))}
       </div>
-    </div>
+    </aside>
   );
 };
 
