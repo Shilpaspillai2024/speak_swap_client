@@ -144,8 +144,6 @@ const TutorProfilePage = () => {
         handler: function (response: any) {
           console.log("Razorpay Response:", response);
 
-          // verifyPayment(response, bookingId)
-
           verifyPayment(
             {
               ...response,

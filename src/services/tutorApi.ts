@@ -33,10 +33,6 @@ export interface tutorProfile {
 }
 
 
-type SchedulePayload = {
-  day: string; 
-  slots: { startTime: string; endTime: string }[]; 
-};
 
 export const tutorBasicDetails = async (data: signupBasicDetails) => {
   try {
@@ -229,6 +225,7 @@ export const setAvailability = async (tutorId: string, schedule: any) => {
     );
   }
 };
+
 
 
 

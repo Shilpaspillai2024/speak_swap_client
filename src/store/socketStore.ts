@@ -64,6 +64,22 @@ interface SocketState {
   findExistingChat: (participantId: string) => Chat | undefined;
   joinChat: (chatId: string) => void;
   initializeChat: (chatId: string) => Promise<void>;
+  sendVideoCallRequest: (chatId: string,senderId:string) => void;
+  sendVideoCallOffer: (
+    chatId: string,
+    senderId: string,
+    offer: RTCSessionDescriptionInit
+  ) => void;
+  sendVideoCallAnswer: (
+    chatId: string,
+    senderId: string,
+    answer: RTCSessionDescriptionInit
+  ) => void;
+  sendIceCandidate: (
+    candidate: RTCIceCandidate,
+    chatId: string,
+    senderId: string
+  ) => void;
 }
 
 const socketStore = create<SocketState>()((set, get) => ({
@@ -88,8 +104,6 @@ const socketStore = create<SocketState>()((set, get) => ({
         throw new Error("Socket URL is not defined");
       }
 
-
-
       const existingSocket = get().socket;
       if (existingSocket?.connected) {
         console.log("Socket already connected");
@@ -100,11 +114,10 @@ const socketStore = create<SocketState>()((set, get) => ({
       return new Promise<void>((resolve, reject) => {
         const socket = io(url, {
           transports: ["websocket"],
-          upgrade:false,
+          upgrade: false,
           reconnection: true,
           reconnectionDelay: 1000,
           withCredentials: true,
-         
         });
 
         console.log("Socket connection status:", socket.connected);
@@ -323,18 +336,16 @@ const socketStore = create<SocketState>()((set, get) => ({
       const role = get().getRole();
       const socket = get().socket;
       const senderId = get().senderId;
-      const userId=userAuthStore.getState().user._id;
+      const userId = userAuthStore.getState().user._id;
 
-      console.log("userId",userId)
-
+      console.log("userId", userId);
 
       const timestamp = new Date().toISOString();
 
       const newMessage = await sendMessage({ chatId, message }, role);
 
-      const currentChat = get().chatList.find(chat => chat.id === chatId);
+      const currentChat = get().chatList.find((chat) => chat.id === chatId);
       const unreadCount = currentChat ? (currentChat.unreadCount || 0) + 1 : 1;
-
 
       set((state) => {
         return {
@@ -368,7 +379,14 @@ const socketStore = create<SocketState>()((set, get) => ({
         console.warn("Socket not connected for real-time message");
       }
 
-      await updateLastMessage(chatId, message, role, timestamp,userId,unreadCount);
+      await updateLastMessage(
+        chatId,
+        message,
+        role,
+        timestamp,
+        userId,
+        unreadCount
+      );
 
       get().updateChatList(newMessage);
     } catch (error) {
@@ -432,6 +450,52 @@ const socketStore = create<SocketState>()((set, get) => ({
         }),
       };
     });
+  },
+
+  sendVideoCallRequest: (chatId: string,senderId:string) => {
+    const { socket, recipientId } = get();
+    console.log("senderId and recipientid",senderId, recipientId )
+    if (socket?.connected) {
+      socket.emit("videoCallRequest", {
+        chatId,
+        senderId,
+        recipientId,
+      });
+
+      console.log("Video call request sent:", { chatId, senderId, recipientId });
+    }
+  },
+
+  sendVideoCallOffer: (
+    chatId: string,
+    senderId: string,
+    offer: RTCSessionDescriptionInit
+  ) => {
+    const { socket } = get();
+    if (socket?.connected) {
+      socket.emit("videoCallOffer", { chatId, senderId, offer });
+    }
+  },
+
+  sendVideoCallAnswer: (
+    chatId: string,
+    senderId: string,
+    answer: RTCSessionDescriptionInit
+  ) => {
+    const { socket } = get();
+    if (socket?.connected) {
+      socket.emit("videoCallOffer", { chatId, senderId, answer });
+    }
+  },
+  sendIceCandidate: (
+    candidate: RTCIceCandidate,
+    chatId: string,
+    senderId: string
+  ) => {
+    const { socket } = get();
+    if (socket?.connected) {
+      socket.emit("iceCandidate", { candidate, chatId, senderId });
+    }
   },
 
   cleanup: () => {
