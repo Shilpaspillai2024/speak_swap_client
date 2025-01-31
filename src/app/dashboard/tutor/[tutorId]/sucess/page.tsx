@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { getBookingDetails } from "@/services/userApi";
 import UserNavbar from "@/components/UserNavbar";
 import { Check, Calendar, Clock, User, CreditCard } from "lucide-react";
-
+import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 interface BookingDetails {
   day: string;
   startTime: string;
@@ -124,4 +124,4 @@ const BookingSuccessPage = () => {
   );
 };
 
-export default BookingSuccessPage;
+export default UserProtectedRoute(BookingSuccessPage);

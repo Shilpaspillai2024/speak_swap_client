@@ -6,6 +6,7 @@ import TutorSidebar from "@/components/TutorSidebar";
 import { setAvailability,deleteSlot,getAvailability} from "@/services/tutorApi";
 import tutorAuthStore from "@/store/tutorAuthStore";
 import { toast } from "react-toastify";
+import TutorProtectedRoute from "@/HOC/TutorProtectedRoute";
 
 const saveTutorAvailability = async (schedule: any) => {
   const tutorId=tutorAuthStore.getState().tutor._id;
@@ -273,7 +274,7 @@ const TutorSchedule = () => {
   );
 };
 
-export default TutorSchedule;
+export default TutorProtectedRoute(TutorSchedule);
 
 
 

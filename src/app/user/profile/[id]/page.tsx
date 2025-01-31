@@ -10,7 +10,7 @@ import axios from "axios";
 import { MessageCircle, ArrowLeft, Globe, Book, MessageSquare, Target, Heart } from "lucide-react";
 import userAuthStore from "@/store/userAuthStore";
 import socketStore from "@/store/socketStore";
-
+import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 const UserProfile = () => {
   const router = useRouter();
   const [user, setUser] = useState<IUser | null>(null);
@@ -197,4 +197,4 @@ const handleMessageClick =async()=>{
   );
 };
 
-export default UserProfile;
+export default UserProtectedRoute(UserProfile);

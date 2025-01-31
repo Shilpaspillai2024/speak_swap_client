@@ -13,7 +13,7 @@ import {
 import UserNavbar from '@/components/UserNavbar';
 import { Booking } from '@/types/booking';
 import { userbookingDetails } from '@/services/userApi';
-
+import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 
 const UserBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -160,4 +160,4 @@ const UserBookings = () => {
   );
 };
 
-export default UserBookings;
+export default UserProtectedRoute(UserBookings);

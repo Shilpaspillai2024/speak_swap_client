@@ -6,7 +6,7 @@ import { User, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { fetchChatList } from '@/services/chatApi';
 import userAuthStore from '@/store/userAuthStore';
-
+import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 
 
 const ChatList = () => {
@@ -186,5 +186,5 @@ const ChatList = () => {
   );
 };
 
-export default ChatList;
+export default UserProtectedRoute(ChatList);
 

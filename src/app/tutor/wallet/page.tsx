@@ -4,7 +4,7 @@ import { getWalletDetails } from '@/services/tutorApi';
 import TutorNavbar from '@/components/TutorNavbar';
 import TutorSidebar from '@/components/TutorSidebar';
 import tutorAuthStore from '@/store/tutorAuthStore';
-
+import TutorProtectedRoute from '@/HOC/TutorProtectedRoute';
 const WalletPage: React.FC = () => {
   const [walletDetails, setWalletDetails] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -111,4 +111,4 @@ const WalletPage: React.FC = () => {
   );
 };
 
-export default WalletPage;
+export default TutorProtectedRoute(WalletPage);

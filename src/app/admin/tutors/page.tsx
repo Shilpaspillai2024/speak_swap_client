@@ -6,6 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import { getTutors, blockUnblockTutor } from "@/services/adminApi";
 import { ITutor } from "@/types/tutor";
 import { toast } from "react-toastify";
+import protectedRoute from "@/HOC/AdminProtectedRoute";
 
 const AdminTutorPage = () => {
   const [tutors, setTutors] = useState<ITutor[]>([]);
@@ -141,4 +142,4 @@ const AdminTutorPage = () => {
   );
 };
 
-export default AdminTutorPage;
+export default protectedRoute(AdminTutorPage);

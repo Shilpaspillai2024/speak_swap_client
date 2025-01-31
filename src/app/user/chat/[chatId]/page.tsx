@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useRouter,} from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Send, User, Video } from "lucide-react";
 import socketStore, { Message } from "@/store/socketStore";
 import { toast } from "react-toastify";
@@ -8,26 +8,20 @@ import format from "date-fns/format";
 import { getChatById } from "@/services/chatApi";
 import userAuthStore from "@/store/userAuthStore";
 import ChatList from "../page";
+import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 import VideoCallModal from "@/components/videoCall/VideoCallModal";
-
-
-interface VideoCallRequestData {
-  chatId: string;
-  senderId: string;
-  recipientId: string;
-  senderName:string;
-}
 
 const ChatPage = () => {
   const { chatId } = useParams();
-  const router=useRouter();
+  const router = useRouter();
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isCallInitiator, setIsCallInitiator] = useState(false);
+  const [showCallModal, setShowCallModal] = useState(false);
   const [message, setMessage] = useState("");
-
   const loggedInUser = userAuthStore.getState().user;
-  const senderName=loggedInUser?.fullName;
   const loggedInUserId = loggedInUser?._id;
+
+  const [isVideoCallRequested, setIsVideoCallRequested] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +34,6 @@ const ChatPage = () => {
     recipientId,
     recipientName,
     recipientProfilePicture,
-    sendVideoCallRequest,
   } = socketStore();
 
   useEffect(() => {
@@ -129,70 +122,63 @@ const ChatPage = () => {
     }
   };
 
-  const handleVideoCall = () => {
-    console.log("Video call initiated");
-    if(chatId ){
-      sendVideoCallRequest(chatId as string,loggedInUserId )
+ 
+
+
+  const startVideoCall = () => {
+    if (socket) {
+      const videoRoomId = `${chatId}-video`; 
+  
+      socket.emit("initiateCall", { chatId, videoRoomId });  
+  
+      sessionStorage.setItem("isCallInitiator", "true");
+      setIsVideoCallRequested(true);
+      router.push(`/user/video-call/${videoRoomId}`); 
     }
   };
-
-
-  useEffect(()=>{
-    if(socket){
-      const handleVideoCallRequestReceived =({ chatId, senderName, recipientId }:VideoCallRequestData) => 
-        {
-          console.log("Incoming video call received:", { chatId, senderName, recipientId });
-         
-          setIsModalVisible(true);
-        }
-        socket.on("videoCallRequest", handleVideoCallRequestReceived);
-
-        return () => {
-          socket.off("videoCallRequest", handleVideoCallRequestReceived);
-        };
-    }
-  },[socket]);
-
+  
   const handleAcceptCall = () => {
-    
-    setIsModalVisible(false);
-
-    socket?.emit("videoCallAccepted", { 
-      chatId, 
-      recipientName,
-    });
-    router.push(`/user/video-call/${chatId}`);
-    console.log("Video call accepted");
-   
+    if (socket) {
+      setShowCallModal(false);
+      const videoRoomId = `${chatId}-video`;  
+  
+      socket.emit("acceptCall", {  videoRoomId });  
+     // sessionStorage.setItem("isCallInitiator", "false");
+      console.log('acceptCall emitted', { videoRoomId });
+      router.push(`/user/video-call/${videoRoomId}`); 
+    }
   };
-
+  
   const handleRejectCall = () => {
-    setIsModalVisible(false);
-    console.log("Video call rejected");
-
-    // Optionally, send a rejection signal
-    socket?.emit("videoCallRejected", { chatId, recipientId: loggedInUserId });
-    toast.info("Video call rejected");
+    if (socket) {
+      setShowCallModal(false);
+      socket.emit("rejectCall", { chatId });  
+    }
   };
-
-
+  
+  useEffect(() => {
+    if (socket) {
+      socket.on("incomingCall", ({ callerId, chatId, videoRoomId }) => {
+        console.log('incomingCall received', { callerId, chatId, videoRoomId });
+        setShowCallModal(true);
+      });
+  
+      return () => {
+        socket.off("incomingCall");
+      };
+    }
+  }, [socket, router]);
 
   return (
     <>
-
-      {/* Video Call Modal */}
-      {isModalVisible && (
-        <VideoCallModal
-          senderId={recipientName || "Unknown"}
-          onAccept={handleAcceptCall}
-          onReject={handleRejectCall}
-        />
-      )}
-
+      <VideoCallModal
+        isOpen={showCallModal}
+        onAccept={handleAcceptCall}
+        onReject={handleRejectCall}
+        callerName={recipientName}
+      />
 
       <ChatList />
-
-
 
       {/* Chat Header */}
 
@@ -220,7 +206,7 @@ const ChatPage = () => {
 
             {/* Video Call Button */}
             <button
-              onClick={handleVideoCall}
+              onClick={startVideoCall}
               className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
             >
               <Video className="w-6 h-6" />
@@ -286,4 +272,4 @@ const ChatPage = () => {
   );
 };
 
-export default ChatPage;
+export default UserProtectedRoute(ChatPage);

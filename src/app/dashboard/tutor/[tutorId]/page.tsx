@@ -23,7 +23,7 @@ import {
 } from "@/services/userApi";
 import { toast } from "react-toastify";
 import userAuthStore from "@/store/userAuthStore";
-
+import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 const TutorProfilePage = () => {
   const [tutor, setTutor] = React.useState<ITutor | null>(null);
   const [activeTab, setActiveTab] = React.useState("about");
@@ -460,4 +460,4 @@ const TutorProfilePage = () => {
   );
 };
 
-export default TutorProfilePage;
+export default UserProtectedRoute(TutorProfilePage);

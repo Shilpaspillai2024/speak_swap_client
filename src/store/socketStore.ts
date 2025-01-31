@@ -47,6 +47,7 @@ interface SocketState {
   senderRole: "user" | "tutor" | null;
   recipientName: string | null;
   recipientProfilePicture: string | null;
+  localStream:MediaStream | null;
 
   connectSocket: () => Promise<void>;
   disconnectSocket: () => void;
@@ -64,22 +65,15 @@ interface SocketState {
   findExistingChat: (participantId: string) => Chat | undefined;
   joinChat: (chatId: string) => void;
   initializeChat: (chatId: string) => Promise<void>;
-  sendVideoCallRequest: (chatId: string,senderId:string) => void;
-  sendVideoCallOffer: (
-    chatId: string,
-    senderId: string,
-    offer: RTCSessionDescriptionInit
-  ) => void;
-  sendVideoCallAnswer: (
-    chatId: string,
-    senderId: string,
-    answer: RTCSessionDescriptionInit
-  ) => void;
-  sendIceCandidate: (
-    candidate: RTCIceCandidate,
-    chatId: string,
-    senderId: string
-  ) => void;
+  
+  sendOffer: (chatId: string, offer: RTCSessionDescriptionInit) => void;
+  sendAnswer: (chatId: string, answer: RTCSessionDescriptionInit) => void;
+  sendIceCandidate: (chatId: string, candidate: RTCIceCandidateInit) => void;
+
+
+
+
+ 
 }
 
 const socketStore = create<SocketState>()((set, get) => ({
@@ -95,6 +89,7 @@ const socketStore = create<SocketState>()((set, get) => ({
   senderRole: null,
   recipientName: null,
   recipientProfilePicture: null,
+  localStream: null,
 
   connectSocket: async () => {
     try {
@@ -452,51 +447,30 @@ const socketStore = create<SocketState>()((set, get) => ({
     });
   },
 
-  sendVideoCallRequest: (chatId: string,senderId:string) => {
-    const { socket, recipientId } = get();
-    console.log("senderId and recipientid",senderId, recipientId )
-    if (socket?.connected) {
-      socket.emit("videoCallRequest", {
-        chatId,
-        senderId,
-        recipientId,
-      });
+  // webrtc methods
 
-      console.log("Video call request sent:", { chatId, senderId, recipientId });
-    }
-  },
 
-  sendVideoCallOffer: (
-    chatId: string,
-    senderId: string,
-    offer: RTCSessionDescriptionInit
-  ) => {
+  sendOffer: (chatId, offer) => {
     const { socket } = get();
-    if (socket?.connected) {
-      socket.emit("videoCallOffer", { chatId, senderId, offer });
+    if (socket) {
+      socket.emit('offer', { chatId, offer });
     }
   },
+  sendAnswer: (chatId, answer) => {
+    const { socket } = get();
+    if (socket) {
+      socket.emit('answer', { chatId, answer });
+    }
+  },
+  sendIceCandidate: (chatId, candidate) => {
+    const { socket } = get();
+    if (socket) {
+      socket.emit('ice-candidate', { chatId, candidate });
+    }
+  },
+  
 
-  sendVideoCallAnswer: (
-    chatId: string,
-    senderId: string,
-    answer: RTCSessionDescriptionInit
-  ) => {
-    const { socket } = get();
-    if (socket?.connected) {
-      socket.emit("videoCallOffer", { chatId, senderId, answer });
-    }
-  },
-  sendIceCandidate: (
-    candidate: RTCIceCandidate,
-    chatId: string,
-    senderId: string
-  ) => {
-    const { socket } = get();
-    if (socket?.connected) {
-      socket.emit("iceCandidate", { candidate, chatId, senderId });
-    }
-  },
+
 
   cleanup: () => {
     get().disconnectSocket();

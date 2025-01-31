@@ -5,7 +5,7 @@ import Image from "next/image";
 import TutorNavbar from "@/components/TutorNavbar";
 import TutorSidebar from "@/components/TutorSidebar";
 import { User, Mail, Phone, Globe, Calendar, Languages } from "lucide-react";
-
+import TutorProtectedRoute from "@/HOC/TutorProtectedRoute";
 const TutorProfilePage = () => {
   const [tutor, setTutor] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -144,4 +144,4 @@ const TutorProfilePage = () => {
   );
 };
 
-export default TutorProfilePage;
+export default TutorProtectedRoute(TutorProfilePage);

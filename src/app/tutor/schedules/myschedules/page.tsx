@@ -17,7 +17,7 @@ import TutorNavbar from '@/components/TutorNavbar';
 import { tutorBooking } from '@/types/booking';
 import { getTutorBookings } from '@/services/tutorApi';
 import TutorSidebar from '@/components/TutorSidebar';
-
+import TutorProtectedRoute from '@/HOC/TutorProtectedRoute';
 const TutorBookings = () => {
   const [bookings, setBookings] = useState<tutorBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -219,4 +219,4 @@ const TutorBookings = () => {
   );
 };
 
-export default TutorBookings;
+export default TutorProtectedRoute(TutorBookings);

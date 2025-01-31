@@ -5,6 +5,7 @@ import { getBookingDetails } from '@/services/adminApi';
 import { IBooking } from '@/types/booking';
 import AdminNavbar from '@/components/AdminNavbar';
 import Sidebar from '@/components/Sidebar';
+import protectedRoute from '@/HOC/AdminProtectedRoute';
 import { 
   ClockIcon, 
   CreditCardIcon, 
@@ -219,4 +220,4 @@ const BookingDetailsPage = () => {
   );
 };
 
-export default BookingDetailsPage;
+export default protectedRoute(BookingDetailsPage);

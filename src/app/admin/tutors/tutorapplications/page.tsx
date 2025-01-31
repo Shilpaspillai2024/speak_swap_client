@@ -6,6 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import { ITutor } from "@/types/tutor";
 import { useState } from "react";
 import { getPendingTutors,tutorVerify } from "@/services/adminApi";
+import protectedRoute from "@/HOC/AdminProtectedRoute";
 
 const pendingTutor = () => {
   const [tutors, setTutors] = useState<ITutor[]>([]);
@@ -156,4 +157,4 @@ const pendingTutor = () => {
   );
 };
 
-export default pendingTutor;
+export default protectedRoute(pendingTutor);

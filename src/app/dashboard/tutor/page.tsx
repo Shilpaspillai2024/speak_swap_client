@@ -5,7 +5,7 @@ import { listTutorsForUser } from '@/services/userApi';
 import { ITutor } from '@/types/tutor';
 import UserNavbar from '@/components/UserNavbar';
 import { useRouter } from 'next/navigation';
-
+import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 const TutorsPage = () => {
   const [tutors, setTutors] = React.useState<ITutor[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -184,4 +184,4 @@ const TutorsPage = () => {
   );
 };
 
-export default TutorsPage;
+export default UserProtectedRoute(TutorsPage);

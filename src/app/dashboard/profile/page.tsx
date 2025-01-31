@@ -5,7 +5,7 @@ import { IUser } from '@/types/user';
 import { fetchProfile, updateProfileDetails } from '@/services/userApi';
 import UserNavbar from '@/components/UserNavbar';
 import { toast } from 'react-toastify';
-
+import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 
 // ProfileSection Component
 interface ProfileSectionProps {
@@ -358,4 +358,4 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage;
+export default UserProtectedRoute(ProfilePage);

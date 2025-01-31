@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import { getAllBookings } from "@/services/adminApi";
 import { IBooking } from "@/types/booking";
 import { useRouter } from "next/navigation";
+import protectedRoute from "@/HOC/AdminProtectedRoute";
 
 const AdminBookingPage = () => {
   const [bookings, setBookings] = useState<IBooking[]>([]);
@@ -195,4 +196,4 @@ const AdminBookingPage = () => {
   );
 };
 
-export default AdminBookingPage;
+export default protectedRoute(AdminBookingPage);
