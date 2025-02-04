@@ -47,8 +47,8 @@ interface SocketState {
   senderRole: "user" | "tutor" | null;
   recipientName: string | null;
   recipientProfilePicture: string | null;
-  localStream:MediaStream | null;
-
+  
+ 
   connectSocket: () => Promise<void>;
   disconnectSocket: () => void;
   fetchChatList: () => Promise<void>;
@@ -66,11 +66,7 @@ interface SocketState {
   joinChat: (chatId: string) => void;
   initializeChat: (chatId: string) => Promise<void>;
   
-  sendOffer: (chatId: string, offer: RTCSessionDescriptionInit) => void;
-  sendAnswer: (chatId: string, answer: RTCSessionDescriptionInit) => void;
-  sendIceCandidate: (chatId: string, candidate: RTCIceCandidateInit) => void;
-
-
+  
 
 
  
@@ -89,8 +85,7 @@ const socketStore = create<SocketState>()((set, get) => ({
   senderRole: null,
   recipientName: null,
   recipientProfilePicture: null,
-  localStream: null,
-
+ 
   connectSocket: async () => {
     try {
       const url = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -447,27 +442,6 @@ const socketStore = create<SocketState>()((set, get) => ({
     });
   },
 
-  // webrtc methods
-
-
-  sendOffer: (chatId, offer) => {
-    const { socket } = get();
-    if (socket) {
-      socket.emit('offer', { chatId, offer });
-    }
-  },
-  sendAnswer: (chatId, answer) => {
-    const { socket } = get();
-    if (socket) {
-      socket.emit('answer', { chatId, answer });
-    }
-  },
-  sendIceCandidate: (chatId, candidate) => {
-    const { socket } = get();
-    if (socket) {
-      socket.emit('ice-candidate', { chatId, candidate });
-    }
-  },
   
 
 

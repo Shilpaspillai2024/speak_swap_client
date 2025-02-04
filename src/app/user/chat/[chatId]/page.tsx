@@ -122,10 +122,7 @@ const ChatPage = () => {
     }
   };
 
- 
-
-
-  const startVideoCall = () => {
+ const startVideoCall = () => {
     if (socket) {
       const videoRoomId = `${chatId}-video`; 
   
@@ -133,7 +130,7 @@ const ChatPage = () => {
   
       sessionStorage.setItem("isCallInitiator", "true");
       setIsVideoCallRequested(true);
-      router.push(`/user/video-call/${videoRoomId}`); 
+      router.push(`/user/video/${videoRoomId}`); 
     }
   };
   
@@ -145,7 +142,7 @@ const ChatPage = () => {
       socket.emit("acceptCall", {  videoRoomId });  
      // sessionStorage.setItem("isCallInitiator", "false");
       console.log('acceptCall emitted', { videoRoomId });
-      router.push(`/user/video-call/${videoRoomId}`); 
+      router.push(`/user/video/${videoRoomId}`); 
     }
   };
   
@@ -273,3 +270,5 @@ const ChatPage = () => {
 };
 
 export default UserProtectedRoute(ChatPage);
+
+

@@ -34,10 +34,10 @@ const TutorSidebar = () => {
             </div>
           )}
         </div>
-        <Link href="/tutor/chats" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
+        {/* <Link href="/tutor/chats" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
           <FaComments size={20} />
           <span>Messages</span>
-        </Link>
+        </Link> */}
         <Link href="/tutor/wallet" className="flex items-center space-x-2 text-lg hover:text-indigo-400">
           <FaCreditCard size={20} />
           <span>Tutor Wallet</span>
