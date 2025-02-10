@@ -6,6 +6,7 @@ import { fetchProfile, updateProfileDetails } from '@/services/userApi';
 import UserNavbar from '@/components/UserNavbar';
 import { toast } from 'react-toastify';
 import UserProtectedRoute from '@/HOC/UserProtectedRoute';
+import Image from 'next/image';
 
 // ProfileSection Component
 interface ProfileSectionProps {
@@ -81,8 +82,11 @@ const ProfilePage: React.FC = () => {
         const profile = await fetchProfile();
         setUser(profile);
         setEditedUser(profile);
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch profile');
+      } catch (err:unknown) {
+        if (err instanceof Error) {
+          setError(err.message || 'Failed to fetch profile');
+        }
+       
       } finally {
         setLoading(false);
       }
@@ -103,8 +107,10 @@ const ProfilePage: React.FC = () => {
       const updatedProfile = await fetchProfile();  
       setUser(updatedProfile);
       setIsEditing(false);
-    } catch (err: any) {
+    } catch (err:unknown) {
+      if(err instanceof Error){
       setUpdateError(err.message || 'Failed to update profile');
+      }
     } finally {
       setUpdateLoading(false);
     }
@@ -292,9 +298,12 @@ const ProfilePage: React.FC = () => {
               <>
                 <div className="flex flex-col items-center mb-8">
                   <div className="relative">
-                    <img
+                    <Image
                       src={user.profilePhoto || '/default-profile.png'}
                       alt={user.fullName}
+                      width={128}
+                      height={128}
+                      unoptimized
                       className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
                     />
                     {user.isActive && (

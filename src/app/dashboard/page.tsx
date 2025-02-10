@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { IUser } from "@/types/user";
 import { Search } from "lucide-react";
+import Image from "next/image";
 
 const UserDashboard = () => {
   const [users, setUsers] = useState<IUser[]>([]);
@@ -42,7 +43,7 @@ const UserDashboard = () => {
       }
     };
     loadUsers();
-  }, []);
+  }, [Logout, router]);
 
   const filteredUsers = users.filter((user) =>
     user.nativeLanguage.toLowerCase().includes(searchQuery.toLowerCase())
@@ -87,10 +88,16 @@ const UserDashboard = () => {
           filteredUsers.map((user, index) => (
             <Link href={`/user/profile/${user._id}`} key={index}>
               <div className="flex bg-white shadow-md rounded-2xl border border-gray-200 p-4">
-                <img
+                <Image
                   src={user.profilePhoto}
                   alt={user.fullName}
+                  width={64} 
+                  height={64}
+                  quality={100}
+                  unoptimized
                   className="w-16 h-16 rounded-full object-cover mr-4"
+                  //className="rounded-full object-cover mr-4"
+                
                 />
                 <div className="flex-1">
                   <div className="flex justify-between items-center">

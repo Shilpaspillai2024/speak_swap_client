@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { signupValidationSchema } from "@/utils/Validation";
 import { SignupErrors } from "@/utils/Types";
 import TutorProfileSetup from "@/components/TutorProfileSetup";
+import Image from "next/image";
 
 const TutorRegister = () => {
   const [formData, setFormData] = useState({
@@ -23,7 +24,7 @@ const TutorRegister = () => {
   const router = useRouter();
   const [errors, setErrors] = useState<SignupErrors>({});
   const [currentStep, setCurrentStep] = useState(1);
-  const { token, setToken } = tutorSignupStore();
+  const { setToken } = tutorSignupStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -56,13 +57,16 @@ const TutorRegister = () => {
           phone: formData.phone,
         });
 
-        const token = response.token;
-        setToken(token);
+        setToken(response.token);
 
         toast.success("Basic details saved");
         setCurrentStep(2);
-      } catch (error: any) {
-        toast.error(error);
+      } catch (error:unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error("An unexpected error occurred.");
+        }
       }
     }
   };
@@ -81,10 +85,14 @@ const TutorRegister = () => {
           {/* Step 1: Registration Form */}
           {currentStep === 1 && (
             <div className="w-full sm:w-1/2 h-full flex items-stretch">
-              <img
+              <Image
                 src="/assets/lg.jpg"
                 alt="Tutoring image"
+                layout="responsive"
+                width={800}  
+                height={600}
                 className="w-full h-full object-cover rounded-lg shadow-lg"
+                
               />
             </div>
           )}
@@ -176,7 +184,7 @@ const TutorRegister = () => {
                 <div>
                   <h1 className="text-4xl font-bold">Welcome to SpeakSwap</h1>
                   <p className="mt-4 text-sm text-gray-200">
-                    "Empowering conversations, one connection at a time."
+                    {`"Empowering conversations, one connection at a time."`}
                   </p>
                 </div>
                 <div>

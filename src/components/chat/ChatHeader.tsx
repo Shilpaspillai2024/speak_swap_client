@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft, MoreVertical } from "lucide-react";
+import Image from "next/image";
 
 interface Props {
   participant: {
@@ -21,9 +22,17 @@ export default function ChatHeader({ participant }: Props) {
         <ArrowLeft className="w-6 h-6" />
       </button>
       
-      <img
+      {/* <img
         src={participant.profilePhoto}
         alt={participant.fullName}
+        className="w-10 h-10 rounded-full object-cover"
+      /> */}
+
+       <Image
+        src={participant.profilePhoto}
+        alt={participant.fullName}
+        width={40}
+        height={40}
         className="w-10 h-10 rounded-full object-cover"
       />
       

@@ -14,7 +14,7 @@ const Confirmation=()=>{
           Your details have been successfully submitted for review. Our team will review your profile and confirm your settings within 24-48 hours.
         </p>
         <p className="text-gray-600 mb-6">
-          We'll notify you through email once everything is approved and live!
+          {`We'll notify you through email once everything is approved and live!`}
         </p>
         <Link href="/tutor/login" className="inline-block bg-purple-600 text-white font-semibold py-2 px-4 rounded hover:bg-purple-700 transition">
           

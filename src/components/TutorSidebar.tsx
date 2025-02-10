@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react';
 import Link from 'next/link';
-import { FaUsers, FaChalkboardTeacher, FaComments, FaUser, FaCreditCard, FaCalendarAlt, FaClock } from 'react-icons/fa';
+import { FaUsers, FaChalkboardTeacher,FaUser, FaCreditCard, FaCalendarAlt, FaClock } from 'react-icons/fa';
 
 const TutorSidebar = () => {
   const [showScheduleOptions, setShowScheduleOptions] = useState(false);

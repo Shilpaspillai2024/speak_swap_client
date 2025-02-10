@@ -14,6 +14,7 @@ import UserNavbar from '@/components/UserNavbar';
 import { Booking } from '@/types/booking';
 import { userbookingDetails } from '@/services/userApi';
 import UserProtectedRoute from '@/HOC/UserProtectedRoute';
+import Image from 'next/image';
 
 const UserBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -82,9 +83,11 @@ const UserBookings = () => {
                   <div className="flex items-center space-x-5">
                     <div className="h-14 w-14 rounded-full overflow-hidden ring-2 ring-purple-100">
                       {booking.tutorId.profilePhoto ? (
-                        <img 
+                        <Image 
                           src={booking.tutorId.profilePhoto} 
                           alt={booking.tutorId.name}
+                          width={56}  // 14 * 4 (Tailwind's h-14 = 56px)
+                          height={56} 
                           className="h-full w-full object-cover"
                         />
                       ) : (
@@ -150,7 +153,7 @@ const UserBookings = () => {
               </div>
               <h3 className="text-xl font-semibold text-gray-900">No bookings found</h3>
               <p className="text-gray-500 mt-2 max-w-sm mx-auto">
-                You haven't booked any sessions yet. Start your learning journey by booking a session with one of our expert tutors.
+                You haven&apos;t booked any sessions yet. Start your learning journey by booking a session with one of our expert tutors.
               </p>
             </div>
           )}

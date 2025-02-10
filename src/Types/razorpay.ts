@@ -1,4 +1,4 @@
-declare interface RazorpayOptions {
+export interface RazorpayOptions {
     key: string;
     amount: number;
     currency: string;
@@ -16,15 +16,31 @@ declare interface RazorpayOptions {
     };
   }
   
-  declare interface RazorpayResponse {
+  export interface RazorpayResponse {
     razorpay_payment_id: string;
     razorpay_order_id: string;
     razorpay_signature: string;
+    tutorId: string; 
+     amount: number; 
+     creditedBy: string;
+  }
+
+  export interface RazorpayInstance {
+    open(): void;
+    
   }
   
-  declare class Razorpay {
-    constructor(options: RazorpayOptions);
-    open(): void;
+  export class Razorpay {
+    private razorpayInstance: RazorpayInstance;
+  
+    constructor(options: RazorpayOptions) {
+      
+      this.razorpayInstance = new window.Razorpay(options);
+    }
+  
+    open(): void {
+      this.razorpayInstance.open();
+    }
   }
   
   declare global {

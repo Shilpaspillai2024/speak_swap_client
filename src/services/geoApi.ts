@@ -2,9 +2,12 @@ import axios from 'axios'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
 
-
+export interface Country {
+   
+    name: string;
+  }
 //fetch the countries
-export const fetchCountries=async ():Promise<any>=>{
+export const fetchCountries=async ():Promise<Country[]>=>{
     try {
 
         const response= await axios.get(`${BACKEND_URL}/countries`,{
@@ -13,15 +16,17 @@ export const fetchCountries=async ():Promise<any>=>{
             },
             withCredentials:true,
         })
+        console.log("countries",response.data)
         return response.data
         
     } catch (error) {
         console.log('error in fetching countries',error)
+        return [];
     }
 
 }
 
-    export const fetchLanguages=async ():Promise<any>=>{
+    export const fetchLanguages=async ():Promise<string[]>=>{
         try {
     
             const response= await axios.get(`${BACKEND_URL}/languages`,{
@@ -30,11 +35,21 @@ export const fetchCountries=async ():Promise<any>=>{
                 },
                
             })
+            console.log("languages",response.data)
             return response.data
             
-        } catch (error:any) {
-            console.log('error in fetching languages',error.response || error.message)
-            return null
-        }
+        } catch (error: unknown) {
+            console.log('Error in fetching languages:', error);
+            if (axios.isAxiosError(error)) {
+              console.log('Axios error response:', error.response);
+              return [];
+            } else if (error instanceof Error) {
+              console.log('Error message:', error.message);
+              return [];
+            } else {
+              console.log('Unknown error:', error);
+              return [];
+            }
+          }
 
 }

@@ -2,18 +2,25 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode"
 import { refreshToken } from "@/services/userApi";
+import { IUser } from "@/types/user";
 
 interface UserAuthState {
-  user: any | null;
+  user: IUser | null;
   token: string | null;
   isUserAuthenticated: boolean;
   isLoading: boolean;
-  setUserAuth: (user: any, token: string) => void;
-  setUser: (user: any) => void;
+  setUserAuth: (user: IUser, token: string) => void;
+  setUser: (user: IUser) => void;
   Logout: () => void;
   initAuth: () => Promise<void>;
   refreshAccessToken:()=>Promise<boolean>
   checkTokenValidity: () =>Promise<boolean>;
+}
+
+interface DecodedToken {
+  exp: number;
+  iat: number;
+  userId: string;
 }
 
 const userAuthStore = create<UserAuthState>()(
@@ -89,7 +96,9 @@ const userAuthStore = create<UserAuthState>()(
           }
 
           try {
-            const decodedToken: any = jwtDecode(token);
+           // const decodedToken: any = jwtDecode(token);
+
+           const decodedToken = jwtDecode<DecodedToken>(token);
             const currentTime = Date.now() / 1000;
             return decodedToken.exp > currentTime;
           } catch (error) {

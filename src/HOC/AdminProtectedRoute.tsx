@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation";
 import useAdminAuthStore from "@/store/adminAuthStore";
 import Loading from "@/components/Loading";
 
-const protectedRoute = (WrappedComponent: React.ComponentType<any>) => {
-  return function ProtectedComponent(props: any) {
+const protectedRoute =<P extends object> (WrappedComponent: React.ComponentType<P>) => {
+  return function ProtectedComponent(props:P) {
     const {
       isAdminAuthenticated,
       isLoading,

@@ -47,7 +47,7 @@ const AdminUserPage = () => {
    
     try {
       const updateStatus=!currentStatus;
-      const response=await blockUnblockUser(userId,updateStatus)
+      await blockUnblockUser(userId,updateStatus)
 
       setUsers((prevUsers)=>prevUsers.map((user)=>user._id ===userId ?{...user,isActive:updateStatus}:user))
       toast.success(`User ${updateStatus ? "unblocked" : "blocked"} successfully.`);

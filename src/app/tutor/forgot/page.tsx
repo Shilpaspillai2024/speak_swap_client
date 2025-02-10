@@ -29,6 +29,7 @@ const ForgotPassword = () => {
       }
     } catch (error) {
       toast.error("something went wrong retry");
+      console.error("something went wrong",error)
     }
   };
 

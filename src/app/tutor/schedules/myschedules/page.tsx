@@ -18,6 +18,7 @@ import { tutorBooking } from '@/types/booking';
 import { getTutorBookings } from '@/services/tutorApi';
 import TutorSidebar from '@/components/TutorSidebar';
 import TutorProtectedRoute from '@/HOC/TutorProtectedRoute';
+import Image from 'next/image';
 const TutorBookings = () => {
   const [bookings, setBookings] = useState<tutorBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -101,10 +102,14 @@ const TutorBookings = () => {
                   <div className="flex items-center space-x-5">
                     <div className="h-14 w-14 rounded-full overflow-hidden ring-2 ring-purple-100">
                       {booking.userId.profilePhoto ? (
-                        <img 
+                        <Image
                           src={booking.userId.profilePhoto} 
                           alt={booking.userId.fullName}
-                          className="h-full w-full object-cover"
+                          width={56}  
+                          height={56}
+                          className="object-cover"
+                          unoptimized
+                          //className="h-full w-full object-cover"
                         />
                       ) : (
                         <div className="h-full w-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
@@ -208,7 +213,7 @@ const TutorBookings = () => {
               </div>
               <h3 className="text-xl font-semibold text-gray-900">No bookings yet</h3>
               <p className="text-gray-500 mt-2 max-w-sm mx-auto">
-                You don't have any student bookings yet. When students book sessions with you, they'll appear here.
+                {`You don't have any student bookings yet. When students book sessions with you, they'll appear here.`}
               </p>
             </div>
           )}

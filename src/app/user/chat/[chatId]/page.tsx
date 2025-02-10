@@ -9,19 +9,28 @@ import { getChatById } from "@/services/chatApi";
 import userAuthStore from "@/store/userAuthStore";
 import ChatList from "../page";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
-import VideoCallModal from "@/components/videoCall/VideoCallModal";
+import Image from "next/image";
+
+
+interface Participant {
+  participantId: {
+    _id: string;
+    fullName: string;
+    profilePhoto?: string;
+    role: 'user' | 'tutor';
+  };
+}
+
 
 const ChatPage = () => {
   const { chatId } = useParams();
   const router = useRouter();
 
-  const [isCallInitiator, setIsCallInitiator] = useState(false);
-  const [showCallModal, setShowCallModal] = useState(false);
   const [message, setMessage] = useState("");
   const loggedInUser = userAuthStore.getState().user;
   const loggedInUserId = loggedInUser?._id;
 
-  const [isVideoCallRequested, setIsVideoCallRequested] = useState(false);
+  //const [isVideoCallRequested, setIsVideoCallRequested] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -31,20 +40,39 @@ const ChatPage = () => {
     sendMessage: sendMessageFn,
     initializeChat,
     currentChatId,
-    recipientId,
     recipientName,
     recipientProfilePicture,
   } = socketStore();
 
+  // useEffect(() => {
+  //   if (chatId && (!currentChatId || currentChatId !== chatId)) {
+  //     initializeChat(chatId as string).catch((error) => {
+  //       toast.error("Failed to initialize chat");
+  //       console.error("Error initializing chat:", error);
+  //     });
+  //   }
+  // }, [chatId, currentChatId, initializeChat]);
+
   useEffect(() => {
     if (chatId && (!currentChatId || currentChatId !== chatId)) {
-      initializeChat(chatId as string).catch((error) => {
-        toast.error("Failed to initialize chat");
-        console.error("Error initializing chat:", error);
-      });
+      initializeChat(chatId as string)
+        .then(() => {
+          // Mark messages as read when chat is initialized
+          socketStore.getState().markAsRead(chatId as string);
+        })
+        .catch((error) => {
+          toast.error("Failed to initialize chat");
+          console.error("Error initializing chat:", error);
+        });
     }
   }, [chatId, currentChatId, initializeChat]);
 
+  useEffect(() => {
+    if (chatId && messages.length > 0) {
+      socketStore.getState().markAsRead(chatId as string);
+    }
+  }, [chatId, messages]);
+  
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({
@@ -64,7 +92,7 @@ const ChatPage = () => {
         const chat = await getChatById(chatId as string, "user");
         if (chat) {
           const recipient = chat.participants.find(
-            (participant: any) =>
+            (participant:Participant) =>
               participant.participantId._id !== loggedInUserId
           );
 
@@ -85,7 +113,7 @@ const ChatPage = () => {
     };
 
     fetchChatDetails();
-  }, [chatId]);
+  }, [chatId,loggedInUserId]);
 
   useEffect(() => {
     if (socket) {
@@ -126,54 +154,20 @@ const ChatPage = () => {
     if (socket) {
       const videoRoomId = `${chatId}-video`; 
   
-      socket.emit("initiateCall", { chatId, videoRoomId });  
+      socket.emit("initiateCall", { chatId, videoRoomId, callerName: loggedInUser?.fullName});  
   
       sessionStorage.setItem("isCallInitiator", "true");
-      setIsVideoCallRequested(true);
+     // setIsVideoCallRequested(true);
       router.push(`/user/video/${videoRoomId}`); 
     }
   };
   
-  const handleAcceptCall = () => {
-    if (socket) {
-      setShowCallModal(false);
-      const videoRoomId = `${chatId}-video`;  
+ 
   
-      socket.emit("acceptCall", {  videoRoomId });  
-     // sessionStorage.setItem("isCallInitiator", "false");
-      console.log('acceptCall emitted', { videoRoomId });
-      router.push(`/user/video/${videoRoomId}`); 
-    }
-  };
-  
-  const handleRejectCall = () => {
-    if (socket) {
-      setShowCallModal(false);
-      socket.emit("rejectCall", { chatId });  
-    }
-  };
-  
-  useEffect(() => {
-    if (socket) {
-      socket.on("incomingCall", ({ callerId, chatId, videoRoomId }) => {
-        console.log('incomingCall received', { callerId, chatId, videoRoomId });
-        setShowCallModal(true);
-      });
-  
-      return () => {
-        socket.off("incomingCall");
-      };
-    }
-  }, [socket, router]);
 
   return (
     <>
-      <VideoCallModal
-        isOpen={showCallModal}
-        onAccept={handleAcceptCall}
-        onReject={handleRejectCall}
-        callerName={recipientName}
-      />
+     
 
       <ChatList />
 
@@ -184,10 +178,18 @@ const ChatPage = () => {
           <div className="flex items-center justify-between  space-x-4">
             <div className="flex items-center space-x-4">
               {recipientProfilePicture ? (
-                <img
+                // <img
+                //   src={recipientProfilePicture}
+                //   alt={recipientName || "Profile Picture"}
+                //   className="w-10 h-10 rounded-full"
+                // />
+                <Image
                   src={recipientProfilePicture}
                   alt={recipientName || "Profile Picture"}
-                  className="w-10 h-10 rounded-full"
+                  width={40}
+                  height={40}
+                  unoptimized
+                  className="rounded-full"
                 />
               ) : (
                 <User className="w-10 h-10 text-gray-600" />

@@ -1,3 +1,4 @@
+import Image from "next/image";
 const GlobalSection = () => {
     return (
       <div className="bg-blue-100 py-16">
@@ -10,11 +11,18 @@ const GlobalSection = () => {
             </p>
           </div>
           <div className="flex justify-center">
-            <img
+            {/* <img
               src="/assets/com.jpg"
               alt="Global community illustration"
               className="rounded-lg shadow-lg"
-            />
+            /> */}
+            <Image
+            src="/assets/com.jpg"
+            alt="Global community illustration"
+            width={600} // Set appropriate width
+            height={400} // Set appropriate height
+            className="rounded-lg shadow-lg"
+          />
           </div>
         </div>
       </div>

@@ -1,13 +1,13 @@
 'use client'
 import { resetPassword } from '@/services/tutorApi';
-import React, { useState } from 'react'
+import React, { useState,Suspense} from 'react'
 import { toast } from 'react-toastify';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { passwordSetErrors } from '@/utils/Types';
 import { resetpasswordSetupSchema } from '@/utils/Validation';
 
 
-const ResetPassword = () => {
+const ResetPasswordForm = () => {
   const searchParams=useSearchParams()
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -45,12 +45,13 @@ const ResetPassword = () => {
       return
     }
     try {
-      const response =await resetPassword(email,newPassword,confirmPassword)
+      await resetPassword(email,newPassword,confirmPassword)
       toast.success("passsword rest successfully")
       router.push("/tutor/login")
       
     } catch (error) {
       toast.error(" something went wrong try again")
+      console.error("something sent wrong",error)
     }
 
   };
@@ -98,6 +99,14 @@ const ResetPassword = () => {
         </form>
       </div>
     </div>
+  );
+};
+
+const ResetPassword = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 };
 

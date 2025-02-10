@@ -2,16 +2,13 @@
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  Calendar,
   Globe,
   Languages,
   Clock,
   Mail,
   Star,
-  ChevronRight,
   X,
   CheckCircle,
-  Currency,
 } from "lucide-react";
 import UserNavbar from "@/components/UserNavbar";
 import { ITutor } from "@/types/tutor";
@@ -24,6 +21,9 @@ import {
 import { toast } from "react-toastify";
 import userAuthStore from "@/store/userAuthStore";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
+import { RazorpayResponse } from "@/types/razorpay";
+import Image from "next/image";
+
 const TutorProfilePage = () => {
   const [tutor, setTutor] = React.useState<ITutor | null>(null);
   const [activeTab, setActiveTab] = React.useState("about");
@@ -38,7 +38,9 @@ const TutorProfilePage = () => {
   const user=userAuthStore().user;
 
   console.log("user from store",user)
-  const [bookedSlots, setBookedSlots] = React.useState<string[]>([]);
+
+ // const [bookedSlots, setBookedSlots] = React.useState<string[]>([]);
+
   const { tutorId } = useParams();
 
   const router = useRouter();
@@ -134,6 +136,8 @@ const TutorProfilePage = () => {
       setSelectedDay(null);
       setSelectedSlot(null);
       const bookingId = bookingData.data.savedBooking._id;
+
+      const creditedByString = user?.fullName ?? 'Unknown User';
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
         amount: sessionFeeInUSD * 100, // Amount in cents for USD
@@ -141,15 +145,15 @@ const TutorProfilePage = () => {
         order_id: bookingData.data.orderId,
         name: `Seesion with ${tutor.name}`,
         description: `Session Fee: ₹${bookingData.sessionFee}`,
-        handler: function (response: any) {
+        handler: function (response:RazorpayResponse) {
           console.log("Razorpay Response:", response);
 
           verifyPayment(
             {
               ...response,
-              tutorId: tutorId,
+              tutorId: tutorId as string,
               amount: sessionFeeInUSD,
-              creditedBy:user.fullName,
+              creditedBy:creditedByString
             },
             bookingId
           )
@@ -177,6 +181,7 @@ const TutorProfilePage = () => {
       razorpay.open();
     } catch (error) {
       toast.error("Error confirming booking:");
+      console.error("something went wrong",error)
     }
   };
 
@@ -202,11 +207,21 @@ const TutorProfilePage = () => {
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="relative h-40 w-40 rounded-full bg-white p-1 overflow-hidden">
                 {tutor.profilePhoto ? (
-                  <img
-                    src={tutor.profilePhoto}
-                    alt={tutor.name}
-                    className="h-full w-full object-cover rounded-full"
-                  />
+                  // <img
+                  //   src={tutor.profilePhoto}
+                  //   alt={tutor.name}
+                  //   className="h-full w-full object-cover rounded-full"
+                  // />
+
+                  <Image
+                  src={tutor.profilePhoto}
+                  alt={tutor.name}
+                  fill 
+                  className="object-cover rounded-full"
+                  sizes="160px" 
+                  priority 
+                  unoptimized
+                />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-indigo-400 text-white text-4xl font-semibold rounded-full">
                     {tutor.name

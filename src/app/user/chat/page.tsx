@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import socketStore from '@/store/socketStore';
 import { User, MessageCircle } from 'lucide-react';
@@ -7,27 +7,57 @@ import { format } from 'date-fns';
 import { fetchChatList } from '@/services/chatApi';
 import userAuthStore from '@/store/userAuthStore';
 import UserProtectedRoute from '@/HOC/UserProtectedRoute';
+import { Message } from '@/store/socketStore';
+import Image from 'next/image';
+import NotificationBadge from '@/components/NotificationBadge';
+interface Participant {
+  participantId: {
+    _id: string;
+    fullName: string;
+    profilePhoto?: string;
+  };
+  role: 'user' | 'tutor';
+}
 
+interface LastMessage {
+  message: string;
+  timestamp: string;
+}
 
+interface ChatData {
+  _id: string;
+  participants: Participant[];
+  lastMessage?: LastMessage;
+  unreadCount: Array<{
+    participantId: string;
+    count: number;
+  }>;
+ 
+}
 const ChatList = () => {
   const router = useRouter();
    
   const loggedInUser=userAuthStore.getState().user;
   const loggedInUserId=loggedInUser?._id;
   
-   const [chatList, setChatList] = useState<any[]>([]);
+   const [chatList, setChatList] = useState<ChatData[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const role = socketStore.getState().getRole(); 
   const socket=socketStore.getState().socket;
-  
-
+  //const { unreadCounts, fetchUnreadCount } = socketStore();
+ 
   console.log("role is",role)
-  
+  const getUnreadCount = (chat: ChatData) => {
+    const userCount = chat.unreadCount?.find(
+      count => count.participantId === loggedInUserId
+    );
+    return userCount?.count || 0;
+  };
 
-  const loadChats = async () => {
+  const loadChats = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetchChatList(role);
@@ -38,36 +68,43 @@ const ChatList = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
+  }, [role]); 
+  
   useEffect(() => {
     loadChats();
-  }, []);
+  }, [loadChats]);
+
 
   useEffect(() => {
     if (socket) {
-      const handleNewMessage = (newMessage: any) => {
+      const handleNewMessage = (newMessage: Message) => {
         setChatList(prevChats => {
           return prevChats.map(chat => {
             if (chat._id === newMessage.chatId) {
+              
+              const updatedUnreadCount = chat.unreadCount.map(count => {
+                if (count.participantId === loggedInUserId && newMessage.senderId !== loggedInUserId) {
+                  return { ...count, count: count.count + 1 };
+                }
+                return count;
+              });
+
               return {
                 ...chat,
                 lastMessage: {
                   message: newMessage.message,
                   timestamp: newMessage.timestamp
-                }
+                },
+                unreadCount: updatedUnreadCount
               };
             }
             return chat;
           });
         });
-
-       
         loadChats();
       };
 
       socket.on("receiveMessage", handleNewMessage);
-      
       socket.on("messageSent", handleNewMessage);
 
       return () => {
@@ -75,7 +112,7 @@ const ChatList = () => {
         socket.off("messageSent", handleNewMessage);
       };
     }
-  }, [socket]);
+  }, [socket, loadChats, loggedInUserId]);
 
   const navigateToChat = async (chatId: string) => {
     try {
@@ -88,16 +125,16 @@ const ChatList = () => {
     }
   };
 
-  const getParticipantName = (chat: any) => {
+  const getParticipantName = (chat:ChatData) => {
     const otherParticipant = chat.participants.find(
-      (p: any) => p.participantId._id !==loggedInUserId
+      (p:Participant) => p.participantId._id !==loggedInUserId
     );
     return otherParticipant?.participantId.fullName || 'Unknown User';
   };
 
-  const getParticipantImage = (chat: any) => {
+  const getParticipantImage = (chat:ChatData) => {
     const otherParticipant = chat.participants.find(
-      (p: any) => p.participantId._id !==loggedInUserId
+      (p:Participant) => p.participantId._id !==loggedInUserId
     );
     return otherParticipant?.participantId.profilePhoto
   };
@@ -110,6 +147,14 @@ const ChatList = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
         </div>
       </>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
     );
   }
 
@@ -131,23 +176,34 @@ const ChatList = () => {
                   <p>No chats yet</p>
                 </div>
               ) : (
-                chatList.map((chat,index) => (
+                chatList.map((chat) => (
                    <div
                     key={chat._id}
                   onClick={() => navigateToChat(chat._id)}
-                  className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="relative p-4 hover:bg-gray-50 cursor-pointer transition-colors"
                  >
                     <div className="flex items-center space-x-4">
                       <div className="bg-gray-200 p-3 rounded-full overflow-hidden">
                         {getParticipantImage(chat) ? (
-                          <img
-                            src={getParticipantImage(chat)}
-                            alt="Profile"
-                            className="w-6 h-6 object-cover rounded-full"
+                          
+                          <Image
+                          src={getParticipantImage(chat)!}
+                          alt="Profile"
+                          width={24}
+                          height={24}
+                          unoptimized
+                          className="object-cover rounded-full"
                           />
                         ) : (
                           <User className="w-6 h-6 text-gray-600" />
                         )}
+
+                         {/* Add notification badge */}
+                         {getUnreadCount(chat) > 0 && (
+                  <div className="absolute top-4 right-4">
+                    <NotificationBadge count={getUnreadCount(chat)} />
+                  </div>
+                )}
                       </div>
                       
                       <div className="flex-1">
@@ -165,11 +221,7 @@ const ChatList = () => {
                             {chat.lastMessage?.message || 'No messages yet'}
                           </p>
 
-                          {/* {chat.unreadCount ? (
-                            <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                              {chat.unreadCount}
-                            </span>
-                          ) : null} */}
+                      
 
 
                         </div>

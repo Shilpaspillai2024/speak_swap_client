@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation";
 import tutorAuthStore from "@/store/tutorAuthStore";
 import Loading from "@/components/Loading";
 
-const TutorProtectedRoute = (WrappedComponent: React.ComponentType<any>) => {
-  return function ProtectedComponent(props: any) {
+const TutorProtectedRoute =<P extends object>(WrappedComponent: React.ComponentType<P>) => {
+  return function ProtectedComponent(props:P) {
     const {
       isTutorAuthenticated,
       isLoading,

@@ -6,6 +6,7 @@ import { ITutor } from '@/types/tutor';
 import UserNavbar from '@/components/UserNavbar';
 import { useRouter } from 'next/navigation';
 import UserProtectedRoute from '@/HOC/UserProtectedRoute';
+import Image from 'next/image';
 const TutorsPage = () => {
   const [tutors, setTutors] = React.useState<ITutor[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -114,9 +115,12 @@ const TutorsPage = () => {
                 <div className="p-6 flex items-center space-x-4 border-b border-purple-100">
                   <div className="relative h-16 w-16 rounded-full bg-purple-200 overflow-hidden shadow-md">
                     {tutor.profilePhoto ? (
-                      <img 
+                      <Image 
                         src={tutor.profilePhoto} 
                         alt={tutor.name}
+                        width={64}
+                        height={64}
+                        unoptimized
                         className="h-full w-full object-cover"
                       />
                     ) : (

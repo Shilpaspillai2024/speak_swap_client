@@ -2,18 +2,25 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode";
 import { refreshToken } from "@/services/tutorApi";
+import { ITutor } from "@/types/tutor";
 
 interface TutorAuthState {
-  tutor: any | null;
+  tutor: ITutor | null;
   token: string | null;
   isTutorAuthenticated: boolean;
   isLoading: boolean;
-  setTutorAuth: (tutor: any, token: string) => void;
-  setTutor: (tutor: any) => void;
+  setTutorAuth: (tutor:ITutor, token: string) => void;
+  setTutor: (tutor:ITutor) => void;
   Logout: () => void;
   initAuth: () => Promise<void>;
   refreshAccessToken:()=>Promise<boolean>;
   checkTokenValidity: () => Promise<boolean>;
+}
+
+interface DecodedToken {
+  exp: number;
+  iat: number;
+  tutorId: string;
 }
 
 const tutorAuthStore = create<TutorAuthState>()(
@@ -87,7 +94,8 @@ const tutorAuthStore = create<TutorAuthState>()(
           }
 
           try {
-            const decodedToken: any = jwtDecode(token);
+           // const decodedToken: any = jwtDecode(token);
+            const decodedToken = jwtDecode<DecodedToken>(token);
             const currentTime = Date.now() / 1000;
             return decodedToken.exp > currentTime;
           } catch (error) {

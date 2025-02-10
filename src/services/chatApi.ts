@@ -2,7 +2,11 @@ import userAxiosInstance from "./userAxiosInstance";
 import tutorAxiosInstance from "./tutorAxiosInstance";
 import userAuthStore from "@/store/userAuthStore";
 import tutorAuthStore from "@/store/tutorAuthStore";
-import socketStore from "@/store/socketStore";
+import { AxiosError } from "axios";
+
+interface UnreadCountResponse {
+  totalUnread: number;
+}
 
 export const createChat = async (
   participants: { participantId: string; role: "user" | "tutor" }[],
@@ -46,12 +50,17 @@ export const createChat = async (
       senderId,
       senderRole,
     };
-  } catch (error: any) {
-    console.error(
-      "Error creating chat:",
-      error.response?.data || error.message || error
-    );
-    throw error.response?.data?.error || "Error creating chat";
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      console.error(
+        "Error creating chat:",
+        error.response?.data || error.message || error
+      );
+      throw error.response?.data?.error || "Error creating chat";
+    } else {
+      console.error("Unexpected error:", error);
+      throw "An unexpected error occurred";
+    }
   }
 };
 
@@ -73,8 +82,17 @@ export const fetchChatList = async (role: "user" | "tutor") => {
     const response = await instance.get(`/chat/participant/${participantId}`);
     console.log("fetchChatlist response:",response)
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error in fetching chats";
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      console.error(
+        "Error in fetching chat:",
+        error.response?.data || error.message || error
+      );
+      throw error.response?.data?.error || "Error in fetching chats";
+    } else {
+      console.error("Unexpected error:", error);
+      throw "An unexpected error occurred";
+    }
   }
 };
 
@@ -84,8 +102,15 @@ export const getChatById = async (chatId: string, role: "user" | "tutor") => {
     const response = await instance.get(`/chat/${chatId}`);
     console.log("response of get chatByid",response)
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error fetching chat";
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+     
+      throw error.response?.data?.error || "Error fetching chat";
+    } else {
+      
+      console.error("Unexpected error:", error);
+      throw "An unexpected error occurred while fetching the chat";
+    }
   }
 };
 
@@ -120,8 +145,13 @@ export const sendMessage = async (
    
 
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error sending message";
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+     throw error.response?.data?.error || "Error sending message";
+    } else {
+      console.error("Unexpected error:", error);
+      throw "An unexpected error occurred while sending the message";
+    }
   }
 };
 
@@ -132,8 +162,13 @@ export const fetchMessages = async (chatId: string, role: "user" | "tutor") => {
     const response = await instance.get(`/message/${chatId}`);
     console.log("response of fecthmessages",response);
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error in fetching messages";
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      throw error.response?.data?.error || "Error in fetching messages";
+    } else {
+      console.error("Unexpected error:", error);
+      throw "An unexpected error occurred while fetching messages";
+    }
   }
 };
 
@@ -154,8 +189,13 @@ export const markMessageAsRead = async (
       userId,
     });
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error marking messages as read";
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      throw error.response?.data?.error || "Error marking messages as read";
+    } else {
+      console.error("Unexpected error:", error);
+      throw "An unexpected error occurred while marking messages as read";
+    }
   }
 };
 
@@ -165,7 +205,7 @@ export const updateLastMessage = async (
   role: "user" | "tutor",
   timestamp:string,
   userId:string,
-  unreadCount:number,
+ 
 ) => {
   try {
     const instance = role === "user" ? userAxiosInstance : tutorAxiosInstance;
@@ -174,11 +214,16 @@ export const updateLastMessage = async (
       message:lastMessage,
       timestamp,
       userId,
-      unreadCount,
+     
     });
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error updating last message";
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      throw error.response?.data?.error || "Error updating last message";
+    } else {
+      console.error("Unexpected error:", error);
+      throw "An unexpected error occurred while updating the last message";
+    }
   }
 };
 
@@ -191,8 +236,23 @@ export const getChatUsers=async(chatId:string,role:"user" | "tutor")=>{
     console.log("response get users",response)
     return response.data.participants;
     
-  } catch (error) {
+  } catch{
     throw new Error("Failed to fetch chat users");
   }
 
+}
+
+
+export const getUnreadCount=async(userId: string, role: "user" | "tutor")=>{
+ try{
+ 
+  const instance = role === "user" ? userAxiosInstance : tutorAxiosInstance;
+    const response = await instance.get<UnreadCountResponse>(`/message/unread/${userId}`);
+    return response.data.totalUnread;
+ }
+ catch(error){
+  console.error('Error fetching unread count:', error);
+    throw error;
+
+ }
 }

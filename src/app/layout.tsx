@@ -2,7 +2,7 @@ import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import SocketConnection from "@/components/SocketConnection";
-
+import GlobalVideoCallModal from "@/components/videoCall/VideoCallModal";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,6 +32,8 @@ export default function RootLayout({
           pauseOnHover
           theme="dark"
         />
+
+     <GlobalVideoCallModal />
         {children}
       </body>
     </html>

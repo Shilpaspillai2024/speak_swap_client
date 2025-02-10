@@ -6,8 +6,9 @@ import TutorNavbar from "@/components/TutorNavbar";
 import TutorSidebar from "@/components/TutorSidebar";
 import { User, Mail, Phone, Globe, Calendar, Languages } from "lucide-react";
 import TutorProtectedRoute from "@/HOC/TutorProtectedRoute";
+import { ITutor } from "@/types/tutor";
 const TutorProfilePage = () => {
-  const [tutor, setTutor] = useState<any>(null);
+  const [tutor, setTutor] = useState<ITutor | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
@@ -16,8 +17,12 @@ const TutorProfilePage = () => {
       try {
         const profileData = await fetchProfile();
         setTutor(profileData);
-      } catch (err: any) {
-        setError(err);
+      } catch (error: unknown)  {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("An unexpected error occurred.");
+        }
       } finally {
         setLoading(false);
       }
@@ -54,7 +59,7 @@ const TutorProfilePage = () => {
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="relative h-48 bg-gradient-to-r from-teal-600 to-teal-400">
                 <div className="absolute -bottom-16 left-8">
-                  {tutor.profilePhoto ? (
+                  {tutor?.profilePhoto ? (
                     <div className="rounded-full border-4 border-white overflow-hidden h-32 w-32">
                       <Image
                         src={tutor.profilePhoto}
@@ -75,24 +80,24 @@ const TutorProfilePage = () => {
               <div className="pt-20 pb-8 px-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">{tutor.name}</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">{tutor?.name}</h2>
                     <div className="space-y-4">
                       <div className="flex items-center space-x-3">
                         <Mail className="w-5 h-5 text-teal-600" />
-                        <span className="text-gray-600">{tutor.email}</span>
+                        <span className="text-gray-600">{tutor?.email}</span>
                       </div>
                       <div className="flex items-center space-x-3">
                         <Phone className="w-5 h-5 text-teal-600" />
-                        <span className="text-gray-600">{tutor.phone}</span>
+                        <span className="text-gray-600">{tutor?.phone}</span>
                       </div>
                       <div className="flex items-center space-x-3">
                         <Globe className="w-5 h-5 text-teal-600" />
-                        <span className="text-gray-600">{tutor.country}</span>
+                        <span className="text-gray-600">{tutor?.country}</span>
                       </div>
                       <div className="flex items-center space-x-3">
                         <Calendar className="w-5 h-5 text-teal-600" />
                         <span className="text-gray-600">
-                          {new Date(tutor.dob).toLocaleDateString()}
+                        {tutor?.dob ? new Date(tutor.dob).toLocaleDateString() : "N/A"}
                         </span>
                       </div>
                     </div>
@@ -108,7 +113,7 @@ const TutorProfilePage = () => {
                         <div>
                           <p className="text-sm text-gray-500">Known Languages</p>
                           <div className="flex flex-wrap gap-2 mt-1">
-                            {tutor.knownLanguages.map((language: string, index: number) => (
+                            {tutor?.knownLanguages.map((language: string, index: number) => (
                               <span
                                 key={index}
                                 className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm"
@@ -121,16 +126,16 @@ const TutorProfilePage = () => {
                         <div>
                           <p className="text-sm text-gray-500">Teaching Language</p>
                           <span className="inline-block mt-1 px-3 py-1 bg-teal-200 text-teal-800 rounded-full text-sm">
-                            {tutor.teachLanguage}
+                            {tutor?.teachLanguage}
                           </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="mt-4 flex items-center space-x-2">
-                      <div className={`h-3 w-3 rounded-full ${tutor.status === 'approved' ? 'bg-teal-500' : 'bg-gray-400'}`}></div>
+                      <div className={`h-3 w-3 rounded-full ${tutor?.status === 'approved' ? 'bg-teal-500' : 'bg-gray-400'}`}></div>
                       <span className="text-sm font-medium text-gray-600">
-                        {tutor.status === 'approved' ? 'Active' : 'Inactive'}
+                        {tutor?.status === 'approved' ? 'Active' : 'Inactive'}
                       </span>
                     </div>
                   </div>

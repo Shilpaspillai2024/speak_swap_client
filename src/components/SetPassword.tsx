@@ -46,7 +46,7 @@ const SetPassword: React.FC<SetPasswordProps> = ({
       await setPassword({ token, password, confirmPassword });
       toast.success("Password set successfully!");
       onNextStep();
-    } catch (error: any) {
+    } catch (error:unknown) {
       if (error instanceof z.ZodError) {
         const fieldErrors = error.flatten().fieldErrors;
         setErrorMessage({

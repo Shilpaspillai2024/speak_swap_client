@@ -27,8 +27,14 @@ const ForgotPassword = () => {
         router.push(`/forgot/verify?email=${encodeURIComponent(email)}`);
         
       }
-    } catch (error) {
-      toast.error("something went wrong retry");
+    } catch (error: unknown) {
+      // Improved error handling
+      if (error instanceof Error) {
+        toast.error(error.message || "Something went wrong. Please try again.");
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+      console.error("Forgot password error:", error);
     }
   };
 

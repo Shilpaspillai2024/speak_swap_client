@@ -32,7 +32,7 @@ const Hero = () => {
           </div>
           <div className="hidden md:flex gap-4 items-start">
             <div className="relative top-[-40px]">
-              <img
+              <Image
                 src="/assets/2.png"
                 alt="words"
                 width={200}
@@ -41,11 +41,18 @@ const Hero = () => {
               />
             </div>
             <div>
-              <img
+              {/* <img
                 src="/assets/fifth.png"
                 alt="Happy language learner"
                 className="rounded-lg w-[500px] h-auto object-contain"
-              />
+              /> */}
+               <Image
+              src="/assets/fifth.png"
+              alt="Happy language learner"
+              width={500}  
+              height={300}
+              className="rounded-lg w-[500px] h-auto object-contain"
+            />
             </div>
           </div>
         </div>

@@ -1,23 +1,35 @@
 import axiosInstance from "./axiosInstance";
+import { AxiosError } from "axios";
+
+interface ErrorResponse {
+  message?: string;
+}
 
 export const loginAdmin = async (email: string, password: string) => {
   try {
     const response = await axiosInstance.post(`/admin`, { email, password });
 
     return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      if (error.response.status === 401) {
-        throw new Error("Incorrect email or password");
-      }
+  } catch (error: unknown) {
+    if ((error as AxiosError).isAxiosError) {
+      const axiosError = error as AxiosError<ErrorResponse>;
 
-      throw new Error(error.response.data.message || "Login failed");
-    } else if (error.request) {
-      console.error("No response received:", error.request);
-      throw new Error("Network error: No response from server");
-    } else {
+      if (axiosError.response) {
+        if (axiosError.response.status === 401) {
+          throw new Error("Incorrect email or password");
+        }
+        const errorMessage = axiosError.response.data?.message || "Login failed";
+        throw new Error(errorMessage);
+      } else if (axiosError.request) {
+        console.error("No response received:", axiosError.request);
+        throw new Error("Network error: No response from server");
+      }
+    } else if (error instanceof Error) {
       console.error("Unexpected error:", error.message);
       throw new Error(error.message || "Unexpected error occurred");
+    } else {
+      console.error("Unknown error:", error);
+      throw new Error("An unknown error occurred");
     }
   }
 };
@@ -128,7 +140,7 @@ export const getBookingDetails=async(bookingId:string)=>{
     console.log("response of bookingdetails from admin by bookingid",response.data)
     return response.data;
   } catch (error) {
-    
+    console.log("somtheing went wrong there",error)
   }
 }
 

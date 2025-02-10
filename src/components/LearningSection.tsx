@@ -1,3 +1,4 @@
+import Image from "next/image";
 const LearningSection = () => {
     return (
       <div className="bg-customGray py-16">
@@ -15,11 +16,18 @@ const LearningSection = () => {
               </button>
             </div>
             <div className="md:w-1/2">
-              <img
+              {/* <img
                 src="/assets/tutor2.jpg"
                 alt="Online tutoring session"
                 className="rounded-lg shadow-lg"
-              />
+              /> */}
+              <Image
+              src="/assets/tutor2.jpg"
+              alt="Online tutoring session"
+              width={600} 
+              height={400} 
+              className="rounded-lg shadow-lg"
+            />
             </div>
           </div>
         </div>

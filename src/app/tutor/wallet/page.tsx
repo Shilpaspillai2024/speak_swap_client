@@ -5,18 +5,36 @@ import TutorNavbar from '@/components/TutorNavbar';
 import TutorSidebar from '@/components/TutorSidebar';
 import tutorAuthStore from '@/store/tutorAuthStore';
 import TutorProtectedRoute from '@/HOC/TutorProtectedRoute';
+
+interface Transaction {
+  _id: string;
+  description: string;
+  date: string;
+  creditedBy: string;
+  type: 'credit' | 'debit';
+  amount: number;
+}
+
+interface WalletDetails {
+  balance: number;
+  transactions: Transaction[];
+}
 const WalletPage: React.FC = () => {
-  const [walletDetails, setWalletDetails] = useState<any>(null);
+  const [walletDetails, setWalletDetails] = useState<WalletDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { isLoading } = tutorAuthStore();  // Using isLoading from tutorAuthStore
+  const { isLoading } = tutorAuthStore(); 
 
   useEffect(() => {
     const fetchWalletDetails = async () => {
       try {
         const response = await getWalletDetails();
-        setWalletDetails(response.data);
-      } catch (err: any) {
-        setError(err.message);
+        setWalletDetails(response.data as WalletDetails);
+      } catch (err:unknown) {
+        if(err instanceof Error){
+           setError(err.message);
+        } else {
+          setError("An unknown error occurred.");
+        }
       }
     };
 
@@ -85,7 +103,7 @@ const WalletPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {walletDetails.transactions.map((transaction: any) => (
+                      {walletDetails.transactions.map((transaction:Transaction) => (
                         <tr key={transaction._id} className="border-b hover:bg-gray-50">
                           <td className="py-4 px-4 text-sm text-gray-700">{transaction.description}</td>
                           <td className="py-4 px-4 text-sm text-gray-500">

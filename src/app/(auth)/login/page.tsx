@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { postLogin } from "@/services/userApi";
 import { loginSchema } from "@/utils/Validation";
@@ -9,15 +8,15 @@ import { LoginErrors } from "@/utils/Types";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import userAuthStore from "@/store/userAuthStore";
-import { FaEye,FaEyeSlash } from "react-icons/fa";
-import Loading from "@/components/Loading";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Image from "next/image";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setErrors] = useState<LoginErrors>({});
-  const [showPassword,setShowPassword]=useState(false)
-  const { isUserAuthenticated, setUserAuth, isLoading } = userAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
+  const { isUserAuthenticated, setUserAuth } = userAuthStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -26,9 +25,8 @@ const LoginPage = () => {
     }
   }, [isUserAuthenticated, router]);
 
-  const togglePasswordVisibility=()=>{
-
-    setShowPassword(!showPassword)
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,35 +67,36 @@ const LoginPage = () => {
 
     try {
       const data = await postLogin(email, password);
-    if (data) {
-      toast.success("login Successfull");
-      setUserAuth(data.user, data.accessToken);
-      router.push("/dashboard");
-    } 
-      
-    } catch (error:any) {
-     
-      if (error.message) {
-        toast.error(error.message); 
+      if (data) {
+        toast.success("login Successfull");
+        setUserAuth(data.user, data.accessToken);
+        router.push("/dashboard");
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
       } else {
         toast.error("An unexpected error occurred. Please try again.");
       }
     }
   };
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
-      <img
+      <Image
         src="/assets/first_3d.png"
         alt="3D Image"
         className="absolute top-1/4 left-0 transform -translate-y-1/4 w-2/4 h-auto object-contain"
+        width={500}  
+        height={500}
       />
 
       <div className="max-w-lg w-full space-y-4 ml-52 bg-gradient-to-br from-sky-50 via-emerald-100 to-blue-200 px-4 py-6 rounded-xl shadow-2xl">
         <div>
           <h3 className="text-center text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 drop-shadow-md italic">
-            Sign in to <span className="italic">Speak Swap</span>
+            Sign in to <span className="italic">Speak Swap&apos;s</span>
           </h3>
+
           <p className="text-center mt-2 text-sm text-gray-600">
             Welcome back! Please sign in to continue.
           </p>
@@ -142,7 +141,7 @@ const LoginPage = () => {
               <input
                 id="password"
                 name="password"
-                type={showPassword ? "text" :"password"}
+                type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 required
                 className="appearance-none rounded-xl relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
@@ -150,8 +149,12 @@ const LoginPage = () => {
                 value={password}
                 onChange={handlePsswordChange}
               />
-              <button type="button" className="absolute inset-y-0 right-3 flex items-center text-gray-500" onClick={togglePasswordVisibility}>
-                {showPassword? <FaEyeSlash/>:<FaEye/>}
+              <button
+                type="button"
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
               <p className="text-red-600 text-xs min-h-[1em]">
                 {error.password}
@@ -177,7 +180,7 @@ const LoginPage = () => {
                 href="/signup"
                 className="font-medium text-indigo-600 hover:text-indigo-500 text-sm"
               >
-                Don't have an account? Sign up
+                {`Don't have an account? Sign up`}
               </Link>
             </div>
           </div>

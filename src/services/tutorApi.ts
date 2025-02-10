@@ -1,5 +1,6 @@
 import axios from "axios";
 import tutorAxiosInstance from "./tutorAxiosInstance";
+import { AxiosError } from "axios";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -32,17 +33,31 @@ export interface tutorProfile {
   introductionVideo: File | null;
 }
 
+interface TimeSlot {
+  startTime: string;
+  endTime: string;
+}
 
-
+interface DaySchedule {
+  day: string;
+  slots: TimeSlot[];
+}
+interface ApiError {
+  message: string;
+  error?: string;
+}
 export const tutorBasicDetails = async (data: signupBasicDetails) => {
   try {
     const response = await axios.post(`${BACKEND_URL}/tutor/signup`, data);
     return response.data;
-  } catch (error: any) {
-    throw (
-      error.response?.data?.error ||
-      "Error occured during basic details registration"
-    );
+  } catch (error:unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw (
+        error.response.data?.error ||
+        "Error occurred during basic details registration"
+      );
+    }
+    throw new Error("Unknown error occurred during basic details registration");
   }
 };
 export const sendOtp = async (token: string) => {
@@ -51,8 +66,11 @@ export const sendOtp = async (token: string) => {
       token,
     });
     return response.data.message;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error occured while sending otp";
+  } catch (error:unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data?.error || "Error occurred while sending otp";
+    }
+    throw new Error("Unknown error occurred while sending otp");
   }
 };
 
@@ -63,8 +81,11 @@ export const verifyOtp = async (data: OtpVerification) => {
       data
     );
     return response.data.message;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error occured while verifying otp";
+  } catch (error:unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data?.error || "Error occurred while verifying otp";
+    }
+    throw new Error("Unknown error occurred while verifying otp");
   }
 };
 
@@ -75,8 +96,11 @@ export const setPassword = async (data: setPassword) => {
       data
     );
     return response.data.message;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error occured while setting password";
+  } catch (error:unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data?.error || "Error occurred while setting password";
+    }
+    throw new Error("Unknown error occurred while setting password");
   }
 };
 
@@ -95,7 +119,7 @@ export const tutorProfileSetup = async (data: tutorProfile) => {
       formData.append("profilePhoto", data.profilePhoto);
     }
     if (data.certificates.length > 0) {
-      data.certificates.forEach((file, index) => {
+      data.certificates.forEach((file) => {
         formData.append("certificates", file);
       });
     }
@@ -114,8 +138,11 @@ export const tutorProfileSetup = async (data: tutorProfile) => {
     );
 
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error occured while setting password";
+  } catch (error:unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error.response.data?.error || "Error occurred while setting profile";
+    }
+    throw new Error("Unknown error occurred while setting profile");
   }
 };
 
@@ -131,7 +158,7 @@ export const tutorLogin = async (email: string, password: string) => {
       }
     );
     return response.data;
-  } catch (error: any) {
+  } catch (error:unknown) {
     if (axios.isAxiosError(error)) {
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
@@ -159,8 +186,12 @@ export const forgotPassword = async (
       email,
     });
     return response.data;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error occured while sending otp";
+  } catch (error:unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      
+      throw error.response.data?.error || "Error occurred while sending otp";
+    }
+    throw new Error("An unexpected error occurred");
   }
 };
 
@@ -174,8 +205,12 @@ export const verifyForgotOtp = async (
       otp,
     });
     return response.data.message;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error occured while verifying otp";
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      const err = error.response?.data as ApiError;
+      throw err?.error || "Error occurred while verifying OTP";
+    }
+    throw new Error("An unexpected error occurred");
   }
 };
 
@@ -191,8 +226,12 @@ export const resetPassword = async (
       confirmPassword,
     });
     return response.data.message;
-  } catch (error: any) {
-    throw error.response?.data?.error || "Error occured while verifying otp";
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      const err = error.response?.data as ApiError;
+      throw err?.error || "Error occurred while resetting password";
+    }
+    throw new Error("An unexpected error occurred");
   }
 };
 
@@ -200,29 +239,32 @@ export const fetchProfile = async () => {
   try {
     const response = await tutorAxiosInstance.get(`/tutor/profile`);
     return response.data;
-  } catch (error: any) {
-    console.log("Error infetching user profile details");
-    throw (
-      error.response?.data?.error ||
-      "Error occured while fetching the profile details"
-    );
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      const err = error.response?.data as ApiError;
+      console.log("Error fetching user profile details");
+      throw err?.error || "Error occurred while fetching the profile details";
+    }
+    throw new Error("An unexpected error occurred");
   }
 };
 
-export const setAvailability = async (tutorId: string, schedule: any) => {
-  console.log("schedule from tutorapi frontend:", schedule);
+export const setAvailability = async (tutorId: string, data: { schedule:DaySchedule[], timeZone: string }) => {
+  console.log("schedule from tutorapi frontend:",data);
   try {
     const response = await tutorAxiosInstance.put(
       `/tutor/${tutorId}/availability`,
-      schedule
+      data
     );
     return response.data;
-  } catch (error: any) {
-    throw new Error(
-      `Error setting availability: ${
-        error.response?.data?.message || error.message
-      }`
-    );
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      const err = error.response?.data as ApiError;
+      throw new Error(
+        `Error setting availability: ${err?.message || error.message}`
+      );
+    }
+    throw new Error("An unexpected error occurred");
   }
 };
 
@@ -236,11 +278,15 @@ export const deleteSlot = async (
   slotIndex: number
 ): Promise<void> => {
   try {
-    const response = await tutorAxiosInstance.delete(
+    await tutorAxiosInstance.delete(
       `/tutor/${tutorId}/availability/${day}/${slotIndex}`
     );
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Failed to delete slot");
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      const err = error.response?.data as ApiError;
+      throw new Error(err?.message || "Failed to delete slot");
+    }
+    throw new Error("An unexpected error occurred");
   }
 };
 
@@ -251,10 +297,14 @@ export const getAvailability = async (tutorId: string) => {
     );
     console.log("tutor avilability geting from tutorapi", response.data);
     return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error.response?.data?.message || "Failed to fetch availability"
-    );
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      const err = error.response?.data as ApiError;
+      throw new Error(
+        err?.message || "Failed to fetch availability"
+      );
+    }
+    throw new Error("An unexpected error occurred");
   }
 };
 
@@ -264,10 +314,14 @@ export const getTutorBookings = async () => {
   try {
     const response = await tutorAxiosInstance.get(`/booking/tutor/bookings`);
     return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error.response?.data?.message || "Failed to fetch bookings"
-    );
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      const err = error.response?.data as ApiError;
+      throw new Error(
+        err?.message || "Failed to fetch bookings"
+      );
+    }
+    throw new Error("An unexpected error occurred");
   }
 };
 
@@ -280,9 +334,13 @@ export const getWalletDetails=async () =>{
     console.log("wallet response in frontednfectch",response.data);
     return response.data;
     
-  } catch (error:any) {
-    throw new Error(
-      error.response?.data?.message || "Failed to fetch wallet details"
-    );
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      const err = error.response?.data as ApiError;
+      throw new Error(
+        err?.message || "Failed to fetch wallet details"
+      );
+    }
+    throw new Error("An unexpected error occurred");
   }
 }

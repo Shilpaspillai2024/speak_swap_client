@@ -1,10 +1,10 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,Suspense} from 'react';
 import { forgotPassword,verifyForgotOtp } from '@/services/tutorApi';
 import { toast } from 'react-toastify';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-const VerifyOtp = () => {
+const VerifyOtpComponent = () => {
   const searchParams=useSearchParams()
   const email=searchParams.get("email")
   const [otp, setOtp] = useState<string[]>(['', '', '', '']);
@@ -52,6 +52,7 @@ const router=useRouter()
       toast.success('OTP verified successfully');
     } catch (error) {
       toast.error('Invalid OTP. Please try again.');
+      console.error("something went wrong",error)
     }
   };
 
@@ -68,6 +69,7 @@ const router=useRouter()
       
     } catch (error) {
       toast.error('Failed to resend OTP. Please try again later.');
+      console.error("something went wrong",error)
     }
    
     
@@ -123,5 +125,14 @@ const router=useRouter()
     </div>
   );
 };
+
+const VerifyOtp = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyOtpComponent />
+    </Suspense>
+  );
+};
+
 
 export default VerifyOtp;

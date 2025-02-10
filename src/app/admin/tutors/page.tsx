@@ -45,7 +45,7 @@ const AdminTutorPage = () => {
       if (!tutor) throw new Error("Tutor not found.");
 
       const isActive = !tutor.isActive;
-      const response = await blockUnblockTutor(tutorId, isActive);
+      await blockUnblockTutor(tutorId, isActive);
       setTutors((prevTutors) =>
         prevTutors.map((tutor) =>
           tutor._id === tutorId ? { ...tutor, isActive } : tutor

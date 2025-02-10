@@ -8,7 +8,9 @@ const ForgotPassword = () => {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
-   
+    setTimeout(() => {
+      setMessage("OTP has been sent to your email.");
+    }, 1000);
     console.log("forgot")
   };
 

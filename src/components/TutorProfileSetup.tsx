@@ -4,6 +4,10 @@ import { tutorProfileSetup } from "@/services/tutorApi";
 import { toast } from "react-toastify";
 import { tutorSignupStore } from "@/store/userSignupStore";
 
+interface Country{
+  name:string
+}
+
 const TutorProfileSetup = ({
   onPrevStep,
   onNextStep,
@@ -22,8 +26,8 @@ const TutorProfileSetup = ({
     introductionVideo: null as File | null,
   });
 
-  const [countries, setCountries] = useState<any[]>([]);
-  const [languages, setLanguages] = useState<any[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
    const {token}=tutorSignupStore();
 
 
@@ -72,13 +76,12 @@ const TutorProfileSetup = ({
       introductionVideo: formData.introductionVideo,
     };
     try {
-     
-      const response=await tutorProfileSetup(data)
+      await tutorProfileSetup(data)
       toast.success("Profile details added successfully")
       onNextStep();
     } catch (error) {
       toast.error("something went wrong! try again")
-      
+      console.log("something went wrong ",error)
     }
 };
 

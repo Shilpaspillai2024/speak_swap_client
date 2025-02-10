@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation";
 import userAuthStore from "@/store/userAuthStore";
 import Loading from "@/components/Loading";
 
-const UserProtectedRoute = (WrappedComponent: React.ComponentType<any>) => {
-  return function ProtectedComponent(props: any) {
+const UserProtectedRoute =<P extends object>(WrappedComponent: React.ComponentType<P>) => {
+  return function ProtectedComponent(props:P) {
     const {
       isUserAuthenticated,
       isLoading,

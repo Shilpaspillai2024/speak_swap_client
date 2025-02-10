@@ -16,6 +16,16 @@ import SetPassword from "@/components/SetPassword";
 import { signupValidationSchema } from "@/utils/Validation";
 import { SignupErrors } from "@/utils/Types";
 
+
+
+
+interface Country {
+  name: string;
+  
+ 
+}
+
+
 const UserSignup: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -37,8 +47,8 @@ const UserSignup: React.FC = () => {
   const { setToken } = userSignupStore();
   const [currentStep, setCurrentStep] = useState(1);
 
-  const [countries, setCountries] = useState<any[]>([]);
-  const [languages, setLanguages] = useState<any[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
   const [rawInput,setRawInput]  =useState("")
   const { token } = userSignupStore();
   const router = useRouter();
@@ -50,7 +60,8 @@ const UserSignup: React.FC = () => {
       try {
         const fetchedCountries = await fetchCountries();
         const fetchedLanguages = await fetchLanguages();
-        setCountries(fetchedCountries);
+        console.log(fetchedLanguages); 
+        setCountries(fetchedCountries as Country[]);
         setLanguages(fetchedLanguages);
       } catch (error) {
         console.log("Error loading data", error);
@@ -100,8 +111,14 @@ const UserSignup: React.FC = () => {
 
         toast.success("Basic details saved");
         setCurrentStep(2);
-      } catch (error: any) {
-        toast.error(error);
+      } catch (error:unknown) {
+        if (error instanceof Error) {
+          toast.error(error.message); 
+        } else if (typeof error === 'string') {
+          toast.error(error); 
+        } else {
+          toast.error('An unexpected error occurred');
+        }
       }
     }
     if (currentStep === 4) {
@@ -142,6 +159,7 @@ const UserSignup: React.FC = () => {
         setCurrentStep(5);
       } catch (error) {
         toast.error("Error submitting details");
+        console.error("something went wrong",error)
       }
     }
     if (currentStep === 5) {
@@ -179,6 +197,7 @@ const UserSignup: React.FC = () => {
         setCurrentStep(6); 
       } catch (error) {
         toast.error("Error submitting interest details");
+        console.error("something went wrong",error)
       }
     }
   };
@@ -213,7 +232,8 @@ const UserSignup: React.FC = () => {
   const handleFinalStep=async()=>{
     try {
       if(formData.profilePhoto){
-        const image=await uploadPicture({token,
+
+        await uploadPicture({token,
           profilePhoto:formData.profilePhoto
         })
 
@@ -225,7 +245,7 @@ const UserSignup: React.FC = () => {
       
     } catch (error) {
       toast.error("something went wrong when uploading profile picture");
-      
+      console.error("something went wrong",error)
     }
   }
 
@@ -235,9 +255,9 @@ const UserSignup: React.FC = () => {
         {/* Left Panel */}
         <div className="hidden md:flex flex-col justify-between w-1/2 bg-gradient-to-br from-indigo-500 to-purple-500 text-white p-8">
           <div>
-            <h1 className="text-4xl font-bold">Welcome to SpeakSwap</h1>
-            <p className="mt-4 text-sm text-gray-200">
-              "Empowering conversations, one connection at a time."
+            <h1 className="text-4xl font-bold">{`Welcome to SpeakSwap`}</h1>
+            <p className="mt-4 text-sm text-gray-200">{`
+              "Empowering conversations, one connection at a time."`}
             </p>
           </div>
           <div>

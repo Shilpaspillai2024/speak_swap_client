@@ -43,7 +43,12 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         (Date.now() - Number(savedOtpTime)) / 1000
       );
       const remainingTime = 60 - elapsedTime;
-      console.log("Elapsed Time:", elapsedTime, "Remaining Time:", remainingTime);
+      console.log(
+        "Elapsed Time:",
+        elapsedTime,
+        "Remaining Time:",
+        remainingTime
+      );
       if (remainingTime > 0) {
         setOtpSent(true);
         setTimer(remainingTime);
@@ -54,16 +59,12 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         setOtpSent(false);
         setTimer(0);
       }
-    } else if(savedOtpTimer) {
-      
+    } else if (savedOtpTimer) {
       console.log("Using saved timer value from localStorage:", savedOtpTimer);
-        setOtpSent(true);
-        setTimer(Number(savedOtpTimer));
-      
+      setOtpSent(true);
+      setTimer(Number(savedOtpTimer));
     }
   }, []);
-
-  
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -73,10 +74,10 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
           const newTimer = prevTimer - 1;
           if (newTimer <= 0) {
             clearInterval(interval!);
-            localStorage.removeItem("otpTimestamp"); 
-            localStorage.removeItem("otpTimer"); 
+            localStorage.removeItem("otpTimestamp");
+            localStorage.removeItem("otpTimer");
           } else {
-            localStorage.setItem("otpTimer", newTimer.toString()); 
+            localStorage.setItem("otpTimer", newTimer.toString());
           }
           return newTimer;
         });
@@ -99,8 +100,17 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       setTimer(60);
       localStorage.setItem("otpTimestamp", Date.now().toString());
       localStorage.setItem("otpTimer", "60");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to send OTP.");
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as {
+          response?: { data: { message: string } };
+        };
+        toast.error(
+          axiosError.response?.data?.message || "Failed to send otp."
+        );
+      } else {
+        toast.error("An unknown error occurred.");
+      }
     }
   };
 
@@ -113,8 +123,15 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       localStorage.removeItem("otpTimestamp");
       localStorage.removeItem("otpTimer");
       onNextStep();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Invalid OTP.");
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as {
+          response?: { data: { message: string } };
+        };
+        toast.error(axiosError.response?.data?.message || "Invalid OTP.");
+      } else {
+        toast.error("An unknown error occurred.");
+      }
     }
   };
 

@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginAdmin } from "@/services/adminApi";
 import useAdminAuthStore from "@/store/adminAuthStore";
-import Loading from "@/components/Loading";
 import { loginSchema } from "@/utils/Validation";
 import { LoginErrors } from "@/utils/Types";
 import { toast } from "react-toastify";
@@ -15,7 +14,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<LoginErrors>({});
-  const { isAdminAuthenticated, setAdminAuth, isLoading } = useAdminAuthStore();
+  const { isAdminAuthenticated, setAdminAuth} = useAdminAuthStore();
 
   const router = useRouter();
 
@@ -75,8 +74,12 @@ try{
       setAdminAuth(response.isAdmin, response.accessToken);
       router.push("/admin/dashboard");
     }
-  } catch (error: any) {
-    toast.error(error.message || "Login failed");
+  } catch (error:unknown) {
+    if (error instanceof Error) {
+      toast.error(error.message);
+    } else {
+      toast.error("Login failed");
+    }
   }
   };
 
@@ -85,9 +88,9 @@ try{
       <div className="flex w-full max-w-5xl bg-white bg-opacity-10 backdrop-blur-lg shadow-2xl overflow-hidden rounded-3xl">
         <div className="hidden md:flex flex-col justify-between w-1/2 bg-gradient-to-br from-indigo-500 to-purple-500 text-white p-8">
           <div>
-            <h1 className="text-4xl font-bold">Welcome to SpeakSwap</h1>
+            <h1 className="text-4xl font-bold">{`Welcome to SpeakSwap`}</h1>
             <p className="mt-4 text-sm text-gray-300">
-              "Empowering conversations, one connection at a time."
+              {`"Empowering conversations, one connection at a time."`}
             </p>
           </div>
           <div>

@@ -3,19 +3,22 @@ import { devtools, persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode";
 import { refreshToken } from "@/services/adminApi";
 import { logoutAdmin } from "@/services/adminApi";
+import { IAdmin } from "@/types/admin";
 
 interface AdminAuthState {
-  admin: any | null;
+  admin: IAdmin | null;
   token: string | null;
   isAdminAuthenticated: boolean;
   isLoading: boolean;
-  setAdminAuth: (admin: any, token: string) => void;
-  setAdmin: (admin: any) => void;
+  setAdminAuth: (admin:IAdmin, token: string) => void;
+  setAdmin: (admin:IAdmin) => void;
   adminLogout: () => void;
   initAdminAuth: () => Promise<void>;
   refreshAccessToken:()=>Promise<boolean>;
   checkTokenValidity: () =>Promise<boolean>;
 }
+
+
 
 const useAdminAuthStore = create<AdminAuthState>()(
   devtools(
@@ -94,7 +97,8 @@ const useAdminAuthStore = create<AdminAuthState>()(
           }
 
           try {
-            const decodedToken: any = jwtDecode(token);
+          //  const decodedToken: any = jwtDecode(token);
+          const decodedToken: { exp: number } = jwtDecode(token);
             const currentTime = Date.now() / 1000;
             console.log("Current Time:", currentTime, "Token Expiry Time:", decodedToken.exp);
             return decodedToken.exp > currentTime
