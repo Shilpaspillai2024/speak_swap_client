@@ -9,7 +9,7 @@ import userAuthStore from '@/store/userAuthStore';
 import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 import { Message } from '@/store/socketStore';
 import Image from 'next/image';
-import NotificationBadge from '@/components/NotificationBadge';
+//import NotificationBadge from '@/components/NotificationBadge';
 interface Participant {
   participantId: {
     _id: string;
@@ -47,15 +47,10 @@ const ChatList = () => {
 
   const role = socketStore.getState().getRole(); 
   const socket=socketStore.getState().socket;
-  //const { unreadCounts, fetchUnreadCount } = socketStore();
+  
  
   console.log("role is",role)
-  const getUnreadCount = (chat: ChatData) => {
-    const userCount = chat.unreadCount?.find(
-      count => count.participantId === loggedInUserId
-    );
-    return userCount?.count || 0;
-  };
+ 
 
   const loadChats = useCallback(async () => {
     try {
@@ -114,10 +109,13 @@ const ChatList = () => {
     }
   }, [socket, loadChats, loggedInUserId]);
 
+
+  
+  
   const navigateToChat = async (chatId: string) => {
     try {
       console.log('Clicked chat ID:', chatId);
-     
+      await socketStore.getState().markAsRead(chatId);
       await socketStore.getState().initializeChat(chatId);
       router.push(`/user/chat/${chatId}`);
     } catch (error) {
@@ -198,12 +196,7 @@ const ChatList = () => {
                           <User className="w-6 h-6 text-gray-600" />
                         )}
 
-                         {/* Add notification badge */}
-                         {getUnreadCount(chat) > 0 && (
-                  <div className="absolute top-4 right-4">
-                    <NotificationBadge count={getUnreadCount(chat)} />
-                  </div>
-                )}
+                       
                       </div>
                       
                       <div className="flex-1">
@@ -221,10 +214,7 @@ const ChatList = () => {
                             {chat.lastMessage?.message || 'No messages yet'}
                           </p>
 
-                      
-
-
-                        </div>
+                       </div>
                       </div>
                     </div>
                   </div>

@@ -8,8 +8,6 @@ import {
   createChat,
   getChatUsers,
   updateLastMessage,
-  getUnreadCount
- 
 } from "@/services/chatApi";
 import userAuthStore from "./userAuthStore";
 import tutorAuthStore from "./tutorAuthStore";
@@ -49,11 +47,7 @@ interface SocketState {
   senderRole: "user" | "tutor" | null;
   recipientName: string | null;
   recipientProfilePicture: string | null;
-  unreadCounts: { [chatId: string]: number };
-  totalUnreadCount: number;
-  fetchUnreadCount: () => Promise<void>;
-  updateUnreadCount: (chatId: string, count: number) => void;
- 
+
   connectSocket: () => Promise<void>;
   disconnectSocket: () => void;
   fetchChatList: () => Promise<void>;
@@ -70,7 +64,6 @@ interface SocketState {
   findExistingChat: (participantId: string) => Chat | undefined;
   joinChat: (chatId: string) => void;
   initializeChat: (chatId: string) => Promise<void>;
-  
 }
 
 const socketStore = create<SocketState>()((set, get) => ({
@@ -86,8 +79,6 @@ const socketStore = create<SocketState>()((set, get) => ({
   senderRole: null,
   recipientName: null,
   recipientProfilePicture: null,
-  unreadCounts: {},
-  totalUnreadCount: 0,
 
   connectSocket: async () => {
     try {
@@ -135,13 +126,7 @@ const socketStore = create<SocketState>()((set, get) => ({
           set({ isConnected: false });
         });
 
-
-
-        // socket.on("unreadCountUpdate", ({ chatId, count }) => {
-        //   get().updateUnreadCount(chatId, count);
-        // });
-
-        socket.on("receiveMessage", (message: Message) => {
+        socket.on("receiveMessage", async (message: Message) => {
           const { currentChatId, messages } = get();
           if (
             currentChatId === message.chatId &&
@@ -151,10 +136,6 @@ const socketStore = create<SocketState>()((set, get) => ({
           }
           get().updateChatList(message);
         });
-
-
-
-        
 
         set({ socket });
       });
@@ -240,7 +221,6 @@ const socketStore = create<SocketState>()((set, get) => ({
     if (socket?.connected) {
       socket.emit("joinRoom", chatId);
       console.log("Joined chat room:", chatId);
-      get().markAsRead(chatId);
     }
   },
 
@@ -292,8 +272,6 @@ const socketStore = create<SocketState>()((set, get) => ({
       }));
 
       await get().fetchMessages(chatId);
-
-      // await get().markAsRead(chatId);
     } catch (error) {
       console.error("Error initializing chat:", error);
       throw error;
@@ -324,8 +302,6 @@ const socketStore = create<SocketState>()((set, get) => ({
       console.log("role from store fetch message", role);
       const messages = await fetchMessages(chatId, role);
       set({ currentChatId: chatId, messages, error: null });
-
-      await get().markAsRead(chatId);
     } catch (error) {
       set({
         error:
@@ -339,7 +315,6 @@ const socketStore = create<SocketState>()((set, get) => ({
       const role = get().getRole();
       const socket = get().socket;
       const senderId = get().senderId;
-     // const userId = userAuthStore.getState().user._id;
       const user = userAuthStore.getState().user;
       const userId = user?._id ?? "";
       console.log("userId", userId);
@@ -348,9 +323,6 @@ const socketStore = create<SocketState>()((set, get) => ({
 
       const newMessage = await sendMessage({ chatId, message }, role);
 
-      //const currentChat = get().chatList.find((chat) => chat.id === chatId);
-     
-
       set((state) => {
         return {
           chatList: state.chatList.map((chat) =>
@@ -358,7 +330,6 @@ const socketStore = create<SocketState>()((set, get) => ({
               ? {
                   ...chat,
                   lastMessage: newMessage,
-                 
                 }
               : chat
           ),
@@ -375,7 +346,7 @@ const socketStore = create<SocketState>()((set, get) => ({
             senderId,
             timestamp,
           },
-          (response:Message) => {
+          (response: Message) => {
             console.log("Scoket message response", response);
           }
         );
@@ -383,13 +354,7 @@ const socketStore = create<SocketState>()((set, get) => ({
         console.warn("Socket not connected for real-time message");
       }
 
-      await updateLastMessage(
-        chatId,
-        message,
-        role,
-        timestamp,
-        userId,
-      );
+      await updateLastMessage(chatId, message, role, timestamp, userId);
 
       get().updateChatList(newMessage);
     } catch (error) {
@@ -403,89 +368,36 @@ const socketStore = create<SocketState>()((set, get) => ({
   markAsRead: async (chatId: string) => {
     try {
       const role = get().getRole();
+
+      const user = userAuthStore.getState().user;
+      const userId = user?._id ?? "";
+
+      if (!userId) throw new Error("User not authenticated");
       await markMessageAsRead(chatId, role);
-      
-      // Reset unread count in local state
-      set(state => ({
-        unreadCounts: {
-          ...state.unreadCounts,
-          [chatId]: 0
-        },
-        totalUnreadCount: Object.entries(state.unreadCounts)
-          .reduce((total, [id, count]) => 
-            id === chatId ? total : total + count, 0)
-      }));
 
-      // Update chat list to reflect read status
-      set(state => ({
-        chatList: state.chatList.map(chat =>
-          chat.id === chatId 
-            ? { ...chat, unreadCount: 0 }
-            : chat
-        )
+      set((state) => ({
+        messages: state.messages.map((msg) =>
+          msg.chatId === chatId && msg.senderId !== userId
+            ? { ...msg, isRead: true }
+            : msg
+        ),
       }));
-
     } catch (error) {
       set({
-        error: error instanceof Error 
-          ? error.message 
-          : "Failed to mark messages as read"
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to mark messages as read",
       });
     }
   },
 
-  fetchUnreadCount: async () => {
-    try {
-      const role = get().getRole();
-      const userId = role === 'user' 
-        ? userAuthStore.getState().user?._id 
-        : tutorAuthStore.getState().tutor?._id;
-
-      if (!userId) throw new Error('User not authenticated');
-
-      const count = await getUnreadCount(userId, role);
-      set({ totalUnreadCount: count });
-    } catch (error) {
-      console.error('Error fetching unread count:', error);
-    }
-  },
-
-  updateUnreadCount: (chatId: string, count: number) => {
-    set(state => {
-      const newUnreadCounts = {
-        ...state.unreadCounts,
-        [chatId]: count
-      };
-      
-      const totalCount = Object.values(newUnreadCounts)
-        .reduce((a, b) => a + b, 0);
-      
-      return {
-        unreadCounts: newUnreadCounts,
-        totalUnreadCount: totalCount,
-        chatList: state.chatList.map(chat =>
-          chat.id === chatId 
-            ? { ...chat, unreadCount: count }
-            : chat
-        )
-      };
-    });
-  },
-
   updateChatList: (message: Message) => {
     set((state) => {
-      const currentUserId = get().senderId;
+      
       const chatExists = state.chatList.some(
         (chat) => chat.id === message.chatId
       );
-
-  // Increment unread count if message is not from current user
- 
-  if (message.senderId !== currentUserId) {
-    const currentCount = state.unreadCounts[message.chatId] || 0;
-    get().updateUnreadCount(message.chatId, currentCount + 1);
-  }
-
 
       if (!chatExists) {
         return {
@@ -495,7 +407,6 @@ const socketStore = create<SocketState>()((set, get) => ({
               id: message.chatId,
               participants: [],
               lastMessage: message,
-             
             },
           ],
         };
@@ -513,9 +424,7 @@ const socketStore = create<SocketState>()((set, get) => ({
     });
   },
 
- 
-
-cleanup: () => {
+  cleanup: () => {
     get().disconnectSocket();
     set({
       chatList: [],

@@ -30,8 +30,6 @@ const ChatPage = () => {
   const loggedInUser = userAuthStore.getState().user;
   const loggedInUserId = loggedInUser?._id;
 
-  //const [isVideoCallRequested, setIsVideoCallRequested] = useState(false);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -44,34 +42,16 @@ const ChatPage = () => {
     recipientProfilePicture,
   } = socketStore();
 
-  // useEffect(() => {
-  //   if (chatId && (!currentChatId || currentChatId !== chatId)) {
-  //     initializeChat(chatId as string).catch((error) => {
-  //       toast.error("Failed to initialize chat");
-  //       console.error("Error initializing chat:", error);
-  //     });
-  //   }
-  // }, [chatId, currentChatId, initializeChat]);
-
-  useEffect(() => {
+ useEffect(() => {
     if (chatId && (!currentChatId || currentChatId !== chatId)) {
-      initializeChat(chatId as string)
-        .then(() => {
-          // Mark messages as read when chat is initialized
-          socketStore.getState().markAsRead(chatId as string);
-        })
-        .catch((error) => {
-          toast.error("Failed to initialize chat");
-          console.error("Error initializing chat:", error);
-        });
+      initializeChat(chatId as string).catch((error) => {
+        toast.error("Failed to initialize chat");
+        console.error("Error initializing chat:", error);
+      });
     }
   }, [chatId, currentChatId, initializeChat]);
 
-  useEffect(() => {
-    if (chatId && messages.length > 0) {
-      socketStore.getState().markAsRead(chatId as string);
-    }
-  }, [chatId, messages]);
+  
   
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -157,7 +137,6 @@ const ChatPage = () => {
       socket.emit("initiateCall", { chatId, videoRoomId, callerName: loggedInUser?.fullName});  
   
       sessionStorage.setItem("isCallInitiator", "true");
-     // setIsVideoCallRequested(true);
       router.push(`/user/video/${videoRoomId}`); 
     }
   };
@@ -178,11 +157,6 @@ const ChatPage = () => {
           <div className="flex items-center justify-between  space-x-4">
             <div className="flex items-center space-x-4">
               {recipientProfilePicture ? (
-                // <img
-                //   src={recipientProfilePicture}
-                //   alt={recipientName || "Profile Picture"}
-                //   className="w-10 h-10 rounded-full"
-                // />
                 <Image
                   src={recipientProfilePicture}
                   alt={recipientName || "Profile Picture"}

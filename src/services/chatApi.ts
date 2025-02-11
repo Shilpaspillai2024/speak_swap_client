@@ -243,16 +243,3 @@ export const getChatUsers=async(chatId:string,role:"user" | "tutor")=>{
 }
 
 
-export const getUnreadCount=async(userId: string, role: "user" | "tutor")=>{
- try{
- 
-  const instance = role === "user" ? userAxiosInstance : tutorAxiosInstance;
-    const response = await instance.get<UnreadCountResponse>(`/message/unread/${userId}`);
-    return response.data.totalUnread;
- }
- catch(error){
-  console.error('Error fetching unread count:', error);
-    throw error;
-
- }
-}

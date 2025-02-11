@@ -6,35 +6,18 @@ import userAuthStore from "@/store/userAuthStore";
 import { useRouter } from "next/navigation";
 import { FaUserCircle } from "react-icons/fa";
 import { IUser } from "@/types/user";
-import NotificationBadge from "./NotificationBadge";
-import socketStore from "@/store/socketStore";
+
 
 const UserNavbar = () => {
   const clearUserAuth = userAuthStore((state) => state.Logout);
   const [menuOpen, setMenuOpen] = useState(false);
   const [clientUser, setClientUser] = useState<IUser | null>(null);
   const router = useRouter();
-  const { totalUnreadCount, fetchUnreadCount } = socketStore();
-
+ 
   useEffect(() => {
     const user = userAuthStore.getState().user;
     setClientUser(user);
-
-  //  fetchUnreadCount();
-
-  const initializeNotifications = async () => {
-    await socketStore.getState().connectSocket();
-    await fetchUnreadCount();
-  };
-  
-  initializeNotifications();
-
-    const interval = setInterval(fetchUnreadCount, 30000); 
-    return () => {
-      clearInterval(interval)
-      socketStore.getState().disconnectSocket();
-    };
-  }, [fetchUnreadCount]);
+},[]);
 
   const handleLogout = () => {
     clearUserAuth();
@@ -60,11 +43,7 @@ const UserNavbar = () => {
 
         <div className="relative">
           <Link href="/user/chat">Messages</Link>
-          {totalUnreadCount > 0 && (
-            <div className="absolute -top-2 -right-2">
-              <NotificationBadge count={totalUnreadCount} />
-            </div>
-          )}
+         
         </div>
 
         <Link href="/dashboard/profile">Profile</Link>
