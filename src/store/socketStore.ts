@@ -120,6 +120,7 @@ const socketStore = create<SocketState>()((set, get) => ({
         socket.on("connect_error", (error) => {
           set({ error: `Connection error: ${error.message}` });
           reject(error);
+          return
         });
 
         socket.on("disconnect", () => {

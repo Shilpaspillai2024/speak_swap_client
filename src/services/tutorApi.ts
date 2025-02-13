@@ -39,7 +39,7 @@ interface TimeSlot {
 }
 
 interface DaySchedule {
-  day: string;
+  date: string;
   slots: TimeSlot[];
 }
 interface ApiError {
@@ -274,12 +274,15 @@ export const setAvailability = async (tutorId: string, data: { schedule:DaySched
 
 export const deleteSlot = async (
   tutorId: string,
-  day: string,
+  date: string,
   slotIndex: number
 ): Promise<void> => {
   try {
+
+    console.log("Deleting slot:", tutorId, date, slotIndex);
+
     await tutorAxiosInstance.delete(
-      `/tutor/${tutorId}/availability/${day}/${slotIndex}`
+      `/tutor/${tutorId}/availability/${date}/${slotIndex}`
     );
   } catch (error:unknown) {
     if (error instanceof AxiosError) {

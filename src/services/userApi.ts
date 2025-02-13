@@ -408,14 +408,14 @@ export const tutorProfile = async (tutorId: string): Promise<ITutor | null> => {
 
 export const createBooking = async (
   tutorId: string,
-  selectedDay: string,
+  selectedDate: string,
   selectedSlot: { startTime: string; endTime: string },
   sessionFee: number
 ) => {
   try {
     const response = await userAxiosInstance.post(`/booking/create`, {
       tutorId,
-      selectedDay,
+      selectedDate,
       selectedSlot,
       sessionFee,
     });
@@ -477,10 +477,10 @@ export const getBookingDetails = async (bookingId: string) => {
   }
 };
 
-export const getBookedSlots = async (tutorId: string, selectedDay: string) => {
+export const getBookedSlots = async (tutorId: string, selectedDate: string) => {
   try {
     const response = await userAxiosInstance.get(
-      `/booking/booked-slots/${tutorId}/${selectedDay}`
+      `/booking/booked-slots/${tutorId}/${selectedDate}`
     );
     return response.data;
   } catch (error) {

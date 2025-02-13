@@ -29,17 +29,17 @@ const TutorProfilePage = () => {
   const [activeTab, setActiveTab] = React.useState("about");
   const [isLoading, setIsLoading] = React.useState(true);
   const [isBookingOpen, setIsBookingOpen] = React.useState(false);
-  const [selectedDay, setSelectedDay] = React.useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = React.useState<{
     startTime: string;
     endTime: string;
   } | null>(null);
 
-  const user=userAuthStore().user;
+  const user = userAuthStore().user;
+ 
+  console.log("user from store", user);
 
-  console.log("user from store",user)
-
- // const [bookedSlots, setBookedSlots] = React.useState<string[]>([]);
+  // const [bookedSlots, setBookedSlots] = React.useState<string[]>([]);
 
   const { tutorId } = useParams();
 
@@ -61,63 +61,67 @@ const TutorProfilePage = () => {
     fetchTutorProfile();
   }, [tutorId]);
 
-
-  const checkSlotAvailability = async (day: string, slot: { startTime: string; endTime: string }) => {
+  const checkSlotAvailability = async (
+    date: string,
+    slot: { startTime: string; endTime: string }
+  ) => {
     try {
-      
-      const bookedSlotsData = await getBookedSlots(tutorId as string, day);
-  
-      
+      const bookedSlotsData = await getBookedSlots(tutorId as string, date);
+
       if (bookedSlotsData.success && Array.isArray(bookedSlotsData.data)) {
         const formattedSlots = bookedSlotsData.data.map(
           (booking: { startTime: string; endTime: string }) =>
             `${booking.startTime}-${booking.endTime}`
         );
-  
+
         console.log("Booked Slots:", formattedSlots);
-  
+
         const selectedSlotString = `${slot.startTime}-${slot.endTime}`;
-       
-        return !formattedSlots.some((bookedSlot: string) => bookedSlot === selectedSlotString);
+
+        return !formattedSlots.some(
+          (bookedSlot: string) => bookedSlot === selectedSlotString
+        );
       }
-  
+
       console.log("No booked slots available for this tutor.");
-      return true; 
+      return true;
     } catch (error) {
       console.error("Error checking slot availability:", error);
-      return false; 
+      return false;
     }
   };
 
-
   const handleBooking = () => {
     setIsBookingOpen(true);
-
   };
 
-  const handleSlotSelection = async(
-    day: string,
+  const handleSlotSelection = async (
+    date: string,
     slot: { startTime: string; endTime: string }
   ) => {
-
-    const isAvailable = await checkSlotAvailability(day, slot);
-    console.log("Checked Slot Availability:", day, slot, isAvailable);
+    const isAvailable = await checkSlotAvailability(date, slot);
+    console.log("Checked Slot Availability:", date, slot, isAvailable);
     if (!isAvailable) {
       toast.error("This slot is already booked. Please choose another.");
       return;
     }
-   
-    setSelectedDay(day);
+
+    setSelectedDate(date);
     setSelectedSlot(slot);
   };
 
   const confirmBooking = async () => {
-    if (!selectedDay || !selectedSlot || !tutor) return;
+    if (!selectedDate || !selectedSlot || !tutor) return;
     try {
-      const isAvailable = await checkSlotAvailability(selectedDay, selectedSlot);
+      const isAvailable = await checkSlotAvailability(
+        selectedDate,
+        selectedSlot
+      );
       if (!isAvailable) {
-        toast.error("This slot was just booked. Please select a different slot.");
-        setSelectedDay(null);
+        toast.error(
+          "This slot was just booked. Please select a different slot."
+        );
+        setSelectedDate(null);
         setSelectedSlot(null);
         return;
       }
@@ -126,26 +130,26 @@ const TutorProfilePage = () => {
 
       const bookingData = await createBooking(
         tutorId as string,
-        selectedDay,
+        selectedDate,
         selectedSlot,
         sessionFeeInUSD
       );
 
       console.log("bookingData", bookingData);
       setIsBookingOpen(false);
-      setSelectedDay(null);
+      setSelectedDate(null);
       setSelectedSlot(null);
       const bookingId = bookingData.data.savedBooking._id;
 
-      const creditedByString = user?.fullName ?? 'Unknown User';
+      const creditedByString = user?.fullName ?? "Unknown User";
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
         amount: sessionFeeInUSD * 100, // Amount in cents for USD
-        currency: "USD", 
+        currency: "USD",
         order_id: bookingData.data.orderId,
         name: `Seesion with ${tutor.name}`,
         description: `Session Fee: ₹${bookingData.sessionFee}`,
-        handler: function (response:RazorpayResponse) {
+        handler: function (response: RazorpayResponse) {
           console.log("Razorpay Response:", response);
 
           verifyPayment(
@@ -153,7 +157,7 @@ const TutorProfilePage = () => {
               ...response,
               tutorId: tutorId as string,
               amount: sessionFeeInUSD,
-              creditedBy:creditedByString
+              creditedBy: creditedByString,
             },
             bookingId
           )
@@ -181,7 +185,7 @@ const TutorProfilePage = () => {
       razorpay.open();
     } catch (error) {
       toast.error("Error confirming booking:");
-      console.error("something went wrong",error)
+      console.error("something went wrong", error);
     }
   };
 
@@ -207,21 +211,15 @@ const TutorProfilePage = () => {
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="relative h-40 w-40 rounded-full bg-white p-1 overflow-hidden">
                 {tutor.profilePhoto ? (
-                  // <img
-                  //   src={tutor.profilePhoto}
-                  //   alt={tutor.name}
-                  //   className="h-full w-full object-cover rounded-full"
-                  // />
-
                   <Image
-                  src={tutor.profilePhoto}
-                  alt={tutor.name}
-                  fill 
-                  className="object-cover rounded-full"
-                  sizes="160px" 
-                  priority 
-                  unoptimized
-                />
+                    src={tutor.profilePhoto}
+                    alt={tutor.name}
+                    fill
+                    className="object-cover rounded-full"
+                    sizes="160px"
+                    priority
+                    unoptimized
+                  />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-indigo-400 text-white text-4xl font-semibold rounded-full">
                     {tutor.name
@@ -303,7 +301,15 @@ const TutorProfilePage = () => {
                   {tutor.availability.map((daySchedule, index) => (
                     <div key={index} className="border-b last:border-0 pb-6">
                       <h3 className="text-lg font-medium text-gray-700 mb-4">
-                        {daySchedule.day}
+                        {new Date(daySchedule.date).toLocaleDateString(
+                          "en-US",
+                          {
+                            weekday: "long",
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          }
+                        )}
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {daySchedule.slots.map((slot, idx) => (
@@ -311,7 +317,7 @@ const TutorProfilePage = () => {
                             key={idx}
                             className="px-4 py-2 border border-purple-200 rounded-lg hover:border-purple-400 hover:bg-purple-50 transition-colors"
                             onClick={() =>
-                              handleSlotSelection(daySchedule.day, slot)
+                              handleSlotSelection(daySchedule.date, slot)
                             }
                           >
                             {slot.startTime} - {slot.endTime}
@@ -412,7 +418,15 @@ const TutorProfilePage = () => {
                 {tutor.availability.map((daySchedule, index) => (
                   <div key={index} className="border-b last:border-0 pb-6">
                     <h3 className="text-lg font-medium text-gray-700 mb-4">
-                      {daySchedule.day}
+                    {new Date(daySchedule.date).toLocaleDateString(
+                          "en-US",
+                          {
+                            weekday: "long",
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          }
+                        )}
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {daySchedule.slots.map((slot, idx) => (
@@ -420,23 +434,22 @@ const TutorProfilePage = () => {
                           key={idx}
                           className={`px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors
                             ${
-                              selectedDay === daySchedule.day &&
+                              selectedDate === daySchedule.date &&
                               selectedSlot?.startTime === slot.startTime
                                 ? "bg-purple-600 text-white"
                                 : "border border-purple-200 hover:border-purple-400 hover:bg-purple-50"
                             }`}
                           onClick={() =>
-                            handleSlotSelection(daySchedule.day, slot)
+                            handleSlotSelection(daySchedule.date, slot)
                           }
                         >
-                          {selectedDay === daySchedule.day &&
+                          {selectedDate === daySchedule.date &&
                           selectedSlot?.startTime === slot.startTime ? (
                             <CheckCircle className="h-4 w-4" />
                           ) : null}
                           {slot.startTime} - {slot.endTime}
                         </button>
                       ))}
-
                     </div>
                   </div>
                 ))}
@@ -457,9 +470,9 @@ const TutorProfilePage = () => {
                 </button>
                 <button
                   onClick={confirmBooking}
-                  disabled={!selectedDay || !selectedSlot}
+                  disabled={!selectedDate || !selectedSlot}
                   className={`px-4 py-2 rounded-lg transition-colors ${
-                    !selectedDay || !selectedSlot
+                    !selectedDate || !selectedSlot
                       ? "bg-gray-300 cursor-not-allowed"
                       : "bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90"
                   } text-white`}

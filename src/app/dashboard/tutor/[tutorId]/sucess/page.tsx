@@ -1,12 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import format from "date-fns/format";
 import { getBookingDetails } from "@/services/userApi";
 import UserNavbar from "@/components/UserNavbar";
 import { Check, Calendar, Clock, User, CreditCard } from "lucide-react";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 interface BookingDetails {
-  day: string;
+  date: string;
   startTime: string;
   endTime: string;
   tutorName: string;
@@ -24,8 +25,10 @@ const BookingSuccessPage = () => {
       if (bookingId) {
         try {
           const data = await getBookingDetails(bookingId);
+
+          const formattedDate = format(new Date(data.selectedDate), "dd MMM yyyy");
           const bookingData: BookingDetails = {
-            day: data.selectedDay,
+            date: formattedDate,
             startTime: data.selectedSlot.startTime,
             endTime: data.selectedSlot.endTime,
             tutorName: data.tutorId.name,
@@ -77,7 +80,7 @@ const BookingSuccessPage = () => {
                 <Calendar className="w-6 h-6 text-purple-600" />
                 <div>
                   <p className="text-sm text-purple-600 font-medium">Date</p>
-                  <p className="text-gray-800 font-semibold">{bookingDetails.day}</p>
+                  <p className="text-gray-800 font-semibold">{bookingDetails.date}</p>
                 </div>
               </div>
 

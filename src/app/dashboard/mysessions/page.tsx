@@ -11,14 +11,20 @@ import {
   DollarSign 
 } from 'lucide-react';
 import UserNavbar from '@/components/UserNavbar';
-import { Booking } from '@/types/booking';
+import { IBooking } from '@/types/booking';
 import { userbookingDetails } from '@/services/userApi';
 import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useBookingStore } from '@/store/bookingStore';
+
 
 const UserBookings = () => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<IBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const {setBookingDetails}=useBookingStore();
+
+const router=useRouter();
 
   useEffect(() => {
     fetchUserBookings();
@@ -47,6 +53,15 @@ const UserBookings = () => {
     return badges[status as keyof typeof badges] || badges.pending;
   };
 
+
+  const formatDate = (isoDate: string) => {
+    return new Date(isoDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -54,6 +69,20 @@ const UserBookings = () => {
       </div>
     );
   }
+
+  const handleJoinSession=(booking:IBooking)=>{
+  
+      setBookingDetails({
+        bookingId: booking._id,
+        userId: booking.userId._id,
+        tutorId: booking.tutorId._id,
+        selectedDate: booking.selectedDate,
+        selectedSlot: booking.selectedSlot,
+        userRole: 'user',
+      })
+      router.push(`/classRoom/${booking._id}`)
+  
+    }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -117,7 +146,7 @@ const UserBookings = () => {
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="flex items-center space-x-3 text-gray-700 bg-gray-50 p-4 rounded-lg">
                     <Calendar className="w-5 h-5 text-purple-600" />
-                    <span className="font-medium">{booking.selectedDay}</span>
+                    <span className="font-medium">{formatDate(booking.selectedDate)}</span>
                   </div>
                   <div className="flex items-center space-x-3 text-gray-700 bg-gray-50 p-4 rounded-lg">
                     <Clock className="w-5 h-5 text-purple-600" />
@@ -133,13 +162,13 @@ const UserBookings = () => {
 
                 {booking.status === 'confirmed' && (
                   <div className="mt-8">
-                    <a
-                      href={booking.meetingLink}
+                    <button
+                      onClick={()=>handleJoinSession(booking)}
                       className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium shadow-sm hover:shadow"
                     >
                       <Video className="w-5 h-5 mr-2" />
                       Join Session
-                    </a>
+                    </button>
                   </div>
                 )}
               </div>

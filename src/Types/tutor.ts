@@ -33,6 +33,6 @@ export interface ITimeSlot {
   
   
  export interface IAvailability {
-    day: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+    date:string;
     slots: ITimeSlot[];
   }

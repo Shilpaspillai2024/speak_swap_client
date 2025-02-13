@@ -6,7 +6,7 @@ export interface Booking {
     email: string;
   };
  
-  selectedDay: string;
+  selectedDate: string;
   selectedSlot: {
     startTime: string;
     endTime: string;
@@ -15,13 +15,14 @@ export interface Booking {
   sessionFee: number;
   paymentStatus: 'paid' | 'pending' | 'failed';
   bookingDate: string;
-  meetingLink?: string;
+ 
 }
 
 
 export interface tutorBooking {
     _id: string;
     userId: {
+      _id:string;
       fullName: string;
       email: string;
       phone?: string;
@@ -31,12 +32,13 @@ export interface tutorBooking {
       learnProficiency: string;
     };
     tutorId: {
+      _id:string;
       name: string;
       email: string;
       profilePhoto?: string;
       teachLanguage: string;
     };
-    selectedDay: string;
+    selectedDate: string;
     selectedSlot: {
       startTime: string;
       endTime: string;
@@ -45,13 +47,13 @@ export interface tutorBooking {
     sessionFee: number;
     paymentStatus: 'paid' | 'pending' | 'failed';
     bookingDate: string;
-    meetingLink?: string;
     createdAt: string;
   }
 
   export interface IBooking {
     _id: string;
     userId: {
+      _id:string;
       fullName: string;
       email: string;
       country:string;
@@ -60,14 +62,16 @@ export interface tutorBooking {
       learnProficiency: string;
     };
     tutorId: {
+      _id:string;
       name: string;
+      profilePhoto: string;
       email: string;
       country:string
       teachLanguage: string;
       knownLanguages:string[];
       timeZone:string;
     };
-    selectedDay: string;
+    selectedDate: string;
     selectedSlot: {
       startTime: string;
       endTime: string;
@@ -76,6 +80,7 @@ export interface tutorBooking {
     sessionFee: number;
     paymentStatus: 'paid' | 'pending' | 'failed' ;
     bookingDate: string;
-    meetingLink?: string;
     createdAt: string;
   }
+
+  
