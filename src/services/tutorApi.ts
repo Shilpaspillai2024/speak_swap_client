@@ -329,6 +329,37 @@ export const getTutorBookings = async () => {
 };
 
 
+//update session status
+export const startSession=async(bookingId: string)=>{
+  try {
+    console.log("calling start session",bookingId)
+    const response = await tutorAxiosInstance.patch(`/booking/start-session/${bookingId}`)
+    console.log("response from backednd for start",response)
+    return response.data;
+
+    
+  } catch (error:unknown) {
+    console.error("Error starting session:", error);
+    throw error;
+  }
+
+}
+
+
+export const completeSession=async(bookingId:string)=>{
+  try {
+    console.log("completed session calling",bookingId)
+    const response=await tutorAxiosInstance.patch(`/booking/complete-session/${bookingId}`)
+    console.log("completesession response",response.data)
+    return response.data
+    
+  } catch (error:unknown) {
+    console.error("Error ending session:", error);
+    throw error;
+  }
+}
+
+
 //fetch wallet details
 
 export const getWalletDetails=async () =>{

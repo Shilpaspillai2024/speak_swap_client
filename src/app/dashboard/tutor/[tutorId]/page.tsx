@@ -281,7 +281,7 @@ const TutorProfilePage = () => {
                 <h3 className="text-2xl font-semibold mb-6">
                   Languages I Speak
                 </h3>
-                <div className="flex flex-wrap gap-3 mb-8">
+                {/* <div className="flex flex-wrap gap-3 mb-8">
                   {tutor.knownLanguages.map((lang) => (
                     <span
                       key={lang}
@@ -290,6 +290,13 @@ const TutorProfilePage = () => {
                       {lang}
                     </span>
                   ))}
+                </div> */}
+
+                 <div className="flex flex-wrap gap-3 mb-8">
+                    <span className="bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-base font-medium">
+                  {tutor.knownLanguages.join(',')}
+                 </span>
+    
                 </div>
               </div>
             )}

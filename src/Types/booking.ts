@@ -11,7 +11,7 @@ export interface Booking {
     startTime: string;
     endTime: string;
   };
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'pending' | 'confirmed' |'in-progress'| 'completed' | 'cancelled';
   sessionFee: number;
   paymentStatus: 'paid' | 'pending' | 'failed';
   bookingDate: string;
@@ -43,7 +43,7 @@ export interface tutorBooking {
       startTime: string;
       endTime: string;
     };
-    status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+    status: 'pending' | 'confirmed' | 'in-progress'| 'completed' | 'cancelled';
     sessionFee: number;
     paymentStatus: 'paid' | 'pending' | 'failed';
     bookingDate: string;
@@ -76,7 +76,7 @@ export interface tutorBooking {
       startTime: string;
       endTime: string;
     };
-    status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+    status: 'pending' | 'confirmed' | 'in-progress'| 'completed' | 'cancelled';
     sessionFee: number;
     paymentStatus: 'paid' | 'pending' | 'failed' ;
     bookingDate: string;

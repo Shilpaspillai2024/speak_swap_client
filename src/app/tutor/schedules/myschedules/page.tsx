@@ -15,17 +15,17 @@ import {
 } from 'lucide-react';
 import TutorNavbar from '@/components/TutorNavbar';
 import { tutorBooking } from '@/types/booking';
-import { getTutorBookings } from '@/services/tutorApi';
+import { getTutorBookings,startSession} from '@/services/tutorApi';
 import TutorSidebar from '@/components/TutorSidebar';
 import TutorProtectedRoute from '@/HOC/TutorProtectedRoute';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useBookingStore } from '@/store/bookingStore';
+import { toast } from 'react-toastify';
 
 
 
-
-const TutorBookings = () => {
+const TutorBookings =()=> {
   const [bookings, setBookings] = useState<tutorBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const {setBookingDetails}=useBookingStore();
@@ -51,15 +51,15 @@ const TutorBookings = () => {
     }
   };
 
-//   const handleStatusUpdate = async (bookingId: string, newStatus: string) => {
-//     try {
-//       await updateBookingStatus(bookingId, newStatus);
-      
-//       fetchTutorBookings();
-//     } catch (error) {
-//       console.error('Error updating booking status:', error);
-//     }
-//   };
+  // const handleStatusUpdate = async(bookingId:string) => {
+  //   try {
+  //     const result=await startSession(bookingId);
+  //     console.log("session started",result)
+  //     toast.info("session started")
+  //   } catch (error) {
+  //     console.error('Error updating booking status:', error);
+  //   }
+  // };
 
   const getStatusBadge = (status: string) => {
     const badges = {
@@ -89,7 +89,7 @@ const TutorBookings = () => {
   }
 
 
-  const handleJoinSession=(booking:tutorBooking)=>{
+  const handleJoinSession=async(booking:tutorBooking)=>{
 
     setBookingDetails({
       bookingId: booking._id,
@@ -99,7 +99,16 @@ const TutorBookings = () => {
       selectedSlot: booking.selectedSlot,
       userRole: 'tutor',
     })
-    router.push(`/classRoom/${booking._id}`)
+
+
+    const result=await startSession(booking._id);
+    // console.log("session started",result)
+    // router.push(`/classRoom/${booking._id}`)
+    if (result) {
+      router.push(`/classRoom/${booking._id}`);
+    } else {
+      alert("Failed to start the session. Please try again.");
+    }
 
   }
 
@@ -217,7 +226,7 @@ const TutorBookings = () => {
                     </div>
                   )}
                   
-                  {booking.status === 'confirmed' && (
+                  {(booking.status === 'confirmed' || booking.status ==='in-progress') && (
                     <div className="flex space-x-4">
                       <button
                       onClick={()=>handleJoinSession(booking)}
@@ -226,13 +235,15 @@ const TutorBookings = () => {
                         <Video className="w-5 h-5 mr-2" />
                         Start Session
                       </button>
+                      {/*  
                       <button
-                        // onClick={() => handleStatusUpdate(booking._id, 'completed')}
+                        onClick={() => handleStatusUpdate(booking._id)}
                         className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium"
                       >
                         <CheckCircle className="w-5 h-5 mr-2" />
                         Mark as Completed
                       </button>
+                      */}
                     </div>
                   )}
                 </div>
