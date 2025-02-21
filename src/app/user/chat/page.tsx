@@ -47,12 +47,10 @@ const ChatList = () => {
 
   const role = socketStore.getState().getRole(); 
   const socket=socketStore.getState().socket;
-  
+
  
   console.log("role is",role)
- 
-
-  const loadChats = useCallback(async () => {
+ const loadChats = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetchChatList(role);
@@ -116,6 +114,10 @@ const ChatList = () => {
     try {
       console.log('Clicked chat ID:', chatId);
       await socketStore.getState().markAsRead(chatId);
+      
+     
+      
+      
       await socketStore.getState().initializeChat(chatId);
       router.push(`/user/chat/${chatId}`);
     } catch (error) {

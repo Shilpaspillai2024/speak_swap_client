@@ -81,14 +81,12 @@ const UserBookings = () => {
       const sessionStart = new Date(booking.selectedDate);
       sessionStart.setHours(hours, minutes, 0, 0);
 
-      console.log("bookings", booking);
-      console.log("sessionStart", sessionStart);
-
+     
       const activationTime = new Date(sessionStart.getTime() - 5 * 60 * 1000);
-      console.log("activationTime", activationTime);
+     
       const currentTime = new Date();
 
-      console.log("currentTime", currentTime);
+     
 
       // if (currentTime >= activationTime && currentTime <= sessionStart) {
       if (currentTime >= activationTime) {

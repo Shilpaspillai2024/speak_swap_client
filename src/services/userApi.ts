@@ -501,3 +501,16 @@ export const userbookingDetails = async () => {
     throw new Error("Error fetching booking details");
   }
 };
+
+
+export const fetchUserWallet=async()=>{
+  try {
+    const response=await userAxiosInstance.get(`/wallet`)
+    console.log("response from user wallet",response)
+    return response.data
+  } catch (error) {
+  
+    throw new Error("Error fetching wallet details");
+  }
+  
+}

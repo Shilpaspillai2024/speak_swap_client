@@ -40,6 +40,7 @@ const ChatPage = () => {
     currentChatId,
     recipientName,
     recipientProfilePicture,
+    markAsRead,
   } = socketStore();
 
  useEffect(() => {
@@ -48,10 +49,25 @@ const ChatPage = () => {
         toast.error("Failed to initialize chat");
         console.error("Error initializing chat:", error);
       });
+
+
+    
     }
   }, [chatId, currentChatId, initializeChat]);
 
-  
+  useEffect(() => {
+    if (!chatId) return;
+    
+    const markReadInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        markAsRead(chatId as string).catch(error => {
+          console.error("Error in periodic mark as read:", error);
+        });
+      }
+    }, 5000);
+    
+    return () => clearInterval(markReadInterval);
+  }, [chatId, markAsRead]);
   
   const scrollToBottom = () => {
     if (messagesEndRef.current) {

@@ -329,6 +329,9 @@ export const getTutorBookings = async () => {
 };
 
 
+
+
+
 //update session status
 export const startSession=async(bookingId: string)=>{
   try {
@@ -364,7 +367,7 @@ export const completeSession=async(bookingId:string)=>{
 
 export const getWalletDetails=async () =>{
   try {
-    const response=await tutorAxiosInstance.get(`/tutor//wallet-details`);
+    const response=await tutorAxiosInstance.get(`/tutor/wallet-details`);
     console.log("wallet response in frontednfectch",response.data);
     return response.data;
     
@@ -378,3 +381,35 @@ export const getWalletDetails=async () =>{
     throw new Error("An unexpected error occurred");
   }
 }
+
+export const withdrawFunds=async (amount:number)=>{
+  try {
+    const response=await tutorAxiosInstance.post(`/tutor/withdraw`,{
+      amount})
+      console.log("response frm withdraw")
+      return response.data
+    
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      const err = error.response?.data as ApiError;
+      throw new Error(
+        err?.message || "Failed to withdraw amount from wallet"
+      );
+    }
+    throw new Error("An unexpected error occurred");
+  
+  }
+}
+
+
+export const cancelSession = async (bookingId: string) => {
+  try {
+    const response = await tutorAxiosInstance.put(`/booking/cancel/${bookingId}`);
+    return response.data;
+  } catch (error: unknown) {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    const errorMessage = axiosError.response?.data?.message || "Something went wrong";
+    
+    throw new Error(errorMessage);
+  }
+};

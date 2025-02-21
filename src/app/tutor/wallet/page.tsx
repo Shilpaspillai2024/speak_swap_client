@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { getWalletDetails } from '@/services/tutorApi';
+import { getWalletDetails,withdrawFunds} from '@/services/tutorApi';
 import TutorNavbar from '@/components/TutorNavbar';
 import TutorSidebar from '@/components/TutorSidebar';
 import tutorAuthStore from '@/store/tutorAuthStore';
 import TutorProtectedRoute from '@/HOC/TutorProtectedRoute';
+import { toast } from 'react-toastify';
 
 interface Transaction {
   _id: string;
@@ -41,6 +42,39 @@ const WalletPage: React.FC = () => {
     fetchWalletDetails();
   }, []);
 
+
+  const handleWithdraw=async()=>{
+    if(!walletDetails || walletDetails.balance <1){
+      toast.info("insufficient balance");
+      return;
+    }
+    const amountString = prompt("Enter amount to withdraw:");
+    if (!amountString) return;
+
+    const amount = parseFloat(amountString);
+    if (isNaN(amount) || amount <= 0) {
+        toast.error("Invalid withdrawal amount");
+        return;
+    }
+
+    if (amount > walletDetails.balance) {
+        toast.error("Withdrawal amount exceeds available balance");
+        return;
+    }
+
+    try {
+        const response = await withdrawFunds(amount);
+        toast.success("Withdrawal successful!");
+        console.log("response in pawithdraw page",response)
+        setWalletDetails(response as WalletDetails);
+        
+        //  setWalletDetails((prev) => prev ? { ...prev, balance: prev.balance - amount } : prev);
+    } catch (error: any) {
+        toast.error(error);
+    }
+    
+  }
+
   if (isLoading) return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <TutorNavbar />
@@ -75,7 +109,8 @@ const WalletPage: React.FC = () => {
             <div className="flex justify-between items-center border-b pb-4 mb-6">
               <h1 className="text-3xl font-semibold text-gray-800">My Wallet</h1>
               <div className="text-right">
-                <button className="ml-4 px-4 py-2 bg-gray-600 text-white rounded-md shadow hover:bg-gray-700 transition-all">
+                <button onClick={handleWithdraw}
+                className="ml-4 px-4 py-2 bg-gray-600 text-white rounded-md shadow hover:bg-gray-700 transition-all">
                   Withdraw
                 </button>
               </div>

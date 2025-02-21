@@ -1,12 +1,13 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { IUser } from '@/types/user';
-import { fetchProfile, updateProfileDetails } from '@/services/userApi';
-import UserNavbar from '@/components/UserNavbar';
-import { toast } from 'react-toastify';
-import UserProtectedRoute from '@/HOC/UserProtectedRoute';
-import Image from 'next/image';
+import React, { useState, useEffect } from "react";
+import { IUser } from "@/types/user";
+import { fetchProfile, updateProfileDetails, fetchUserWallet } from "@/services/userApi";
+import UserNavbar from "@/components/UserNavbar";
+import { toast } from "react-toastify";
+import UserProtectedRoute from "@/HOC/UserProtectedRoute";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 // ProfileSection Component
 interface ProfileSectionProps {
@@ -29,7 +30,8 @@ interface InfoItemProps {
 
 const InfoItem: React.FC<InfoItemProps> = ({ label, value }) => (
   <p className="text-gray-700">
-    <span className="font-semibold">{label}: </span>{value || 'Not provided'}
+    <span className="font-semibold">{label}: </span>
+    {value || "Not provided"}
   </p>
 );
 
@@ -39,7 +41,7 @@ interface BadgeProps {
   color?: string;
 }
 
-const Badge: React.FC<BadgeProps> = ({ children, color = 'bg-green-500' }) => (
+const Badge: React.FC<BadgeProps> = ({ children, color = "bg-green-500" }) => (
   <span className={`${color} text-white text-xs px-2 py-1 rounded-full`}>
     {children}
   </span>
@@ -52,12 +54,18 @@ interface EditableFieldProps {
   onChange: (value: string) => void;
 }
 
-const EditableField: React.FC<EditableFieldProps> = ({ label, value, onChange }) => (
+const EditableField: React.FC<EditableFieldProps> = ({
+  label,
+  value,
+  onChange,
+}) => (
   <div className="mb-4">
-    <label className="block text-gray-700 text-sm font-bold mb-2">{label}</label>
+    <label className="block text-gray-700 text-sm font-bold mb-2">
+      {label}
+    </label>
     <input
       type="text"
-      value={value || ''}
+      value={value || ""}
       onChange={(e) => onChange(e.target.value)}
       className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
     />
@@ -66,7 +74,8 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, value, onChange })
 
 const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<IUser | null>(null);
-
+  const [hasWallet, setHasWallet] = useState(false);
+  const [hasCanceledSession, setHasCanceledSession] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +84,7 @@ const ProfilePage: React.FC = () => {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
 
+  const router=useRouter();
 
   useEffect(() => {
     const getUserProfile = async () => {
@@ -82,11 +92,34 @@ const ProfilePage: React.FC = () => {
         const profile = await fetchProfile();
         setUser(profile);
         setEditedUser(profile);
-      } catch (err:unknown) {
-        if (err instanceof Error) {
-          setError(err.message || 'Failed to fetch profile');
+        
+        // Check wallet separately and handle possible 404
+        try {
+          const walletData = await fetchUserWallet();
+          
+          if (walletData?.data?.transactions?.length > 0) {
+            setHasWallet(true);
+            
+            const hasCancellation = walletData.data.transactions.some(
+              (txn: any) => 
+                txn.type === 'refund' && 
+                txn.description?.toLowerCase().includes('cancel')
+            );
+            
+            setHasCanceledSession(hasCancellation);
+          }
+        } catch (walletErr) {
+          // Silently handle wallet not found - no need to set an error state
+          // Just means user doesn't have a wallet yet
+          console.log("Wallet not found or error fetching wallet");
+          setHasWallet(false);
+          setHasCanceledSession(false);
         }
-       
+        
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message || "Failed to fetch profile");
+        }
       } finally {
         setLoading(false);
       }
@@ -102,14 +135,14 @@ const ProfilePage: React.FC = () => {
     setUpdateError(null);
 
     try {
-    await updateProfileDetails(editedUser);
-      toast.success("profile updated successfully")
-      const updatedProfile = await fetchProfile();  
+      await updateProfileDetails(editedUser);
+      toast.success("profile updated successfully");
+      const updatedProfile = await fetchProfile();
       setUser(updatedProfile);
       setIsEditing(false);
-    } catch (err:unknown) {
-      if(err instanceof Error){
-      setUpdateError(err.message || 'Failed to update profile');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setUpdateError(err.message || "Failed to update profile");
       }
     } finally {
       setUpdateLoading(false);
@@ -133,18 +166,17 @@ const ProfilePage: React.FC = () => {
 
   const handleLanguageAdd = (language: string) => {
     if (editedUser && language.trim()) {
-        
-        const newLanguage = language.trim();
-        if (editedUser.knownLanguages?.includes(newLanguage)) {
-          toast.warning("Language already added");
-          return;
-        }
-    
-        setEditedUser({
-          ...editedUser,
-          knownLanguages: [...(editedUser.knownLanguages || []), newLanguage], 
-        });
+      const newLanguage = language.trim();
+      if (editedUser.knownLanguages?.includes(newLanguage)) {
+        toast.warning("Language already added");
+        return;
       }
+
+      setEditedUser({
+        ...editedUser,
+        knownLanguages: [...(editedUser.knownLanguages || []), newLanguage],
+      });
+    }
   };
 
   const handleLanguageRemove = (index: number) => {
@@ -157,6 +189,11 @@ const ProfilePage: React.FC = () => {
       });
     }
   };
+
+
+  const handleWallet=()=>{
+    router.push(`/dashboard/profile/wallet`)
+  }
 
   if (loading) {
     return (
@@ -184,7 +221,7 @@ const ProfilePage: React.FC = () => {
         <div className="max-w-3xl mx-auto bg-blue-100 rounded-lg shadow-lg">
           <div className="p-6">
             <h1 className="text-2xl font-bold text-center mb-8">
-              {isEditing ? 'Edit Profile' : 'User Profile'}
+              {isEditing ? "Edit Profile" : "User Profile"}
             </h1>
 
             {updateError && (
@@ -194,35 +231,47 @@ const ProfilePage: React.FC = () => {
             )}
 
             {isEditing ? (
-              <form onSubmit={(e) => { e.preventDefault(); handleUpdateProfile(); }}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleUpdateProfile();
+                }}
+              >
                 <div className="space-y-6">
                   <EditableField
                     label="Full Name"
                     value={editedUser.fullName}
-                    onChange={(value) => handleInputChange('fullName', value)}
+                    onChange={(value) => handleInputChange("fullName", value)}
                   />
-                 
+
                   <EditableField
                     label="Phone"
                     value={editedUser.phone}
-                    onChange={(value) => handleInputChange('phone', value)}
+                    onChange={(value) => handleInputChange("phone", value)}
                   />
                   <EditableField
                     label="Country"
                     value={editedUser.country}
-                    onChange={(value) => handleInputChange('country', value)}
+                    onChange={(value) => handleInputChange("country", value)}
                   />
                   <EditableField
                     label="Native Language"
                     value={editedUser.nativeLanguage}
-                    onChange={(value) => handleInputChange('nativeLanguage', value)}
+                    onChange={(value) =>
+                      handleInputChange("nativeLanguage", value)
+                    }
                   />
                   {/* Languages Section */}
                   <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">Known Languages</label>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Known Languages
+                    </label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {editedUser.knownLanguages?.map((lang, index) => (
-                        <span key={`lang-${index}`} className="bg-gray-100 px-2 py-1 rounded-full text-sm flex items-center">
+                        <span
+                          key={`lang-${index}`}
+                          className="bg-gray-100 px-2 py-1 rounded-full text-sm flex items-center"
+                        >
                           {lang.toString()}
                           <button
                             type="button"
@@ -240,10 +289,12 @@ const ProfilePage: React.FC = () => {
                         placeholder="Add language"
                         className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === "Enter") {
                             e.preventDefault();
-                            handleLanguageAdd((e.target as HTMLInputElement).value);
-                            (e.target as HTMLInputElement).value = '';
+                            handleLanguageAdd(
+                              (e.target as HTMLInputElement).value
+                            );
+                            (e.target as HTMLInputElement).value = "";
                           }
                         }}
                       />
@@ -252,27 +303,33 @@ const ProfilePage: React.FC = () => {
                   <EditableField
                     label="Learning Language"
                     value={editedUser.learnLanguage}
-                    onChange={(value) => handleInputChange('learnLanguage', value)}
+                    onChange={(value) =>
+                      handleInputChange("learnLanguage", value)
+                    }
                   />
                   <EditableField
                     label="Learning Proficiency"
                     value={editedUser.learnProficiency}
-                    onChange={(value) => handleInputChange('learnProficiency', value)}
+                    onChange={(value) =>
+                      handleInputChange("learnProficiency", value)
+                    }
                   />
                   <EditableField
                     label="Topics to Talk About"
                     value={editedUser.talkAbout}
-                    onChange={(value) => handleInputChange('talkAbout', value)}
+                    onChange={(value) => handleInputChange("talkAbout", value)}
                   />
                   <EditableField
                     label="Learning Goal"
                     value={editedUser.learningGoal}
-                    onChange={(value) => handleInputChange('learningGoal', value)}
+                    onChange={(value) =>
+                      handleInputChange("learningGoal", value)
+                    }
                   />
                   <EditableField
                     label="Why Chat"
                     value={editedUser.whyChat}
-                    onChange={(value) => handleInputChange('whyChat', value)}
+                    onChange={(value) => handleInputChange("whyChat", value)}
                   />
                   <div className="flex justify-end space-x-4">
                     <button
@@ -286,10 +343,10 @@ const ProfilePage: React.FC = () => {
                       type="submit"
                       disabled={updateLoading}
                       className={`px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors duration-200 ${
-                        updateLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        updateLoading ? "opacity-50 cursor-not-allowed" : ""
                       }`}
                     >
-                      {updateLoading ? 'Saving...' : 'Save Changes'}
+                      {updateLoading ? "Saving..." : "Save Changes"}
                     </button>
                   </div>
                 </div>
@@ -299,7 +356,7 @@ const ProfilePage: React.FC = () => {
                 <div className="flex flex-col items-center mb-8">
                   <div className="relative">
                     <Image
-                      src={user.profilePhoto || '/default-profile.png'}
+                      src={user.profilePhoto || "/default-profile.png"}
                       alt={user.fullName}
                       width={128}
                       height={128}
@@ -312,8 +369,12 @@ const ProfilePage: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <h2 className="mt-4 text-2xl font-bold text-gray-800">{user.fullName}</h2>
-                  {user.isVerified && <Badge color="bg-blue-300">Verified Account</Badge>}
+                  <h2 className="mt-4 text-2xl font-bold text-gray-800">
+                    {user.fullName}
+                  </h2>
+                  {user.isVerified && (
+                    <Badge color="bg-blue-300">Verified Account</Badge>
+                  )}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-8">
@@ -324,7 +385,10 @@ const ProfilePage: React.FC = () => {
                   </ProfileSection>
 
                   <ProfileSection title="Language Details">
-                    <InfoItem label="Native Language" value={user.nativeLanguage} />
+                    <InfoItem
+                      label="Native Language"
+                      value={user.nativeLanguage}
+                    />
                     {user.knownLanguages && user.knownLanguages.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {user.knownLanguages.map((lang, index) => (
@@ -336,21 +400,48 @@ const ProfilePage: React.FC = () => {
 
                   <ProfileSection title="Learning Goals">
                     <InfoItem label="Learning" value={user.learnLanguage} />
-                    <InfoItem label="Proficiency" value={user.learnProficiency} />
+                    <InfoItem
+                      label="Proficiency"
+                      value={user.learnProficiency}
+                    />
                     <InfoItem label="Topics" value={user.talkAbout} />
                   </ProfileSection>
 
                   <ProfileSection title="Additional Information">
                     <div className="text-gray-600">
                       <p className="mb-2">
-                        <span className="font-medium">Learning Goal:</span> {user.learningGoal}
+                        <span className="font-medium">Learning Goal:</span>{" "}
+                        {user.learningGoal}
                       </p>
                       <p>
-                        <span className="font-medium">Why Chat:</span> {user.whyChat}
+                        <span className="font-medium">Why Chat:</span>{" "}
+                        {user.whyChat}
                       </p>
                     </div>
                   </ProfileSection>
                 </div>
+
+                {/* Only render Wallet section if user has wallet */}
+                {hasWallet && (
+                  <ProfileSection title="Wallet">
+                    {hasCanceledSession ? (
+                      <p className="text-gray-700">
+                        A tutor canceled your session. The amount has been refunded
+                        to your wallet.
+                      </p>
+                    ) : (
+                      <p className="text-gray-700">
+                        View your wallet balance and transaction history.
+                      </p>
+                    )}
+                    <button 
+                      onClick={handleWallet}
+                      className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                    >
+                      View Wallet
+                    </button>
+                  </ProfileSection>
+                )}
 
                 <button
                   onClick={() => setIsEditing(true)}
