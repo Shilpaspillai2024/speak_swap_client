@@ -4,8 +4,6 @@ import {
   FaUsers, 
   FaChalkboardTeacher, 
   FaClipboardList, 
-  FaCreditCard, 
-  FaHeadset,
   FaHome,
   FaChevronDown
 } from 'react-icons/fa';
@@ -43,20 +41,13 @@ const Sidebar = () => {
       label: 'Bookings',
       href: '/admin/bookings'
     },
-    {
-      icon: <FaCreditCard size={20} />,
-      label: 'Payments',
-      href: '/admin/payments'
-    },
-    {
-      icon: <FaHeadset size={20} />,
-      label: 'Support',
-      href: '/admin/support'
-    }
+   
+   
   ];
 
   return (
-    <aside className="h-full min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] text-white p-6 shadow-2xl items-stretch">
+    <aside className="h-auto min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] text-white p-6 shadow-2xl flex flex-col">
+
       <div className="space-y-4">
         {sidebarLinks.map((link, index) => (
           <div key={index}>

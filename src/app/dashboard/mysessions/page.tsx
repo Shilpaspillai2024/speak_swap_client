@@ -156,11 +156,18 @@ const UserBookings = () => {
 
   const formatTimeLeft = (milliseconds: number) => {
     if (milliseconds <= 0) return "0m 0s";
-    const minutes = Math.floor(milliseconds / 60000);
+    
+    const hours = Math.floor(milliseconds / (60 * 60 * 1000));
+    const minutes = Math.floor((milliseconds % (60 * 60 * 1000)) / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
-    return `${minutes}m ${seconds}s`;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    } else {
+      return `${minutes}m ${seconds}s`;
+    }
   };
-
+  
   const getStatusBadge = (status: string) => {
     const badges = {
       pending: {

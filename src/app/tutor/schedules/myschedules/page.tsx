@@ -15,7 +15,11 @@ import {
 } from "lucide-react";
 import TutorNavbar from "@/components/TutorNavbar";
 import { tutorBooking } from "@/types/booking";
-import { cancelSession, getTutorBookings, startSession } from "@/services/tutorApi";
+import {
+  cancelSession,
+  getTutorBookings,
+  startSession,
+} from "@/services/tutorApi";
 import TutorSidebar from "@/components/TutorSidebar";
 import TutorProtectedRoute from "@/HOC/TutorProtectedRoute";
 import Image from "next/image";
@@ -27,6 +31,9 @@ const TutorBookings = () => {
   const [bookings, setBookings] = useState<tutorBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { setBookingDetails } = useBookingStore();
+
+  const [activeBookingId, setActiveBookingId] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
 
   const router = useRouter();
 
@@ -46,6 +53,74 @@ const TutorBookings = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const initialTimeLeft: { [key: string]: number } = {};
+    bookings.forEach((booking) => {
+      const parseTime = (timeStr: string) => {
+        const [time, modifier] = timeStr.split(" ");
+        let [hours, minutes] = time.split(":").map(Number);
+        if (modifier === "PM" && hours !== 12) hours += 12;
+        if (modifier === "AM" && hours === 12) hours = 0;
+
+        return { hours, minutes };
+      };
+
+      const { hours, minutes } = parseTime(booking.selectedSlot.startTime);
+      const sessionStart = new Date(booking.selectedDate);
+      sessionStart.setHours(hours, minutes, 0, 0);
+
+      const activationTime = new Date(sessionStart.getTime() - 10 * 60 * 1000);
+      const currentTime = new Date();
+
+      if (currentTime < activationTime) {
+        initialTimeLeft[booking._id] =
+          activationTime.getTime() - currentTime.getTime();
+      } else {
+        initialTimeLeft[booking._id] = 0;
+      }
+    });
+    setTimeLeft(initialTimeLeft);
+  }, [bookings]);
+
+  useEffect(() => {
+    const timers: NodeJS.Timeout[] = [];
+
+    bookings.forEach((booking) => {
+      const parseTime = (timeStr: string) => {
+        const [time, modifier] = timeStr.split(" ");
+        let [hours, minutes] = time.split(":").map(Number);
+
+        if (modifier === "PM" && hours !== 12) hours += 12;
+        if (modifier === "AM" && hours === 12) hours = 0;
+
+        return { hours, minutes };
+      };
+
+      const { hours, minutes } = parseTime(booking.selectedSlot.startTime);
+      const sessionStart = new Date(booking.selectedDate);
+      sessionStart.setHours(hours, minutes, 0, 0);
+
+      // Setting activation time to 10 minutes before session start
+      const activationTime = new Date(sessionStart.getTime() - 10 * 60 * 1000);
+      const currentTime = new Date();
+
+      if (currentTime >= activationTime) {
+        setActiveBookingId(booking._id);
+      } else if (currentTime < activationTime) {
+        const timeUntilActivation =
+          activationTime.getTime() - currentTime.getTime();
+        const timer = setTimeout(() => {
+          setActiveBookingId(booking._id);
+        }, timeUntilActivation);
+        timers.push(timer);
+      }
+    });
+
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+    };
+  }, [bookings]);
 
   const getStatusBadge = (status: string) => {
     const badges = {
@@ -68,6 +143,63 @@ const TutorBookings = () => {
     };
 
     return badges[status as keyof typeof badges] || badges.pending;
+  };
+
+  useEffect(() => {
+    if (bookings.length === 0) return;
+
+    const interval = setInterval(() => {
+      setTimeLeft((prevTimeLeft) => {
+        const newTimeLeft: { [key: string]: number } = { ...prevTimeLeft };
+
+        bookings.forEach((booking) => {
+          const parseTime = (timeStr: string) => {
+            const [time, modifier] = timeStr.split(" ");
+            let [hours, minutes] = time.split(":").map(Number);
+
+            if (modifier === "PM" && hours !== 12) hours += 12;
+            if (modifier === "AM" && hours === 12) hours = 0;
+
+            return { hours, minutes };
+          };
+
+          const { hours, minutes } = parseTime(booking.selectedSlot.startTime);
+          const sessionStart = new Date(booking.selectedDate);
+          sessionStart.setHours(hours, minutes, 0, 0);
+
+          
+          const activationTime = new Date(
+            sessionStart.getTime() - 10 * 60 * 1000
+          );
+          const currentTime = new Date();
+
+          if (currentTime < activationTime) {
+            newTimeLeft[booking._id] =
+              activationTime.getTime() - currentTime.getTime();
+          } else {
+            newTimeLeft[booking._id] = 0;
+          }
+        });
+
+        return newTimeLeft;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [bookings]);
+
+  const formatTimeLeft = (milliseconds: number) => {
+    if (milliseconds <= 0) return "0m 0s";
+
+    const hours = Math.floor(milliseconds / (60 * 60 * 1000));
+    const minutes = Math.floor((milliseconds % (60 * 60 * 1000)) / 60000);
+    const seconds = Math.floor((milliseconds % 60000) / 1000);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    } else {
+      return `${minutes}m ${seconds}s`;
+    }
   };
 
   const formatDate = (isoDate: string) => {
@@ -106,18 +238,19 @@ const TutorBookings = () => {
     }
   };
 
- const handleCancelSession=async(bookingId:string)=>{
-  console.log("bookingId",bookingId)
-  try {
-    const response =await cancelSession(bookingId)
-    toast.success(response.message)
-    fetchTutorBookings()
-    
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Failed to cancel session";
-    toast.error(errorMessage);
-  }
- }
+  const handleCancelSession = async (bookingId: string) => {
+    console.log("bookingId", bookingId);
+    try {
+      const response = await cancelSession(bookingId);
+      console.log("Cancellation response:", response);
+      toast.success(response.message);
+      fetchTutorBookings();
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to cancel session";
+      toast.error(errorMessage);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -231,7 +364,7 @@ const TutorBookings = () => {
                     </div>
                   </div>
 
-                  <div className="mt-8 flex items-center justify-between">
+                  {/* <div className="mt-8 flex items-center justify-between">
                     {(booking.status === "confirmed" ||
                       booking.status === "in-progress") && (
                       <div className="flex space-x-4">
@@ -249,6 +382,42 @@ const TutorBookings = () => {
                           <XCircle className="w-5 h-5 mr-2" />
                           Cancel Session
                         </button>
+                      </div>
+                    )}
+                  </div> */}
+
+                  <div className="mt-8 flex items-center justify-between">
+                    {(booking.status === "confirmed" ||
+                      booking.status === "in-progress") && (
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={() => handleJoinSession(booking)}
+                          disabled={activeBookingId !== booking._id}
+                          className={`inline-flex items-center px-6 py-3 rounded-lg transition-colors duration-200 font-medium shadow-sm hover:shadow ${
+                            activeBookingId === booking._id
+                              ? "bg-purple-600 text-white hover:bg-purple-700"
+                              : "bg-gray-400 text-gray-700 cursor-not-allowed"
+                          }`}
+                        >
+                          <Video className="w-5 h-5 mr-2" />
+                          Start Session
+                        </button>
+                        <button
+                          onClick={() => handleCancelSession(booking._id)}
+                          className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium shadow-sm hover:shadow"
+                        >
+                          <XCircle className="w-5 h-5 mr-2" />
+                          Cancel Session
+                        </button>
+                        {timeLeft[booking._id] > 0 && (
+                          <div className="flex items-center text-red-600 font-semibold bg-gray-100 p-2 rounded-lg shadow-md w-fit">
+                            <Clock className="w-5 h-5 text-red-500 animate-pulse mr-2" />
+                            <span>
+                              Time left:{" "}
+                              {formatTimeLeft(timeLeft[booking._id] || 0)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

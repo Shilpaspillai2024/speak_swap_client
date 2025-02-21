@@ -153,3 +153,17 @@ export const logoutAdmin = async () => {
     throw new Error("Logout failed.");
   }
 };
+
+
+
+export const fetchadminDashboard=async()=>{
+  try {
+    console.log("in adminApi frontend dashnoard")
+    const response=await axiosInstance.get(`/admin/dashboard`);
+    console.log("admin dashboard response,",response)
+    return response.data
+    
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+  }
+}

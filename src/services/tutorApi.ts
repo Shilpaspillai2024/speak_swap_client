@@ -1,6 +1,7 @@
 import axios from "axios";
 import tutorAxiosInstance from "./tutorAxiosInstance";
 import { AxiosError } from "axios";
+import { responseCookiesToRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -413,3 +414,35 @@ export const cancelSession = async (bookingId: string) => {
     throw new Error(errorMessage);
   }
 };
+
+
+export const fetchDashboradData =async (tutorId:string)=>{
+  try {
+    const response=await tutorAxiosInstance.get(`/booking/dashboard/${tutorId}`)
+    return response.data;
+
+
+
+  } catch (error) {
+    console.error("Error fetching tutor dashboard data:", error);
+        return {
+            upcomingSessions: 0,
+            completedSessions: 0,
+            cancelledSessions: 0,
+        };
+    }
+  }
+
+    export const fetchEarnings=async(tutorId:string)=>{
+      try {
+
+        const response=await tutorAxiosInstance(`/tutor/earnings/${tutorId}`)
+        console.log("response of eranings",response)
+        return response.data.earningData || [];
+      } catch (error) {
+        console.error("Error fetching tutor earnings data:", error);
+        return [];
+      }
+    }
+  
+
