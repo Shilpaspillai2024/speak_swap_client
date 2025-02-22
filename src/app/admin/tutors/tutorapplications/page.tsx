@@ -102,7 +102,7 @@ const PendingTutor = () => {
                               rel="noopener noreferrer"
                               className="text-blue-500 block mb-1"
                             >
-                              View Document {index + 1}
+                              View Certificate {index + 1}
                             </a>
                           ))
                         ) : (

@@ -114,7 +114,9 @@ export const tutorProfileSetup = async (data: tutorProfile) => {
     formData.append("gender", data.gender);
     formData.append("country", data.country);
     formData.append("teachLanguage", data.teachLanguage);
-    formData.append("knownLanguages", JSON.stringify(data.knownLanguages));
+    data.knownLanguages.forEach((lang) => {
+    formData.append("knownLanguages[]", lang);
+  });
 
     if (data.profilePhoto) {
       formData.append("profilePhoto", data.profilePhoto);

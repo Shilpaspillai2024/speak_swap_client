@@ -452,20 +452,38 @@ export const verifyPayment = async (response:RazorpayResponse, bookingId: string
       }
     );
     console.log("Payment verification successful:", verifyResponse.data);
+    return verifyResponse.data
+      
   } catch (error: unknown) {
     console.log("Error in payment verification");
+    let errorMessage = "An unknown error occurred during payment verification";
 
     if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.error || "Error occurred while verifying payment"
-      );
+      errorMessage = error.response.data?.message || error.response.data?.error || errorMessage;
     } else if (error instanceof Error) {
-      throw new Error(error.message);
-    } else {
-      throw new Error("An unknown error occurred during payment verification");
+      errorMessage = error.message;
     }
+    return {
+      success: false,
+      message: errorMessage
+    };
+  }
+
+};
+
+export const markPaymentAsFailed = async (bookingId: string, reason: string) => {
+  try {
+    await userAxiosInstance.post("/booking/mark-payment-failed", {
+      bookingId,
+      reason,
+    });
+    console.log("Payment marked as failed in backend.");
+  } catch (error) {
+    console.error("Error marking payment as failed:", error);
   }
 };
+
+
 
 export const getBookingDetails = async (bookingId: string) => {
   try {

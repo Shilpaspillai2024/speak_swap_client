@@ -23,6 +23,7 @@ import userAuthStore from "@/store/userAuthStore";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 import { RazorpayResponse } from "@/types/razorpay";
 import Image from "next/image";
+import { markPaymentAsFailed } from "@/services/userApi";
 
 const TutorProfilePage = () => {
   const [tutor, setTutor] = React.useState<ITutor | null>(null);
@@ -36,7 +37,7 @@ const TutorProfilePage = () => {
   } | null>(null);
 
   const user = userAuthStore().user;
- 
+
   console.log("user from store", user);
 
   // const [bookedSlots, setBookedSlots] = React.useState<string[]>([]);
@@ -50,6 +51,7 @@ const TutorProfilePage = () => {
       try {
         setIsLoading(true);
         const fetchedTutor = await tutorProfile(tutorId as string);
+      
         setTutor(fetchedTutor);
       } catch (error) {
         console.error("Error fetching tutor profile:", error);
@@ -60,6 +62,8 @@ const TutorProfilePage = () => {
 
     fetchTutorProfile();
   }, [tutorId]);
+
+  console.log("tutor",tutor)
 
   const checkSlotAvailability = async (
     date: string,
@@ -161,15 +165,39 @@ const TutorProfilePage = () => {
             },
             bookingId
           )
-            .then(() => {
-              router.push(
-                `/dashboard/tutor/${tutorId}/sucess?bookingId=${bookingId}`
-              );
+            .then((result) => {
+              if(result.success){
+                router.push(
+                  `/dashboard/tutor/${tutorId}/sucess?bookingId=${bookingId}`
+                );
+
+              }else{
+                router.push(
+                  `/dashboard/tutor/${tutorId}/failure?bookingId=${bookingId}&reason=${encodeURIComponent(result.message)}`
+                
+                );
+              }
             })
             .catch((error) => {
-              console.error("Payment verification failed:", error);
-              toast.error("Payment verification failed. Please try again.");
+             
+              const errorMessage = error instanceof Error ? error.message : "Payment verification failed";
+              router.push(
+                `/dashboard/tutor/${tutorId}/failure?bookingId=${bookingId}&reason=${encodeURIComponent(errorMessage)}`
+              );
             });
+        },
+
+
+        modal:{
+          ondismiss:async function(){
+            console.log("Payment window closed")
+            await markPaymentAsFailed(bookingId,"user closed payment window")
+            router.push(
+              `/dashboard/tutor/${tutorId}/failure?bookingId=${bookingId}&reason=${encodeURIComponent("User closed payment window")}`
+            );
+          
+          }
+
         },
         prefill: {
           name: tutor.name,
@@ -182,6 +210,15 @@ const TutorProfilePage = () => {
       };
 
       const razorpay = new window.Razorpay(options);
+
+      razorpay.on("payment.failed", async function (response: any) {
+        console.log("Payment failed:", response.error);
+        await markPaymentAsFailed(bookingId, response.error.description || "Payment failed");
+  
+        router.push(
+          `/dashboard/tutor/${tutorId}/failure?bookingId=${bookingId}&reason=${encodeURIComponent(response.error.description || "Payment failed")}`
+        );
+      });
       razorpay.open();
     } catch (error) {
       toast.error("Error confirming booking:");
@@ -281,22 +318,16 @@ const TutorProfilePage = () => {
                 <h3 className="text-2xl font-semibold mb-6">
                   Languages I Speak
                 </h3>
-                {/* <div className="flex flex-wrap gap-3 mb-8">
-                  {tutor.knownLanguages.map((lang) => (
+
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {tutor.knownLanguages.map((lang, index) => (
                     <span
-                      key={lang}
+                      key={index}
                       className="bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-base font-medium"
                     >
                       {lang}
                     </span>
                   ))}
-                </div> */}
-
-                 <div className="flex flex-wrap gap-3 mb-8">
-                    <span className="bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-base font-medium">
-                  {tutor.knownLanguages.join(',')}
-                 </span>
-    
                 </div>
               </div>
             )}
@@ -425,15 +456,12 @@ const TutorProfilePage = () => {
                 {tutor.availability.map((daySchedule, index) => (
                   <div key={index} className="border-b last:border-0 pb-6">
                     <h3 className="text-lg font-medium text-gray-700 mb-4">
-                    {new Date(daySchedule.date).toLocaleDateString(
-                          "en-US",
-                          {
-                            weekday: "long",
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          }
-                        )}
+                      {new Date(daySchedule.date).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {daySchedule.slots.map((slot, idx) => (

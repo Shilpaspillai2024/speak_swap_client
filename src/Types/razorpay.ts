@@ -14,6 +14,9 @@ export interface RazorpayOptions {
     theme: {
       color: string;
     };
+    modal?: {
+      ondismiss?: () => void;
+    };
   }
   
   export interface RazorpayResponse {
@@ -27,6 +30,7 @@ export interface RazorpayOptions {
 
   export interface RazorpayInstance {
     open(): void;
+    on(event: "payment.failed", callback: (response: any) => void): void;
     
   }
   
@@ -40,6 +44,10 @@ export interface RazorpayOptions {
   
     open(): void {
       this.razorpayInstance.open();
+    }
+
+    on(event: "payment.failed", callback: (response: any) => void): void {
+      this.razorpayInstance.on(event, callback); 
     }
   }
   

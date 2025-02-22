@@ -1,5 +1,6 @@
 import axiosInstance from "./axiosInstance";
 import { AxiosError } from "axios";
+import { HttpStatus } from "@/constants/httpStatus";
 
 interface ErrorResponse {
   message?: string;
@@ -15,7 +16,7 @@ export const loginAdmin = async (email: string, password: string) => {
       const axiosError = error as AxiosError<ErrorResponse>;
 
       if (axiosError.response) {
-        if (axiosError.response.status === 401) {
+        if (axiosError.response.status === HttpStatus.UNAUTHORIZED) {
           throw new Error("Incorrect email or password");
         }
         const errorMessage = axiosError.response.data?.message || "Login failed";
