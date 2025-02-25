@@ -8,7 +8,7 @@ import { completeSession } from "@/services/tutorApi";
 import {
     Mic, MicOff, Video as VideoIcon, VideoOff,
     PhoneOff, Users, MessageCircle, X, Send,
-    ChevronRight, ChevronLeft
+    Monitor,MonitorOff
   } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -37,7 +37,7 @@ const ClassRoom = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
-
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
 
 
@@ -47,6 +47,7 @@ const ClassRoom = () => {
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const localStream = useRef<MediaStream | null>(null);
   const remoteStream = useRef<MediaStream>(new MediaStream());
+  const screenStream = useRef<MediaStream | null>(null);
   const isInitiator = useRef<boolean>(false);
   const makingOffer = useRef<boolean>(false);
   const ignoreOffer = useRef<boolean>(false);
@@ -317,6 +318,7 @@ const ClassRoom = () => {
       userRole: bookingDetails.userRole,
     });
 
+
     socket.on("sessionEnded", handleSessionEnded);
     socket.on("userJoinedSession", handleUserJoined);
     socket.on("receivevideoOffer", handleOffer);
@@ -324,6 +326,7 @@ const ClassRoom = () => {
     socket.on("candidate", handleCandidate);
 
     return () => {
+     
       socket.off("userJoinedSession", handleUserJoined);
       socket.off("receivevideoOffer", handleOffer);
       socket.off("receivevideoAnswer", handleAnswer);
@@ -332,6 +335,80 @@ const ClassRoom = () => {
       cleanup();
     };
   }, [socket, bookingId, bookingDetails]);
+
+  
+
+  const startScreenShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
+      });
+
+      screenStream.current = stream;
+
+      
+      if (peerConnection.current) {
+        const senders = peerConnection.current.getSenders();
+        const videoSender = senders.find(
+          (sender) => sender.track?.kind === "video"
+        );
+
+        if (videoSender) {
+          videoSender.replaceTrack(stream.getVideoTracks()[0]);
+        }
+
+       
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+
+        setIsScreenSharing(true);
+
+        
+        stream.getVideoTracks()[0].onended = () => {
+          stopScreenShare();
+        };
+      }
+    } catch (err) {
+      console.error("Error starting screen share:", err);
+      toast.error("Failed to start screen sharing");
+    }
+  };
+
+  const stopScreenShare = async () => {
+    try {
+      if (screenStream.current) {
+        screenStream.current.getTracks().forEach((track) => track.stop());
+        screenStream.current = null;
+      }
+
+    
+      if (localStream.current && peerConnection.current) {
+        const senders = peerConnection.current.getSenders();
+        const videoSender = senders.find(
+          (sender) => sender.track?.kind === "video"
+        );
+
+        if (videoSender) {
+          const videoTrack = localStream.current.getVideoTracks()[0];
+          if (videoTrack) {
+            videoSender.replaceTrack(videoTrack);
+          }
+        }
+
+        
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = localStream.current;
+        }
+      }
+
+      setIsScreenSharing(false);
+    } catch (err) {
+      console.error("Error stopping screen share:", err);
+      toast.error("Failed to stop screen sharing");
+    }
+  };
 
   const cleanup = () => {
     if (localStream.current) {
@@ -348,6 +425,14 @@ const ClassRoom = () => {
         console.log(`Stopped remote ${track.kind} track`);
       });
       remoteStream.current = new MediaStream();
+    }
+
+    if (screenStream.current) {
+      screenStream.current.getTracks().forEach((track) => {
+        track.stop();
+        console.log(`Stopped screen share ${track.kind} track`);
+      });
+      screenStream.current = null;
     }
 
     // Close peer connection
@@ -369,6 +454,7 @@ const ClassRoom = () => {
     setRemoteUserJoined(false);
     setParticipantCount(1);
     setIsSessionReady(false);
+    setIsScreenSharing(false);
   };
 
   const endCall = async() => {
@@ -478,15 +564,14 @@ const ClassRoom = () => {
   
           {/* Video container */}
           <div className="flex-1 flex flex-col items-center justify-center bg-gray-900/50 rounded-xl p-4 overflow-hidden">
-            <div className="relative w-full h-full max-w-4xl mx-auto flex items-center justify-center">
-              {/* Remote video */}
-              <div className="w-full h-full max-h-[70vh] aspect-video rounded-xl overflow-hidden bg-gray-700 shadow-2xl">
-                <video
-                  ref={remoteVideoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative w-full h-full flex items-center justify-center">
+                <div className="w-full h-full flex items-center justify-center">
+              <video
+                      ref={remoteVideoRef}
+                      autoPlay
+                      playsInline
+                      className="w-full h-full max-h-[70vh] rounded-xl object-contain bg-gray-800"
+                    />
               </div>
   
               {/* Local video */}
@@ -530,6 +615,21 @@ const ClassRoom = () => {
                 <VideoOff className="w-6 h-6 text-white" />
               )}
             </button>
+
+            <button
+                onClick={isScreenSharing ? stopScreenShare : startScreenShare}
+                className={`p-3 rounded-full transition-colors ${
+                  isScreenSharing
+                    ? "bg-blue-500/90 hover:bg-blue-600"
+                    : "bg-gray-700/50 hover:bg-gray-600"
+                }`}
+              >
+                {isScreenSharing ? (
+                  <MonitorOff className="w-6 h-6 text-white" />
+                ) : (
+                  <Monitor className="w-6 h-6 text-white" />
+                )}
+              </button>
             <button
               onClick={endCall}
               className="p-3 rounded-full bg-red-500/90 hover:bg-red-600 transition-colors"

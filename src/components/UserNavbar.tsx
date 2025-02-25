@@ -19,8 +19,8 @@ const UserNavbar = () => {
     setClientUser(user);
 },[]);
 
-  const handleLogout = () => {
-    clearUserAuth();
+  const handleLogout = async() => {
+    await clearUserAuth();
     router.push("/login");
   };
 

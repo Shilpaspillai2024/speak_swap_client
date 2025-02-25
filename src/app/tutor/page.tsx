@@ -19,9 +19,7 @@ const TuturLanding = () => {
           <h1 className="text-2xl font-bold">SpeakSwap</h1>
         </Link>
         <nav className="space-x-6">
-          <Link href="#how-it-works" className="hover:underline">
-            How it Works
-          </Link>
+          
           <Link href="/tutor/login" className="hover:underline">
             Login As Tutor
           </Link>

@@ -181,12 +181,12 @@ export const markMessageAsRead = async (
     const userStore = userAuthStore.getState();
     const tutorStore = tutorAuthStore.getState();
 
-    const userId =
+    const participantId =
       role === "user" ? userStore.user?._id : tutorStore.tutor?._id;
 
     const response = await instance.put(`/message/markAsRead`, {
       chatId,
-      userId,
+      participantId,
     });
     return response.data;
   } catch (error:unknown) {

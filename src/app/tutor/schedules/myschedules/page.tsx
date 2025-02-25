@@ -303,7 +303,7 @@ const TutorBookings = () => {
                             height={56}
                             className="object-cover"
                             unoptimized
-                            //className="h-full w-full object-cover"
+                           
                           />
                         ) : (
                           <div className="h-full w-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
@@ -364,27 +364,7 @@ const TutorBookings = () => {
                     </div>
                   </div>
 
-                  {/* <div className="mt-8 flex items-center justify-between">
-                    {(booking.status === "confirmed" ||
-                      booking.status === "in-progress") && (
-                      <div className="flex space-x-4">
-                        <button
-                          onClick={() => handleJoinSession(booking)}
-                          className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium shadow-sm hover:shadow"
-                        >
-                          <Video className="w-5 h-5 mr-2" />
-                          Start Session
-                        </button>
-                        <button
-                          onClick={() => handleCancelSession(booking._id)}
-                          className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium shadow-sm hover:shadow"
-                        >
-                          <XCircle className="w-5 h-5 mr-2" />
-                          Cancel Session
-                        </button>
-                      </div>
-                    )}
-                  </div> */}
+                
 
                   <div className="mt-8 flex items-center justify-between">
                     {(booking.status === "confirmed" ||

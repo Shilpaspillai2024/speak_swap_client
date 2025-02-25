@@ -18,5 +18,7 @@ export interface IUser {
   profilePhoto:string;
   isVerified:boolean;
   role: "user" ;
+  isOnline:boolean;
+  lastActive:Date;
   }
   

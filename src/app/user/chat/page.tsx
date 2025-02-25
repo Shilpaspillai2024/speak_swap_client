@@ -70,6 +70,37 @@ const ChatList = () => {
 
   useEffect(() => {
     if (socket) {
+      const handleReadStatusUpdate = (data: { chatId: string, readBy: string }) => {
+        setChatList(prevChats => {
+          return prevChats.map(chat => {
+            if (chat._id === data.chatId) {
+             
+              const updatedUnreadCount = chat.unreadCount.map(count => {
+                if (count.participantId === data.readBy) {
+                  return { ...count, count: 0 };
+                }
+                return count;
+              });
+              return { ...chat, unreadCount: updatedUnreadCount };
+            }
+            return chat;
+          });
+        });
+      };
+
+      socket.on("messagesRead", handleReadStatusUpdate);
+
+      return () => {
+        socket.off("messagesRead", handleReadStatusUpdate);
+      };
+    }
+  }, [socket]);
+
+ 
+
+
+  useEffect(() => {
+    if (socket) {
       const handleNewMessage = (newMessage: Message) => {
         setChatList(prevChats => {
           return prevChats.map(chat => {
@@ -108,22 +139,39 @@ const ChatList = () => {
   }, [socket, loadChats, loggedInUserId]);
 
 
+ 
   
-  
-  const navigateToChat = async (chatId: string) => {
-    try {
-      console.log('Clicked chat ID:', chatId);
-      await socketStore.getState().markAsRead(chatId);
+  // const navigateToChat = async (chatId: string) => {
+  //   try {
+  //     console.log('Clicked chat ID:', chatId);
+  //     await socketStore.getState().markAsRead(chatId);
       
      
       
       
+  //     await socketStore.getState().initializeChat(chatId);
+  //     router.push(`/user/chat/${chatId}`);
+  //   } catch (error) {
+  //     console.error('Error navigating to chat:', error);
+  //   }
+  // };
+
+
+  const navigateToChat = async (chatId: string) => {
+    try {
+      console.log("Clicked chat ID:", chatId);
+  
+     
+      await socketStore.getState().markAsRead(chatId);
+  
+      
       await socketStore.getState().initializeChat(chatId);
       router.push(`/user/chat/${chatId}`);
     } catch (error) {
-      console.error('Error navigating to chat:', error);
+      console.error("Error navigating to chat:", error);
     }
   };
+  
 
   const getParticipantName = (chat:ChatData) => {
     const otherParticipant = chat.participants.find(

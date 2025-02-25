@@ -292,7 +292,7 @@ const TutorProfilePage = () => {
           {/* Navigation Tabs */}
           <div className="px-8">
             <div className="flex space-x-8">
-              {["about", "schedule", "reviews"].map((tab) => (
+              {["about", "schedule"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -368,37 +368,7 @@ const TutorProfilePage = () => {
               </div>
             )}
 
-            {activeTab === "reviews" && (
-              <div className="bg-white rounded-xl shadow-md p-8">
-                <h2 className="text-2xl font-semibold mb-6">Student Reviews</h2>
-                <div className="space-y-8">
-                  {[1, 2, 3].map((review) => (
-                    <div
-                      key={review}
-                      className="border-b last:border-0 pb-8 last:pb-0"
-                    >
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-400 to-indigo-400 flex items-center justify-center text-white font-medium">
-                          JS
-                        </div>
-                        <div>
-                          <h3 className="font-medium text-lg">John Smith</h3>
-                          <div className="flex items-center gap-1 text-yellow-400">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="h-4 w-4 fill-current" />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-gray-600 leading-relaxed">
-                        Excellent teacher! Very patient and knowledgeable.
-                        Helped me improve my speaking skills significantly.
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+          
           </div>
 
           {/* Right Column */}

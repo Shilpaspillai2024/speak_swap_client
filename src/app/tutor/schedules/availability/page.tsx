@@ -177,12 +177,12 @@ const TutorSchedule = () => {
 
 
   return (
-<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+<div className="min-h-screen bg-gray-50">
       <TutorNavbar />
-      <div className="flex flex-1">
-        <div className="h-full bg-white shadow-lg">
+      <div className="flex">
+       
           <TutorSidebar />
-        </div>
+  
         <div className="flex-1 p-4 md:p-8 w-full max-w-full overflow-x-hidden">
           <div className="max-w-5xl mx-auto">
             <div className="bg-white rounded-2xl shadow-xl p-4 md:p-8 backdrop-blur-lg backdrop-filter border border-gray-100">

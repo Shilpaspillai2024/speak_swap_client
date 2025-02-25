@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode";
-import { refreshToken } from "@/services/tutorApi";
+import { logoutTutor, refreshToken } from "@/services/tutorApi";
 import { ITutor } from "@/types/tutor";
 
 interface TutorAuthState {
@@ -49,23 +49,26 @@ const tutorAuthStore = create<TutorAuthState>()(
         setTutor: (tutor) => {
           set({ tutor });
         },
-        Logout: () => {
+        Logout: async() => {
           console.log("Logging out...");
+          await logoutTutor();
           set({
             tutor: null,
             token: null,
             isTutorAuthenticated: false,
             isLoading: false,
           });
+
+          localStorage.removeItem("tutor-auth");
         },
 
 
         initAuth: async () => {
        
-          const{token,checkTokenValidity,refreshAccessToken,tutor}=get()
+          const{token,checkTokenValidity,refreshAccessToken,tutor,Logout}=get()
           if (!token) {
             console.warn("No token found during initAuth.");
-            get().Logout(); 
+            Logout(); 
             return;
           }
         
@@ -74,7 +77,7 @@ const tutorAuthStore = create<TutorAuthState>()(
           if(!isValid){
             const isRefreshed=await refreshAccessToken()
             if(!isRefreshed){
-              get().Logout();
+              Logout();
               return;
             }
           }
@@ -94,7 +97,7 @@ const tutorAuthStore = create<TutorAuthState>()(
           }
 
           try {
-           // const decodedToken: any = jwtDecode(token);
+         
             const decodedToken = jwtDecode<DecodedToken>(token);
             const currentTime = Date.now() / 1000;
             return decodedToken.exp > currentTime;

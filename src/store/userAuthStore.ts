@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode"
-import { refreshToken } from "@/services/userApi";
+import { refreshToken,logoutUser} from "@/services/userApi";
 import { IUser } from "@/types/user";
 
 interface UserAuthState {
@@ -50,25 +50,29 @@ const userAuthStore = create<UserAuthState>()(
         setUser: (user) => {
           set({ user });
         },
-        Logout: () => {
+        Logout:async() => {
           console.log("Logging out...");
-          
+          await logoutUser();
+
+         
           set({
             user: null,
             token: null,
             isUserAuthenticated: false,
             isLoading: false,
           });
+
+          localStorage.removeItem("user-auth");
         },
 
         initAuth: async () => {
-        const{token,checkTokenValidity,refreshAccessToken,user}=get();
+        const{token,checkTokenValidity,refreshAccessToken,user,Logout}=get();
         console.log("Initializing user Auth. Current Token:", token);
 
 
         if(!token){
           console.warn("No token found.Logging out....");
-          get().Logout();
+          Logout();
           return;
         }
 
@@ -76,12 +80,12 @@ const userAuthStore = create<UserAuthState>()(
         if(!isValid){
           const isRefreshed=await refreshAccessToken()
           if(!isRefreshed){
-            get().Logout();
+            Logout();
             return;
           }
         }
           set({
-            user,
+           
             isUserAuthenticated:true,
             isLoading:false,
           });
@@ -91,12 +95,12 @@ const userAuthStore = create<UserAuthState>()(
          const {token}=get();
          
           if (!token) {
-            console.error("Token is missing");
+           // console.error("Token is missing");
             return false;
           }
 
           try {
-           // const decodedToken: any = jwtDecode(token);
+          
 
            const decodedToken = jwtDecode<DecodedToken>(token);
             const currentTime = Date.now() / 1000;

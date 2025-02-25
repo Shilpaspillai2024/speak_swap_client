@@ -12,11 +12,13 @@ import Link from "next/link";
 import { IUser } from "@/types/user";
 import { Search } from "lucide-react";
 import Image from "next/image";
+import socketStore from "@/store/socketStore";
 
 const UserDashboard = () => {
   const [users, setUsers] = useState<IUser[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const { isLoading, isUserAuthenticated, Logout } = userAuthStore();
+  const { isLoading, isUserAuthenticated, Logout, user } = userAuthStore();
+  const socket = socketStore.getState().socket;
   const router = useRouter();
 
   useEffect(() => {
@@ -43,7 +45,22 @@ const UserDashboard = () => {
       }
     };
     loadUsers();
-  }, [Logout, router]);
+
+    if (socket && user?._id) {
+      socket?.emit("userOnline", user._id);
+    }
+    if (socket) {
+      socket.on("updateUserStatus", ({ userId, isOnline }) => {
+        setUsers((prevUsers) =>
+          prevUsers.map((u) => (u._id === userId ? { ...u, isOnline } : u))
+        );
+      });
+
+      return () => {
+        socket.off("updateUserStatus");
+      };
+    }
+  }, [Logout, router, socket, user]);
 
   const filteredUsers = users.filter((user) =>
     user.nativeLanguage.toLowerCase().includes(searchQuery.toLowerCase())
@@ -91,22 +108,28 @@ const UserDashboard = () => {
                 <Image
                   src={user.profilePhoto}
                   alt={user.fullName}
-                  width={64} 
+                  width={64}
                   height={64}
                   quality={100}
                   unoptimized
                   className="w-16 h-16 rounded-full object-cover mr-4"
-                  //className="rounded-full object-cover mr-4"
-                
                 />
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
                     <h2 className="text-lg font-semibold text-gray-800">
                       {user.fullName}
                     </h2>
-                    <p className="text-sm text-gray-500">
-                      {user.isActive ? "Active" : "Inactive"}
-                    </p>
+
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`w-3 h-3 rounded-full ${
+                          user.isOnline ? "bg-green-500" : "bg-gray-400"
+                        }`}
+                      ></span>
+                      <p className="text-sm text-gray-500">
+                        {user.isOnline ? "Online" : "Offline"}
+                      </p>
+                    </div>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
                     <strong>Country:</strong> {user.country}

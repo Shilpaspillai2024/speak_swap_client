@@ -366,23 +366,57 @@ const socketStore = create<SocketState>()((set, get) => ({
       throw error;
     }
   },
+  // markAsRead: async (chatId: string) => {
+  //   try {
+  //     const role = get().getRole();
+
+  //     const user = userAuthStore.getState().user;
+  //     const participantId = user?._id ?? "";
+
+  //     if (!participantId) throw new Error("User not authenticated");
+  //     await markMessageAsRead(chatId, role);
+
+  //     set((state) => ({
+  //       messages: state.messages.map((msg) =>
+  //         msg.chatId === chatId && msg.senderId !== participantId
+  //           ? { ...msg, isRead: true }
+  //           : msg
+  //       ),
+  //     }));
+  //   } catch (error) {
+  //     set({
+  //       error:
+  //         error instanceof Error
+  //           ? error.message
+  //           : "Failed to mark messages as read",
+  //     });
+  //   }
+  // },
+
   markAsRead: async (chatId: string) => {
     try {
       const role = get().getRole();
-
       const user = userAuthStore.getState().user;
-      const userId = user?._id ?? "";
-
-      if (!userId) throw new Error("User not authenticated");
+      const participantId = user?._id ?? "";
+  
+      if (!participantId) throw new Error("User not authenticated");
+  
+     
       await markMessageAsRead(chatId, role);
-
+  
+     
+      get().socket?.emit("messagesRead", { chatId, userId: participantId });
+  
+      await fetchChatList(role);
       set((state) => ({
         messages: state.messages.map((msg) =>
-          msg.chatId === chatId && msg.senderId !== userId
+          msg.chatId === chatId && msg.senderId !== participantId
             ? { ...msg, isRead: true }
             : msg
         ),
       }));
+  
+     
     } catch (error) {
       set({
         error:
@@ -392,6 +426,7 @@ const socketStore = create<SocketState>()((set, get) => ({
       });
     }
   },
+  
 
   updateChatList: (message: Message) => {
     set((state) => {

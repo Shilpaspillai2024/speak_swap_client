@@ -55,6 +55,7 @@ const useAdminAuthStore = create<AdminAuthState>()(
             isAdminAuthenticated: false,
             isLoading: false,
           });
+          localStorage.removeItem("admin-auth");
         },
 
       

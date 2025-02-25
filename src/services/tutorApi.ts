@@ -1,7 +1,7 @@
 import axios from "axios";
 import tutorAxiosInstance from "./tutorAxiosInstance";
 import { AxiosError } from "axios";
-import { responseCookiesToRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
+
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -446,5 +446,17 @@ export const fetchDashboradData =async (tutorId:string)=>{
         return [];
       }
     }
+
+
+    export const logoutTutor = async () => {
+      try {
+        const response = await tutorAxiosInstance.post(`/tutor/logout`);
+        return response.data;
+      } catch (error) {
+        console.error("Error logging out:", error);
+        throw new Error("Logout failed.");
+      }
+    };
+    
   
 

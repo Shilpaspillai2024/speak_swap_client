@@ -41,7 +41,7 @@ userAxiosInstance.interceptors.response.use(
         const originalRequest=error.config;
 
 
-        if(error.response.status ===401 && !originalRequest._retry){
+        if(error.response?.status ===401 && !originalRequest._retry){
            
             originalRequest._retry=true;
 
@@ -54,6 +54,7 @@ userAxiosInstance.interceptors.response.use(
             }else{
                 console.log("Refresh token failed. Logging out...");
                 userAuth.Logout();
+                return Promise.reject(error);
             }
         }
 

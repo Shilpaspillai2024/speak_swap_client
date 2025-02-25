@@ -17,9 +17,9 @@ const Navbar = () => {
         </Link>
 
         <div className="flex space-x-6 text-customTeal ml-12 font-bold">
-          <Link href="/about">About Us</Link>
+          <Link href="/shared/about">About Us</Link>
           <Link href="/tutor">Become A Tutor</Link>
-          <Link href="/tutor_market">Find Tutor</Link>
+         
         </div>
       </div>
 

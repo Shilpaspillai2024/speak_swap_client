@@ -41,58 +41,64 @@ const VideoCallPage = () => {
       { urls: "stun:stun1.l.google.com:19302" },
     ],
   };
-
   const cleanup = useCallback(() => {
-  // Stop local stream
-  if (localStreamRef.current) {
-    console.log("🎥 [MEDIA] Stopping local stream tracks");
-    localStreamRef.current.getTracks().forEach((track) => track.stop());
-    localStreamRef.current = null;
-  }
-
-  // Stop remote stream
-  if (remoteVideoRef.current?.srcObject instanceof MediaStream) {
-    console.log("🎥 [MEDIA] Stopping remote stream tracks");
-    (remoteVideoRef.current.srcObject as MediaStream)
-      .getTracks()
-      .forEach((track) => track.stop());
-    remoteVideoRef.current.srcObject = null;
-  }
-
-  // Clear video elements
-  if (localVideoRef.current) {
-    localVideoRef.current.srcObject = null;
-  }
-  if (remoteVideoRef.current) {
-    remoteVideoRef.current.srcObject = null;
-  }
-
-  // Close peer connection
-  if (peerConnectionRef.current) {
-    console.log("🔌 [RTC] Closing peer connection");
-    peerConnectionRef.current.close();
-    peerConnectionRef.current = null;
-  }
-
-  // Reset state
-  setIsAudioEnabled(true);
-  setIsVideoEnabled(true);
-  setIsCallConnected(false);
-
-  // Clear ICE candidates buffer
-  iceCandidatesBuffer.current = [];
-  }, []);
-
-  const handleCallEnd = useCallback(async () => {
-    if (!mountedRef.current) return;
-
-    // Notify server before cleanup
-    if (socket && videoRoomId) {
-      socket.emit("endCall", { videoRoomId });
+    console.log("🧹 Cleaning up video call resources...");
+  
+    // Stop local stream
+    if (localStreamRef.current) {
+      console.log("🎥 Stopping local stream:", localStreamRef.current);
+      localStreamRef.current.getTracks().forEach(track => {
+        console.log(`Stopping track: ${track.kind}`);
+        track.stop();
+        console.log(`✅ Track stopped: ${track.kind}, track.readyState: ${track.readyState}`);
+      });
+      localStreamRef.current = null;
+    } else {
+      console.warn("⚠️ localStreamRef is already null!");
     }
+  
+    // Stop remote stream
+    if (remoteVideoRef.current?.srcObject instanceof MediaStream) {
+      console.log("🎥 Stopping remote stream tracks");
+      (remoteVideoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+      remoteVideoRef.current.srcObject = null;
+    }
+  
+    // Clear video elements
+    if (localVideoRef.current){
+      console.log("🛑 Clearing local video element");
+     localVideoRef.current.srcObject = null;
+    }
+      
+    if (remoteVideoRef.current) 
+      {
+        console.log("🛑 Clearing remote video element");
+        remoteVideoRef.current.srcObject = null;
+      }
 
-    // Remove all socket listeners
+
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+  .then(stream => {
+    stream.getTracks().forEach(track => track.stop());
+    console.log("🔄 Released media devices");
+  })
+  .catch(error => console.error("❌ Error releasing media devices:", error));
+
+  
+    // Close peer connection
+    if (peerConnectionRef.current) {
+      console.log("🔌 Closing peer connection");
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+  
+    // Reset states
+    setIsAudioEnabled(true);
+    setIsVideoEnabled(true);
+    setIsCallConnected(false);
+
     if (socket) {
+      console.log("🚫 Removing socket listeners");
       socket.off("callAccepted");
       socket.off("receiveOffer");
       socket.off("receiveAnswer");
@@ -100,23 +106,48 @@ const VideoCallPage = () => {
       socket.off("remoteDisconnect");
       socket.off("endCall");
     }
+  
+    // Clear ICE candidates buffer
+    iceCandidatesBuffer.current = [];
+  
+    console.log("✅ Cleanup complete.");
 
-    // Run cleanup
+   
+  }, [socket]);
+  
+  const handleCallEnd = useCallback(async () => {
+   // if (!mountedRef.current) return;
+  
+    console.log("📞 Ending call...");
+  
+    // Notify the server
+    if (socket && videoRoomId) {
+      console.log("📡 Emitting 'endCall' to server");
+      socket.emit("endCall", { videoRoomId });
+    }
+
+  
+  
     cleanup();
-    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    
-
-    // Navigate away
-    router.push("/user/chat");
+    setTimeout(() => {
+      router.push("/user/chat");
+    }, 1000);
+  
   }, [cleanup, router, socket, videoRoomId]);
+  
+  
+
+
 
   const createPeerConnection = () => {
     if (peerConnectionRef.current) {
       console.log(
         "⚠️ [RTC] PeerConnection already exists, reusing existing connection"
       );
-      return peerConnectionRef.current;
+     
+     peerConnectionRef.current.close();
+     peerConnectionRef.current = null;
     }
 
     console.log(
@@ -146,6 +177,7 @@ const VideoCallPage = () => {
       if (remoteVideoRef.current && event.streams[0] && mountedRef.current) {
         console.log("🎥 [TRACK] Setting remote video stream");
         remoteVideoRef.current.srcObject = event.streams[0];
+        setIsCallConnected(true);
       }
     };
 
@@ -227,7 +259,7 @@ const VideoCallPage = () => {
 
 
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+     await new Promise((resolve) => setTimeout(resolve, 1000));
       
       if (isCallInitiator) {
         const pc = createPeerConnection();
@@ -249,7 +281,10 @@ const VideoCallPage = () => {
 
         if (localStreamRef.current) {
           localStreamRef.current.getTracks().forEach((track) => {
-            pc.addTrack(track, localStreamRef.current!);
+
+           pc.addTrack(track, localStreamRef.current!);
+
+         
           });
         }
 
@@ -266,7 +301,11 @@ const VideoCallPage = () => {
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
 
-        socket.emit("sendAnswer", { answer, videoRoomId });
+        if (mountedRef.current) {
+          socket.emit("sendAnswer", { answer, videoRoomId });
+        }
+
+       // socket.emit("sendAnswer", { answer, videoRoomId });
       } catch (error) {
         toast.error("Failed to process call offer");
         console.log("failed to procees call offer", error);
@@ -290,9 +329,11 @@ const VideoCallPage = () => {
       try {
         const pc = peerConnectionRef.current;
         if (!pc || !pc.remoteDescription) {
+          console.log("🧊 [ICE] Buffering ICE candidate - no remote description yet");
           iceCandidatesBuffer.current.push(new RTCIceCandidate(candidate));
           return;
         }
+        console.log("🧊 [ICE] Adding received ICE candidate");
         await pc.addIceCandidate(new RTCIceCandidate(candidate));
       } catch (error) {
         toast.error("Failed to process ICE candidate");
@@ -303,6 +344,13 @@ const VideoCallPage = () => {
     socket.on("remoteDisconnect", () => {
       if (!mountedRef.current) return;
       toast.info("Other user disconnected");
+      handleCallEnd();
+    });
+
+    socket.on("endCall", () => {
+      if (!mountedRef.current) return;
+      console.log("📞 [CALL] Received end call event from server");
+      toast.info("Call ended by other user");
       handleCallEnd();
     });
   };
@@ -321,13 +369,17 @@ const VideoCallPage = () => {
           audio: true,
         });
 
+
+        console.log("✅ [MEDIA] Successfully got local media stream");
+        
+        localStreamRef.current = stream;
+
         if (!mountedRef.current) {
           console.log("⚠️ [CLEANUP] Component unmounted during initialization");
           return;
         }
 
-        console.log("✅ [MEDIA] Successfully got local media stream");
-        localStreamRef.current = stream;
+        
         if (localVideoRef.current) {
           console.log("🎥 [MEDIA] Setting local video stream");
           localVideoRef.current.srcObject = stream;
@@ -353,7 +405,7 @@ const VideoCallPage = () => {
       console.log("🧹 [CLEANUP] Component unmounting");
       mountedRef.current = false;
 
-      handleCallEnd();
+      cleanup();
     };
   }, [socket, videoRoomId, cleanup, handleCallEnd]);
 

@@ -17,16 +17,23 @@ interface Participant {
     _id: string;
     fullName: string;
     profilePhoto?: string;
-    role: 'user' | 'tutor';
+    role: "user" | "tutor";
   };
 }
-
 
 const ChatPage = () => {
   const { chatId } = useParams();
   const router = useRouter();
-
+  const [formatDistanceToNowFn, setFormatDistanceToNowFn] = useState<
+    ((date: Date, options?: any) => string) | null
+  >(null);
   const [message, setMessage] = useState("");
+  const [recipientDetails, setRecipientDetails] = useState({
+    name: "",
+    profilePhoto: "",
+    isOnline: false,
+    lastActive: "",
+  });
   const loggedInUser = userAuthStore.getState().user;
   const loggedInUserId = loggedInUser?._id;
 
@@ -38,37 +45,24 @@ const ChatPage = () => {
     sendMessage: sendMessageFn,
     initializeChat,
     currentChatId,
-    recipientName,
-    recipientProfilePicture,
     markAsRead,
   } = socketStore();
 
- useEffect(() => {
-    if (chatId && (!currentChatId || currentChatId !== chatId)) {
-      initializeChat(chatId as string).catch((error) => {
-        toast.error("Failed to initialize chat");
-        console.error("Error initializing chat:", error);
-      });
-
-
-    
-    }
-  }, [chatId, currentChatId, initializeChat]);
-
   useEffect(() => {
-    if (!chatId) return;
-    
-    const markReadInterval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        markAsRead(chatId as string).catch(error => {
-          console.error("Error in periodic mark as read:", error);
-        });
-      }
-    }, 5000);
-    
-    return () => clearInterval(markReadInterval);
-  }, [chatId, markAsRead]);
-  
+    if (chatId && (!currentChatId || currentChatId !== chatId)) {
+      const setupChat = async () => {
+        try {
+          await initializeChat(chatId as string);
+          await markAsRead(chatId as string);
+        } catch (error) {
+          toast.error("Failed to initialize chat");
+          console.error("Error initializing chat:", error);
+        }
+      };
+      setupChat();
+    }
+  }, [chatId, currentChatId, initializeChat, markAsRead]);
+
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({
@@ -88,11 +82,22 @@ const ChatPage = () => {
         const chat = await getChatById(chatId as string, "user");
         if (chat) {
           const recipient = chat.participants.find(
-            (participant:Participant) =>
+            (participant: Participant) =>
               participant.participantId._id !== loggedInUserId
           );
 
           if (recipient) {
+            const recipientData = {
+              name: recipient.participantId.fullName,
+              profilePhoto: recipient.participantId.profilePhoto || "",
+              isOnline: recipient.participantId.isOnline,
+              lastActive: recipient.participantId.lastActive || "",
+            };
+
+            console.log("recipienData", recipientData);
+
+            setRecipientDetails(recipientData);
+
             socketStore.setState({
               recipientName: recipient.participantId.fullName,
               recipientProfilePicture: recipient.participantId.profilePhoto,
@@ -109,7 +114,13 @@ const ChatPage = () => {
     };
 
     fetchChatDetails();
-  }, [chatId,loggedInUserId]);
+  }, [chatId, loggedInUserId]);
+
+  useEffect(() => {
+    import("date-fns/formatDistanceToNow").then((module) => {
+      setFormatDistanceToNowFn(() => module.formatDistanceToNow);
+    });
+  }, []);
 
   useEffect(() => {
     if (socket) {
@@ -132,12 +143,36 @@ const ChatPage = () => {
 
     try {
       await sendMessageFn(chatId as string, message.trim());
+      await markAsRead(chatId as string);
       setMessage("");
     } catch (error) {
       toast.error("Failed to send message");
       console.error("Error sending message:", error);
     }
   };
+
+  useEffect(() => {
+    
+    if (chatId && socket) {
+      
+      const readInterval = setInterval(() => {
+        if (messages.length > 0) {
+          markAsRead(chatId as string);
+        }
+      }, 2000); 
+      
+  
+      
+      if (messages.length > 0) {
+        markAsRead(chatId as string);
+      }
+  
+      return () => {
+        clearInterval(readInterval);
+      };
+    }
+  }, [chatId, socket, messages, markAsRead]);
+  
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -146,24 +181,23 @@ const ChatPage = () => {
     }
   };
 
- const startVideoCall = () => {
+  const startVideoCall = () => {
     if (socket) {
-      const videoRoomId = `${chatId}-video`; 
-  
-      socket.emit("initiateCall", { chatId, videoRoomId, callerName: loggedInUser?.fullName});  
-  
+      const videoRoomId = `${chatId}-video`;
+
+      socket.emit("initiateCall", {
+        chatId,
+        videoRoomId,
+        callerName: loggedInUser?.fullName,
+      });
+
       sessionStorage.setItem("isCallInitiator", "true");
-      router.push(`/user/video/${videoRoomId}`); 
+      router.push(`/user/video/${videoRoomId}`);
     }
   };
-  
- 
-  
 
   return (
     <>
-     
-
       <ChatList />
 
       {/* Chat Header */}
@@ -172,10 +206,10 @@ const ChatPage = () => {
         <div className="border-b p-4 bg-white">
           <div className="flex items-center justify-between  space-x-4">
             <div className="flex items-center space-x-4">
-              {recipientProfilePicture ? (
+              {recipientDetails.profilePhoto ? (
                 <Image
-                  src={recipientProfilePicture}
-                  alt={recipientName || "Profile Picture"}
+                  src={recipientDetails.profilePhoto}
+                  alt={recipientDetails.name}
                   width={40}
                   height={40}
                   unoptimized
@@ -186,9 +220,17 @@ const ChatPage = () => {
               )}
 
               <div>
-                <h2 className="font-semibold">{recipientName || "Unknown"}</h2>
+                <h2 className="font-semibold">{recipientDetails.name}</h2>
                 <p className="text-sm text-gray-500">
-                  {socket?.connected ? "Online" : "Offline"}
+
+                  {recipientDetails.isOnline
+                    ? "Online"
+                    : recipientDetails.lastActive && formatDistanceToNowFn
+                    ? `last seen: ${formatDistanceToNowFn(
+                        new Date(recipientDetails.lastActive),
+                        { addSuffix: true }
+                      )}`
+                    : "Offline"}
                 </p>
               </div>
             </div>
@@ -262,5 +304,3 @@ const ChatPage = () => {
 };
 
 export default UserProtectedRoute(ChatPage);
-
-

@@ -60,12 +60,7 @@ export const signupBasicDatails = async (data: signupBasicDetails) => {
       throw "An unknown error occurred during registration";
     }
   }
-  // } catch (error:any) {
-  //   throw (
-  //     error.response?.data?.error ||
-  //     "Error occured during basic details registration"
-  //   );
-  // }
+ 
 };
 
 export const sendOtp = async (token: string) => {
@@ -532,3 +527,14 @@ export const fetchUserWallet=async()=>{
   }
   
 }
+
+
+export const logoutUser = async () => {
+  try {
+    const response = await userAxiosInstance.post(`/logout`);
+    return response.data;
+  } catch (error) {
+    console.error("Error logging out:", error);
+    throw new Error("Logout failed.");
+  }
+};
