@@ -90,6 +90,19 @@ export const getPendingTutors = async () => {
   }
 };
 
+export const pendingTutorDetails =async(tutorId:string)=>{
+  try {
+    console.log("callig pending tutor by id")
+    const response=await axiosInstance.get(`/admin/tutors/pending-tutor-details/${tutorId}`)
+    console.log("pending tutors",response.data)
+    return response.data
+    
+  } catch (error) {
+    console.error("error in fetching tutors:", error);
+    throw error;
+  }
+}
+
 export const tutorVerify = async (
   tutorId: string,
   action: "approved" | "rejected"

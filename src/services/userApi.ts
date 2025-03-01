@@ -3,6 +3,8 @@ import userAxiosInstance from "./userAxiosInstance";
 import { IUser } from "@/types/user";
 import { ITutor } from "@/types/tutor";
 import { RazorpayResponse } from "@/types/razorpay";
+import { HttpStatus } from "@/constants/httpStatus";
+import { TutorResponse } from "@/types/tutor";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export interface signupBasicDetails {
@@ -283,9 +285,11 @@ export const resetPassword = async (
   }
 };
 
-export const fetchUsers = async (): Promise<IUser[]> => {
+
+
+export const fetchUsers = async (page=1,limit=6,searchQuery=""): Promise<IUser[]> => {
   try {
-    const response = await userAxiosInstance.get(`/users`);
+    const response = await userAxiosInstance.get(`/users?page=${page}&limit=${limit}&search=${encodeURIComponent(searchQuery)}`);
     console.log("Fetched users:", response.data);
     return response.data;
   } catch (error: unknown) {
@@ -339,7 +343,7 @@ export const updateProfileDetails = async (updateData: Partial<IUser>) => {
   try {
     const response = await userAxiosInstance.put(`/update`, updateData);
 
-    if (response.status !== 200) {
+    if (response.status !== HttpStatus.OK) {
       throw new Error(response.data?.message || "Failed to update profile");
     }
 
@@ -360,10 +364,16 @@ export const updateProfileDetails = async (updateData: Partial<IUser>) => {
 
 // get list Alltutors
 
-export const listTutorsForUser = async (): Promise<ITutor[]> => {
+export const listTutorsForUser = async (searchQuery:string='',page:number=1,limit:number=9): Promise<TutorResponse> => {
   console.log("calling tutors");
   try {
-    const response = await userAxiosInstance.get(`/tutors`);
+    const response = await userAxiosInstance.get(`/tutors`,{
+      params:{
+        search:searchQuery,
+        page:page,
+        limit:limit
+      }
+    });
     console.log("Fetched tutors:", response.data);
     return response.data;
   } catch (error: unknown) {
@@ -504,9 +514,14 @@ export const getBookedSlots = async (tutorId: string, selectedDate: string) => {
 
 // fetch booking details for user
 
-export const userbookingDetails = async () => {
+export const userbookingDetails = async (page:number=1,limit:number=5) => {
   try {
-    const response = await userAxiosInstance.get(`/booking/user/bookings`);
+    const response = await userAxiosInstance.get(`/booking/user/bookings`,{
+    params:{
+    page,
+    limit
+    }
+    });
     console.log("response of booking", response);
     return response.data;
   } catch (error) {

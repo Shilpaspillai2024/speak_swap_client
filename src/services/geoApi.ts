@@ -10,7 +10,7 @@ export interface Country {
 export const fetchCountries=async ():Promise<Country[]>=>{
     try {
 
-        const response= await axios.get(`${BACKEND_URL}/countries`,{
+        const response= await axios.get(`${BACKEND_URL}/geo/countries`,{
             headers:{
                 'Content-Type':'application/json',
             },
@@ -29,7 +29,7 @@ export const fetchCountries=async ():Promise<Country[]>=>{
     export const fetchLanguages=async ():Promise<string[]>=>{
         try {
     
-            const response= await axios.get(`${BACKEND_URL}/languages`,{
+            const response= await axios.get(`${BACKEND_URL}/geo/languages`,{
                 headers:{
                     'Content-Type':'application/json',
                 },

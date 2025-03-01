@@ -1,5 +1,6 @@
 import axios from "axios";
 import useAdminAuthStore from "@/store/adminAuthStore";
+import { HttpStatus } from "@/constants/httpStatus";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -38,7 +39,7 @@ axiosInstance.interceptors.response.use(
       const originalRequest=error.config;
 
 
-      if(error.response.status === 401 && !originalRequest._retry){
+      if(error.response.status === HttpStatus.UNAUTHORIZED && !originalRequest._retry){
          
           originalRequest._retry=true;
 

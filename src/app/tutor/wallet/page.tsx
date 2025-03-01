@@ -139,7 +139,7 @@ const WalletPage: React.FC = () => {
             <div className="mt-4 flex justify-between items-center">
               <span className="text-gray-600">Current Balance</span>
               <span className="text-4xl font-bold text-green-600">
-                ${walletDetails?.balance?.toFixed(2) || '0.00'}
+              ₹{walletDetails?.balance?.toFixed(2) || '0.00'}
               </span>
             </div>
 
@@ -172,7 +172,7 @@ const WalletPage: React.FC = () => {
                           </td>
                           <td className="py-4 px-4 text-sm text-gray-500">{transaction.creditedBy}</td>
                           <td className={`py-4 px-4 text-sm font-semibold ${transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
-                            {transaction.type === 'credit' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                            {transaction.type === 'credit' ? '+' : '-'}₹{transaction.amount.toFixed(2)}
                           </td>
                         </tr>
                       ))}
@@ -198,7 +198,7 @@ const WalletPage: React.FC = () => {
                 Amount to Withdraw
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-gray-600">$</span>
+                <span className="absolute left-3 top-2 text-gray-600">₹</span>
                 <input
                   id="withdrawAmount"
                   type="number"
@@ -211,7 +211,7 @@ const WalletPage: React.FC = () => {
                 />
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                Available Balance: ${walletDetails?.balance?.toFixed(2) || '0.00'}
+                Available Balance: ₹{walletDetails?.balance?.toFixed(2) || '0.00'}
               </p>
             </div>
             

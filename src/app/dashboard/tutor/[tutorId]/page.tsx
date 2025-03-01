@@ -40,8 +40,6 @@ const TutorProfilePage = () => {
 
   console.log("user from store", user);
 
-  // const [bookedSlots, setBookedSlots] = React.useState<string[]>([]);
-
   const { tutorId } = useParams();
 
   const router = useRouter();
@@ -130,13 +128,14 @@ const TutorProfilePage = () => {
         return;
       }
 
-      const sessionFeeInUSD = tutor.hourlyRate;
+     // const sessionFeeInUSD = tutor.hourlyRate;
+     const sessionFee=tutor.hourlyRate
 
       const bookingData = await createBooking(
         tutorId as string,
         selectedDate,
         selectedSlot,
-        sessionFeeInUSD
+        sessionFee
       );
 
       console.log("bookingData", bookingData);
@@ -148,8 +147,8 @@ const TutorProfilePage = () => {
       const creditedByString = user?.fullName ?? "Unknown User";
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
-        amount: sessionFeeInUSD * 100, // Amount in cents for USD
-        currency: "USD",
+        amount: sessionFee * 100, // Amount in cents for USD
+        currency: "INR", //USD
         order_id: bookingData.data.orderId,
         name: `Seesion with ${tutor.name}`,
         description: `Session Fee: ₹${bookingData.sessionFee}`,
@@ -160,7 +159,7 @@ const TutorProfilePage = () => {
             {
               ...response,
               tutorId: tutorId as string,
-              amount: sessionFeeInUSD,
+              amount: sessionFee,
               creditedBy: creditedByString,
             },
             bookingId
@@ -463,7 +462,7 @@ const TutorProfilePage = () => {
               <p className="text-lg">
                 <strong className="text-red-600">Session Fee:</strong>
                 <span className="text-xl font-semibold text-green-600">
-                  ${tutor.hourlyRate} /hour
+                  ₹{tutor.hourlyRate} /hour
                 </span>
               </p>
               <div className="mt-6 flex justify-end gap-4">

@@ -15,6 +15,8 @@ import {userSignupStore} from "@/store/userSignupStore";
 import SetPassword from "@/components/SetPassword";
 import { signupValidationSchema } from "@/utils/Validation";
 import { SignupErrors } from "@/utils/Types";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 
 
@@ -250,6 +252,8 @@ const UserSignup: React.FC = () => {
   }
 
   return (
+    <>
+    <Navbar/>
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
       <div className="flex w-full max-w-5xl bg-white bg-opacity-30 backdrop-blur-lg shadow-2xl overflow-hidden rounded-3xl">
         {/* Left Panel */}
@@ -616,6 +620,8 @@ const UserSignup: React.FC = () => {
         </div>
       </div>
     </div>
+    <Footer/>
+    </>
   );
 };
 

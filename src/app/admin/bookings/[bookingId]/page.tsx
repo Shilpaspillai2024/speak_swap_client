@@ -153,23 +153,11 @@ const BookingDetailsPage = () => {
                     <strong>Payment Status:</strong>
                     <StatusBadge status={booking.paymentStatus} type="payment" />
                   </div>
-                  {booking.meetingLink && (
-                    <p>
-                      <strong>Meeting Link:</strong>{' '}
-                      <a 
-                        href={booking.meetingLink} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-blue-600 hover:underline"
-                      >
-                        Join Session
-                      </a>
-                    </p>
-                  )}
+                 
                 </DetailSection>
 
                 <DetailSection title="Session Details" icon={ClockIcon}>
-                  <p><strong>Selected Day:</strong> {booking.selectedDay}</p>
+                  <p><strong>Selected Day:</strong> {booking.selectedDate}</p>
                   <p><strong>Time Slot:</strong> {booking.selectedSlot.startTime} - {booking.selectedSlot.endTime}</p>
                 </DetailSection>
 

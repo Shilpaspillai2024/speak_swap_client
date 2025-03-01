@@ -119,11 +119,7 @@ const UserProfile = () => {
             <ArrowLeft className="w-5 h-5" />
             Back to Dashboard
           </button>
-          {/* <button
-            className="flex items-center gap-2 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-md transition-colors"
-            onClick={()=>router.push(`/user/chat/${id}`)}
-          > */}
-
+         
           <button
             className="flex items-center gap-2 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-md transition-colors"
             onClick={handleMessageClick}
@@ -136,11 +132,7 @@ const UserProfile = () => {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-gradient-to-r from-blue-300 to-blue-400 p-8 text-white">
             <div className="flex flex-col items-center">
-              {/* <img
-                src={user.profilePhoto}
-                alt={user.fullName}
-                className="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover"
-              /> */}
+             
 
               <Image
                 src={user.profilePhoto}

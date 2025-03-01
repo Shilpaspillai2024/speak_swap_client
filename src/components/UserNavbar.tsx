@@ -21,7 +21,7 @@ const UserNavbar = () => {
 
   const handleLogout = async() => {
     await clearUserAuth();
-    router.push("/login");
+    router.push("/");
   };
 
   return (

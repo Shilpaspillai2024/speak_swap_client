@@ -93,7 +93,7 @@ const ProfilePage: React.FC = () => {
         setUser(profile);
         setEditedUser(profile);
         
-        // Check wallet separately and handle possible 404
+       
         try {
           const walletData = await fetchUserWallet();
           
@@ -109,8 +109,7 @@ const ProfilePage: React.FC = () => {
             setHasCanceledSession(hasCancellation);
           }
         } catch (walletErr) {
-          // Silently handle wallet not found - no need to set an error state
-          // Just means user doesn't have a wallet yet
+        
           console.log("Wallet not found or error fetching wallet");
           setHasWallet(false);
           setHasCanceledSession(false);

@@ -9,6 +9,7 @@ import {
   CheckCircle,
   AlertCircle,
   DollarSign,
+  RefreshCcw,
 } from "lucide-react";
 import UserNavbar from "@/components/UserNavbar";
 import { IBooking } from "@/types/booking";
@@ -17,6 +18,8 @@ import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useBookingStore } from "@/store/bookingStore";
+import Pagination from "@/components/Pagination";
+
 
 const UserBookings = () => {
   const [bookings, setBookings] = useState<IBooking[]>([]);
@@ -25,22 +28,38 @@ const UserBookings = () => {
   const [activeBookingId, setActiveBookingId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
 
+
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 5;
+
+
   const router = useRouter();
 
   useEffect(() => {
     fetchUserBookings();
-  }, []);
+  }, [currentPage]);
 
   const fetchUserBookings = async () => {
     try {
       setIsLoading(true);
-      const response = await userbookingDetails();
-      setBookings(response.result);
+      const response = await userbookingDetails(currentPage,itemsPerPage);
+      console.log("bookings",response)
+      setBookings(response.result.bookings);
+      setTotalItems(response.result.totalItems);
+      setTotalPages(Math.ceil(response.result.totalItems / itemsPerPage));
     } catch (error) {
       console.error("Error fetching bookings:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   useEffect(() => {
@@ -219,6 +238,10 @@ const UserBookings = () => {
     router.push(`/classRoom/${booking._id}`);
   };
 
+  const handleRetryPayment = (booking: IBooking) => {
+    router.push(`/dashboard/tutor/${booking.tutorId._id}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <UserNavbar />
@@ -227,7 +250,7 @@ const UserBookings = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Bookings</h1>
           <div className="flex space-x-2">
-            {["confirmed", "pending", "completed", "cancelled"].map(
+            {["confirmed", "payment_failed", "completed", "cancelled"].map(
               (status) => (
                 <div
                   key={status}
@@ -314,6 +337,24 @@ const UserBookings = () => {
                   </div>
                 </div>
 
+
+                {booking.status === "payment_failed" && (
+                  <div className="mt-8">
+                    <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-4">
+                      <p className="text-red-700 text-sm">
+                        Payment for this session failed. Please retry payment to confirm your booking.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleRetryPayment(booking)}
+                      className="inline-flex items-center px-6 py-3 rounded-lg transition-colors duration-200 font-medium shadow-sm bg-purple-600 text-white hover:bg-purple-700"
+                    >
+                      <RefreshCcw className="w-5 h-5 mr-2" />
+                      Retry Payment
+                    </button>
+                  </div>
+                )}
+
                 {(booking.status === "confirmed" || booking.status === "in-progress") && (
                   <div className="mt-8 flex items-center space-x-4">
                     <button
@@ -358,6 +399,17 @@ const UserBookings = () => {
             </div>
           )}
         </div>
+
+
+        {totalItems > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+          />
+        )}
       </div>
     </div>
   );

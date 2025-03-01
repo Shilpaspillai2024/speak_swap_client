@@ -36,3 +36,15 @@ export interface ITimeSlot {
     date:string;
     slots: ITimeSlot[];
   }
+
+
+
+  export interface TutorResponse{
+    tutors: ITutor[];
+    meta: {
+      currentPage: number;
+      itemsPerPage: number;
+      totalItems: number;
+      totalPages: number;
+    }
+  }

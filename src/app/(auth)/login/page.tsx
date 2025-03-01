@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import userAuthStore from "@/store/userAuthStore";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Image from "next/image";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -82,11 +84,13 @@ const LoginPage = () => {
   };
 
   return (
+   <>
+   <Navbar/>
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-100">
       <Image
         src="/assets/first_3d.png"
         alt="3D Image"
-        className="absolute top-1/4 left-0 transform -translate-y-1/4 w-2/4 h-auto object-contain"
+        className="absolute top-2/4 left-0 transform -translate-y-1/4 w-2/4 h-auto object-contain"
         width={500}  
         height={500}
       />
@@ -169,24 +173,28 @@ const LoginPage = () => {
             >
               Sign in
             </button>
-            <div className="flex justify-between w-full mt-4">
+
+            </div>
+            <div className="flex flex-col items-center w-full mt-4 space-y-2">
               <Link
                 href="/forgot"
-                className="font-medium text-indigo-600 hover:text-indigo-500 text-sm"
+                className="font-medium text-indigo-600 hover:text-indigo-500 text-sm hover:underline"
               >
                 Forgot Password
               </Link>
               <Link
                 href="/signup"
-                className="font-medium text-indigo-600 hover:text-indigo-500 text-sm"
+                className="font-medium text-indigo-600 hover:text-indigo-500 text-sm hover:underline"
               >
                 {`Don't have an account? Sign up`}
               </Link>
             </div>
-          </div>
+          
         </form>
       </div>
     </div>
+   <Footer/>
+    </>
   );
 };
 

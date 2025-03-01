@@ -5,12 +5,15 @@ import AdminNavbar from "@/components/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
 import { ITutor } from "@/types/tutor";
 import { useState } from "react";
-import { getPendingTutors,tutorVerify } from "@/services/adminApi";
+import { getPendingTutors, tutorVerify } from "@/services/adminApi";
 import protectedRoute from "@/HOC/AdminProtectedRoute";
+import { useRouter } from "next/navigation";
+
 
 const PendingTutor = () => {
   const [tutors, setTutors] = useState<ITutor[]>([]);
   const [loading, setLoading] = useState(true);
+  const router=useRouter();
 
   useEffect(() => {
     const fetchTutors = async () => {
@@ -28,22 +31,28 @@ const PendingTutor = () => {
     fetchTutors();
   }, []);
 
-  const handleAction = async (tutorId: string, action:"approved" |"rejected") => {
-    try {
-     
-      await tutorVerify(tutorId,action);
-  
-      
-      setTutors((prevTutors) =>
-        prevTutors.map((tutor) =>
-          tutor._id === tutorId ? { ...tutor, status: action } : tutor
-        ) as ITutor[]
-      );
-    } catch (error) {
-      console.error("Error updating tutor status:", error);
-    }
-  };
-  
+
+  const handleViewDetails=(tutorId:string)=>{
+       router.push(`/admin/tutors/tutorapplications/${tutorId}`)    
+  }
+
+  // const handleAction = async (
+  //   tutorId: string,
+  //   action: "approved" | "rejected"
+  // ) => {
+  //   try {
+  //     await tutorVerify(tutorId, action);
+
+  //     setTutors(
+  //       (prevTutors) =>
+  //         prevTutors.map((tutor) =>
+  //           tutor._id === tutorId ? { ...tutor, status: action } : tutor
+  //         ) as ITutor[]
+  //     );
+  //   } catch (error) {
+  //     console.error("Error updating tutor status:", error);
+  //   }
+  // };
 
   return (
     <div className="flex flex-col">
@@ -53,9 +62,11 @@ const PendingTutor = () => {
         <Sidebar />
 
         <div className="container mx-auto p-4 bg-[#f5f5f5]">
-          <h1 className="text-2xl font-bold mb-4">Pending Tutor Applications</h1>
+          <h1 className="text-2xl font-bold mb-4">
+            Pending Tutor Applications
+          </h1>
 
-          {loading ? ( 
+          {loading ? (
             <p className="text-center">Loading tutors...</p>
           ) : (
             <table className="min-w-full table-auto bg-white border border-gray-300 rounded-lg shadow-sm text-white">
@@ -88,7 +99,11 @@ const PendingTutor = () => {
                       <td className="py-2 px-4">{tutor.country}</td>
                       <td className="py-2 px-4">{tutor.teachLanguage}</td>
                       <td className="py-2 px-4">
-                        <a href={tutor.introductionVideo} target="_blank" className="text-blue-500">
+                        <a
+                          href={tutor.introductionVideo}
+                          target="_blank"
+                          className="text-blue-500"
+                        >
                           Watch video
                         </a>
                       </td>
@@ -123,7 +138,7 @@ const PendingTutor = () => {
                         </span>
                       </td>
 
-                      <td className="py-2 px-4">
+                      {/* <td className="py-2 px-4">
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleAction(tutor._id, "approved")}
@@ -138,6 +153,15 @@ const PendingTutor = () => {
                             Reject
                           </button>
                         </div>
+                      </td> */}
+
+                      <td className="py-2 px-4">
+                        <button
+                          onClick={() => handleViewDetails(tutor._id)}
+                          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+                        >
+                          View Details
+                        </button>
                       </td>
                     </tr>
                   ))

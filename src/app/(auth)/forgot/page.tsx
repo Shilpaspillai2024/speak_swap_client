@@ -28,7 +28,7 @@ const ForgotPassword = () => {
         
       }
     } catch (error: unknown) {
-      // Improved error handling
+     
       if (error instanceof Error) {
         toast.error(error.message || "Something went wrong. Please try again.");
       } else {

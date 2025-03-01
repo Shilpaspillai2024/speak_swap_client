@@ -1,5 +1,5 @@
 'use client'
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Globe, Languages, Clock, Search } from 'lucide-react';
 import { listTutorsForUser } from '@/services/userApi';
 import { ITutor } from '@/types/tutor';
@@ -7,20 +7,49 @@ import UserNavbar from '@/components/UserNavbar';
 import { useRouter } from 'next/navigation';
 import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 import Image from 'next/image';
+import { debounce } from 'lodash';
+import Pagination from '@/components/Pagination';
+import { TutorResponse } from '@/types/tutor';
+
 const TutorsPage = () => {
   const [tutors, setTutors] = React.useState<ITutor[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
 
+
+
+
+  const[currentPage,setCurrentPage]=useState(1);
+  const [totalPages,setTotalPages]=useState(1);
+  const [totalItems,setTotalItems]=useState(0);
+  const itemsPerPage=9;
   const router=useRouter();
-  React.useEffect(() => {
-    const fetchTutors = async () => {
+
+
+
+  const debouncedSearch=React.useCallback(
+    debounce((query:string)=>{
+      setCurrentPage(1);
+      fetchTutors(query);
+    },500),
+    []
+  );
+
+  const handleSearchChange=(e:React.ChangeEvent<HTMLInputElement>)=>{
+   const query=e.target.value;
+   setSearchQuery(query);
+   debouncedSearch(query);
+  }
+    const fetchTutors = async (query:string='',page:number=currentPage) => {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await listTutorsForUser();
-        setTutors(data);
+        const response = await listTutorsForUser(query,page,itemsPerPage) as TutorResponse;
+        setTutors(response.tutors);
+        setTotalItems(response.meta.totalItems);
+        setTotalPages(response.meta.totalPages);
+        setCurrentPage(response.meta.currentPage);
       } catch (error) {
         setError(typeof error === 'string' ? error : 'Failed to fetch tutors');
         console.error('Error fetching tutors:', error);
@@ -29,16 +58,15 @@ const TutorsPage = () => {
       }
     };
 
-    fetchTutors();
-  }, []);
+    useEffect(()=>{
+      fetchTutors(searchQuery,currentPage);
 
-  const filteredTutors = tutors.filter(tutor =>
-    tutor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tutor.teachLanguage.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tutor.country.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    },[currentPage]);
 
-
+  
+    const handlePageChange = (page: number) => {
+      setCurrentPage(page);
+    };
 
   const viewProfile=(tutorId:string)=>{
     router.push(`/dashboard/tutor/${tutorId}`);
@@ -93,21 +121,22 @@ const TutorsPage = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="Search by name, language, or country..."
+              placeholder="Search by name, Teachinglanguage, or country..."
               className="w-full pl-12 pr-4 py-3 rounded-lg border border-purple-200 shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
         </div>
 
-        {filteredTutors.length === 0 ? (
+        {tutors.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-purple-500 text-lg">No tutors found matching your search.</p>
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredTutors.map((tutor) => (
+            {tutors.map((tutor) => (
               <div 
                 key={tutor._id} 
                 className="bg-gradient-to-br from-indigo-200 to-purple-200 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1"
@@ -182,6 +211,16 @@ const TutorsPage = () => {
               </div>
             ))}
           </div>
+
+          <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+            />
+          </>
+
         )}
       </div>
     </div>

@@ -139,22 +139,6 @@ const ChatList = () => {
   }, [socket, loadChats, loggedInUserId]);
 
 
- 
-  
-  // const navigateToChat = async (chatId: string) => {
-  //   try {
-  //     console.log('Clicked chat ID:', chatId);
-  //     await socketStore.getState().markAsRead(chatId);
-      
-     
-      
-      
-  //     await socketStore.getState().initializeChat(chatId);
-  //     router.push(`/user/chat/${chatId}`);
-  //   } catch (error) {
-  //     console.error('Error navigating to chat:', error);
-  //   }
-  // };
 
 
   const navigateToChat = async (chatId: string) => {

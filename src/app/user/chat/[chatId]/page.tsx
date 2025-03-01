@@ -38,6 +38,7 @@ const ChatPage = () => {
   const loggedInUserId = loggedInUser?._id;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatMarkedAsReadRef = useRef(false);
 
   const {
     socket,
@@ -151,27 +152,6 @@ const ChatPage = () => {
     }
   };
 
-  useEffect(() => {
-    
-    if (chatId && socket) {
-      
-      const readInterval = setInterval(() => {
-        if (messages.length > 0) {
-          markAsRead(chatId as string);
-        }
-      }, 2000); 
-      
-  
-      
-      if (messages.length > 0) {
-        markAsRead(chatId as string);
-      }
-  
-      return () => {
-        clearInterval(readInterval);
-      };
-    }
-  }, [chatId, socket, messages, markAsRead]);
   
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
