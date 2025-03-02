@@ -8,19 +8,28 @@ import { useState } from "react";
 import { getPendingTutors, tutorVerify } from "@/services/adminApi";
 import protectedRoute from "@/HOC/AdminProtectedRoute";
 import { useRouter } from "next/navigation";
-
+import Pagination from "@/components/Pagination";
 
 const PendingTutor = () => {
   const [tutors, setTutors] = useState<ITutor[]>([]);
   const [loading, setLoading] = useState(true);
-  const router=useRouter();
+  const router = useRouter();
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchTutors = async () => {
       try {
-        const data = await getPendingTutors();
-        console.log("fetched tutors:", data);
-        setTutors(data);
+        const response = await getPendingTutors(currentPage, itemsPerPage);
+        console.log("fetched tutors:", response);
+
+        setTutors(response.tutors);
+        setTotalItems(response.meta.totalItems);
+        setTotalPages(response.meta.totalPages);
+        setCurrentPage(response.meta.currentPage);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching pending tutors:", error);
@@ -29,30 +38,15 @@ const PendingTutor = () => {
     };
 
     fetchTutors();
-  }, []);
+  }, [currentPage]);
 
+  const handleViewDetails = (tutorId: string) => {
+    router.push(`/admin/tutors/tutorapplications/${tutorId}`);
+  };
 
-  const handleViewDetails=(tutorId:string)=>{
-       router.push(`/admin/tutors/tutorapplications/${tutorId}`)    
-  }
-
-  // const handleAction = async (
-  //   tutorId: string,
-  //   action: "approved" | "rejected"
-  // ) => {
-  //   try {
-  //     await tutorVerify(tutorId, action);
-
-  //     setTutors(
-  //       (prevTutors) =>
-  //         prevTutors.map((tutor) =>
-  //           tutor._id === tutorId ? { ...tutor, status: action } : tutor
-  //         ) as ITutor[]
-  //     );
-  //   } catch (error) {
-  //     console.error("Error updating tutor status:", error);
-  //   }
-  // };
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="flex flex-col">
@@ -138,23 +132,6 @@ const PendingTutor = () => {
                         </span>
                       </td>
 
-                      {/* <td className="py-2 px-4">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleAction(tutor._id, "approved")}
-                            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleAction(tutor._id, "rejected")}
-                            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      </td> */}
-
                       <td className="py-2 px-4">
                         <button
                           onClick={() => handleViewDetails(tutor._id)}
@@ -169,6 +146,14 @@ const PendingTutor = () => {
               </tbody>
             </table>
           )}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+          />
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ const TutorsPage = () => {
   const[currentPage,setCurrentPage]=useState(1);
   const [totalPages,setTotalPages]=useState(1);
   const [totalItems,setTotalItems]=useState(0);
-  const itemsPerPage=9;
+  const itemsPerPage=6;
   const router=useRouter();
 
 

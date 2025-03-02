@@ -20,7 +20,7 @@ const Pagination: React.FC<PaginationProps> = ({
       startPage = Math.max(1, endPage - maxPageVisible + 1);
     }
 
-    for (let i = startPage; i < endPage; i++) {
+    for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
 

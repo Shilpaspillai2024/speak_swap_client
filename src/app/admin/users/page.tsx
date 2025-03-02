@@ -6,6 +6,7 @@ import { blockUnblockUser, getAllUser } from "@/services/adminApi";
 import { IUser } from "@/types/user";
 import { toast } from "react-toastify";
 import protectedRoute from "@/HOC/AdminProtectedRoute";
+import Pagination from "@/components/Pagination";
 
 
 const AdminUserPage = () => {
@@ -13,16 +14,27 @@ const AdminUserPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalItems,setTotalItems]=useState(0);
+  const itemsPerPage = 10;
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await getAllUser();
+        const response = await getAllUser(currentPage,itemsPerPage);
         
         console.log('Fetched Users:', response);
+
+        if(response?.users){
+          setUsers(response.users)
         
-        if (Array.isArray(response)) {
-          setUsers(response);
+
+         setTotalItems(response.meta.totalItems);
+         setTotalPages(response.meta.totalPages);
+         setCurrentPage(response.meta.currentPage);
+        
         } else {
           console.warn('Fetched users is not an array:', response);
           setError("Invalid user data format");
@@ -41,7 +53,7 @@ const AdminUserPage = () => {
     };
 
     fetchUsers();
-  }, []);
+  }, [currentPage]);
 
   const handleBlockUnblock = async(userId: string, currentStatus: boolean) => {
    
@@ -56,6 +68,10 @@ const AdminUserPage = () => {
       console.error("Error toggling user status:", error);
     setError("Failed to update user status. Please try again.");
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (loading) {
@@ -134,6 +150,14 @@ const AdminUserPage = () => {
               </tbody>
             </table>
           </div>
+
+          <Pagination 
+            currentPage={currentPage} 
+            totalPages={totalPages} 
+            onPageChange={handlePageChange} 
+            totalItems={totalItems} 
+            itemsPerPage={itemsPerPage} 
+          />
         </div>
       </div>
     </div>

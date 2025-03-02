@@ -45,11 +45,16 @@ export const refreshToken = async () => {
   }
 };
 
-export const getAllUser = async () => {
+export const getAllUser = async (page:number,limit:number) => {
   try {
-    const response = await axiosInstance.get(`/admin/users`);
+    const response = await axiosInstance.get(`/admin/users`,{
+      params:{
+        page,
+        limit
+      },
+    });
 
-    return response.data.users || [];
+    return response.data|| [];
   } catch (error) {
     console.error("Error fetching users:", error);
     throw error;
@@ -68,22 +73,32 @@ export const blockUnblockUser = async (userId: string, isActive: boolean) => {
   }
 };
 
-export const getTutors = async () => {
+export const getTutors = async (page:number,limit:number) => {
   try {
-    const response = await axiosInstance.get("/admin/tutors/alltutors");
+    const response = await axiosInstance.get("/admin/tutors/alltutors",{
+      params:{
+        page,
+        limit
+      }
+    });
     console.log("api response:", response.data);
 
-    return response.data.tutor || [];
+    return response.data || [];
   } catch (error) {
     console.error("error in fetching tutors:", error);
     throw error;
   }
 };
 
-export const getPendingTutors = async () => {
+export const getPendingTutors = async (page:number,limit:number) => {
   try {
-    const response = await axiosInstance.get("/admin/tutors/pending-tutors");
-    return response.data.tutors || [];
+    const response = await axiosInstance.get("/admin/tutors/pending-tutors",{
+      params:{
+        page,
+        limit
+      }
+    });
+    return response.data || [];
   } catch (error) {
     console.error("error in fetching tutors:", error);
     throw error;
@@ -134,10 +149,15 @@ export const blockUnblockTutor = async (tutorId: string, isActive: boolean) => {
 };
 
 
-export const getAllBookings =async()=>{
+export const getAllBookings =async(page:number,limit:number)=>{
   try {
     
-    const response = await axiosInstance.get(`/admin/bookings`);
+    const response = await axiosInstance.get(`/admin/bookings`,{
+      params:{
+        page,
+        limit
+      }
+    });
     console.log("response of booking in admin",response.data)
     return response.data;
   } catch (error) {

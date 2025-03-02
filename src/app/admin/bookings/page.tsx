@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useEffect, useState } from "react";
 import AdminNavbar from "@/components/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
@@ -6,20 +6,31 @@ import { getAllBookings } from "@/services/adminApi";
 import { IBooking } from "@/types/booking";
 import { useRouter } from "next/navigation";
 import protectedRoute from "@/HOC/AdminProtectedRoute";
+import Pagination from "@/components/Pagination";
 
 const AdminBookingPage = () => {
   const [bookings, setBookings] = useState<IBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const router=useRouter();
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
+  const router = useRouter();
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         setLoading(true);
-        const response = await getAllBookings();
-        if (Array.isArray(response.bookings)) {
+        const response = await getAllBookings(currentPage, itemsPerPage);
+        console.log("booking response", response);
+
+        if (response?.bookings) {
           setBookings(response.bookings);
+          setTotalItems(response.meta.totalItems);
+          setTotalPages(response.meta.totalPages);
+          setCurrentPage(response.meta.currentPage);
         } else {
           throw new Error("Unexpected response format");
         }
@@ -31,13 +42,18 @@ const AdminBookingPage = () => {
       }
     };
     fetchBookings();
-  }, []);
-
+  }, [currentPage]);
 
   const handleViewBooking = (bookingId: string) => {
     router.push(`/admin/bookings/${bookingId}`);
   };
-  
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -64,22 +80,22 @@ const AdminBookingPage = () => {
           <Sidebar />
           <div className="flex-grow flex items-center justify-center">
             <div className="bg-white p-8 rounded-xl shadow-lg text-center">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
                 className="h-16 w-16 text-red-500 mx-auto mb-4"
-                fill="none" 
-                viewBox="0 0 24 24" 
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
               <p className="text-red-500 text-xl mb-4">{error}</p>
-              <button 
+              <button
                 onClick={() => window.location.reload()}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
               >
@@ -101,23 +117,25 @@ const AdminBookingPage = () => {
         <main className="p-6 flex-grow">
           <div className="bg-white shadow-xl rounded-xl overflow-hidden">
             <div className="bg-gradient-to-r from-indigo-300 to-purple-300 p-6">
-              <h1 className="text-3xl font-bold text-white">Booking Management</h1>
+              <h1 className="text-3xl font-bold text-white">
+                Booking Management
+              </h1>
             </div>
-            
+
             {bookings.length === 0 ? (
               <div className="p-6 text-center text-gray-500">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
                   className="h-24 w-24 mx-auto mb-4 text-gray-300"
-                  fill="none" 
-                  viewBox="0 0 24 24" 
+                  fill="none"
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
                 <p className="text-xl">No Bookings found...</p>
@@ -127,9 +145,19 @@ const AdminBookingPage = () => {
                 <table className="w-full">
                   <thead className="bg-gray-100 border-b">
                     <tr>
-                      {['Si.no', 'Booking ID', 'Booked User', 'Email', 'Tutor', 'Payment Status', 'Booking Status', 'Session Fee', 'Actions'].map((header) => (
-                        <th 
-                          key={header} 
+                      {[
+                        "Si.no",
+                        "Booking ID",
+                        "Booked User",
+                        "Email",
+                        "Tutor",
+                        "Payment Status",
+                        "Booking Status",
+                        "Session Fee",
+                        "Actions",
+                      ].map((header) => (
+                        <th
+                          key={header}
                           className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
                           {header}
@@ -139,34 +167,44 @@ const AdminBookingPage = () => {
                   </thead>
                   <tbody>
                     {bookings.map((booking, index) => (
-                      <tr 
-                        key={booking._id} 
+                      <tr
+                        key={booking._id}
                         className="hover:bg-gray-50 transition duration-150 border-b"
                       >
-                        <td className="px-4 py-4 whitespace-nowrap">{index + 1}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{booking._id}</td>
-                        <td className="px-4 py-4 whitespace-nowrap">{booking.userId.fullName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{booking.userId.email}</td>
-                        <td className="px-4 py-4 whitespace-nowrap">{booking.tutorId.name}</td>
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <span 
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {booking._id}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          {booking.userId.fullName}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {booking.userId.email}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          {booking.tutorId.name}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <span
                             className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              booking.paymentStatus === 'paid' 
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
+                              booking.paymentStatus === "paid"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
                             }`}
                           >
                             {booking.paymentStatus}
                           </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <span 
+                          <span
                             className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              booking.status === 'completed' 
-                                ? 'bg-green-100 text-green-800'
-                                : booking.status === 'pending'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
+                              booking.status === "completed"
+                                ? "bg-green-100 text-green-800"
+                                : booking.status === "pending"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
                             }`}
                           >
                             {booking.status}
@@ -176,7 +214,7 @@ const AdminBookingPage = () => {
                           ${booking.sessionFee}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                          <button 
+                          <button
                             className="text-blue-600 hover:text-blue-900 transition"
                             onClick={() => handleViewBooking(booking._id)}
                           >
@@ -190,6 +228,14 @@ const AdminBookingPage = () => {
               </div>
             )}
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+          />
         </main>
       </div>
     </div>

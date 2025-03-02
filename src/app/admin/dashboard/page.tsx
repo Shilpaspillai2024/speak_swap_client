@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import AdminNavbar from "@/components/AdminNavbar";
 import AdminProtectedRoute from "@/HOC/AdminProtectedRoute";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { CalendarDays, Users, GraduationCap, BookOpen, DollarSign, Globe, Lightbulb, MessageCircle } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, } from "recharts";
+import { IndianRupeeIcon, Users, GraduationCap, BookOpen, Globe, Lightbulb, MessageCircle } from "lucide-react";
 import { fetchadminDashboard } from "@/services/adminApi";
 import { useRouter } from "next/navigation";
 
@@ -87,7 +87,7 @@ const AdminDashboard = () => {
 
 
   const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString()}`;
+    return `${amount.toLocaleString()}`;
   };
 
   if (loading) {
@@ -184,7 +184,7 @@ const AdminDashboard = () => {
             
             <div className="bg-white rounded-xl shadow-md p-6 flex items-center">
               <div className="bg-green-100 p-3 rounded-full mr-4">
-                <DollarSign className="text-green-600" size={24} />
+                <IndianRupeeIcon className="text-green-600" size={24} />
               </div>
               <div>
                 <p className="text-gray-500 text-sm">Revenue</p>
@@ -277,7 +277,7 @@ const AdminDashboard = () => {
                     bgColor = 'bg-purple-100';
                     break;
                   case 'payment':
-                    IconComponent = DollarSign;
+                    IconComponent = IndianRupeeIcon;
                     bgColor = 'bg-yellow-100';
                     break;
                   default:

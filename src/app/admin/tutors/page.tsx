@@ -7,24 +7,28 @@ import { getTutors, blockUnblockTutor } from "@/services/adminApi";
 import { ITutor } from "@/types/tutor";
 import { toast } from "react-toastify";
 import protectedRoute from "@/HOC/AdminProtectedRoute";
+import Pagination from "@/components/Pagination";
 
 const AdminTutorPage = () => {
   const [tutors, setTutors] = useState<ITutor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     const fetchTutors = async () => {
       try {
         setLoading(true);
-        const response = await getTutors();
-
-        if (Array.isArray(response)) {
-          const approvedTutors = response.filter(
-            (tutor: ITutor) => tutor.status === "approved"
-          );
-
-          setTutors(approvedTutors);
+        const response = await getTutors(currentPage, itemsPerPage);
+        if (response?.tutors) {
+          setTutors(response.tutors);
+          setTotalItems(response.meta.totalItems);
+          setTotalPages(response.meta.totalPages);
+          setCurrentPage(response.meta.currentPage);
         } else {
           console.error("Invalid response format:", response);
           setError("Invalid data format received");
@@ -37,7 +41,7 @@ const AdminTutorPage = () => {
       }
     };
     fetchTutors();
-  }, []);
+  }, [currentPage]);
 
   const handleBlockUnblock = async (tutorId: string) => {
     try {
@@ -58,6 +62,10 @@ const AdminTutorPage = () => {
       console.error("Error in block/unblock:", error);
       toast.error("Failed to update tutor status.");
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (loading) {
@@ -136,6 +144,14 @@ const AdminTutorPage = () => {
               </tbody>
             </table>
           )}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+          />
         </div>
       </div>
     </div>
