@@ -316,9 +316,14 @@ export const getAvailability = async (tutorId: string) => {
 
 // fetch tutor related bookings
 
-export const getTutorBookings = async () => {
+export const getTutorBookings = async (page:number,limit:number) => {
   try {
-    const response = await tutorAxiosInstance.get(`/booking/tutor/bookings`);
+    const response = await tutorAxiosInstance.get(`/booking/tutor/bookings`,{
+      params:{
+        page,
+        limit
+      }
+    });
     return response.data;
   } catch (error:unknown) {
     if (error instanceof AxiosError) {

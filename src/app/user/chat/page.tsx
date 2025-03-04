@@ -136,7 +136,7 @@ const ChatList = () => {
         socket.off("messageSent", handleNewMessage);
       };
     }
-  }, [socket, loadChats, loggedInUserId]);
+  }, [socket, loggedInUserId]);
 
 
 

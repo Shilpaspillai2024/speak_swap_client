@@ -5,6 +5,7 @@ import { Send, User, Video } from "lucide-react";
 import socketStore, { Message } from "@/store/socketStore";
 import { toast } from "react-toastify";
 import format from "date-fns/format";
+import { Locale } from "date-fns/locale";
 import { getChatById } from "@/services/chatApi";
 import userAuthStore from "@/store/userAuthStore";
 import ChatList from "../page";
@@ -25,7 +26,7 @@ const ChatPage = () => {
   const { chatId } = useParams();
   const router = useRouter();
   const [formatDistanceToNowFn, setFormatDistanceToNowFn] = useState<
-    ((date: Date, options?: any) => string) | null
+    ((date: Date, options?: { addSuffix?: boolean,locale?: Locale}) => string) | null
   >(null);
   const [message, setMessage] = useState("");
   const [recipientDetails, setRecipientDetails] = useState({
@@ -38,7 +39,8 @@ const ChatPage = () => {
   const loggedInUserId = loggedInUser?._id;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatMarkedAsReadRef = useRef(false);
+
+ // const chatMarkedAsReadRef = useRef(false);
 
   const {
     socket,

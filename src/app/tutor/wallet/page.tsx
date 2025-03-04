@@ -79,10 +79,15 @@ const WalletPage: React.FC = () => {
       await withdrawFunds(amount);
       toast.success("Withdrawal successful!");
       closeWithdrawModal();
-      // Refresh wallet details to show updated transactions
+      
       await fetchWalletDetails();
-    } catch (error: any) {
-      toast.error(error);
+    } catch (error:unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unexpected error occurred");
+        console.error("Withdrawal error:", error); 
+      }
     }
   };
 

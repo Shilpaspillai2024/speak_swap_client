@@ -6,7 +6,6 @@ import {
   Languages,
   Clock,
   Mail,
-  Star,
   X,
   CheckCircle,
 } from "lucide-react";
@@ -21,7 +20,7 @@ import {
 import { toast } from "react-toastify";
 import userAuthStore from "@/store/userAuthStore";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
-import { RazorpayResponse } from "@/types/razorpay";
+import { RazorpayResponse,RazorpayFailureResponse} from "@/types/razorpay";
 import Image from "next/image";
 import { markPaymentAsFailed } from "@/services/userApi";
 
@@ -210,7 +209,7 @@ const TutorProfilePage = () => {
 
       const razorpay = new window.Razorpay(options);
 
-      razorpay.on("payment.failed", async function (response: any) {
+      razorpay.on("payment.failed", async function (response:RazorpayFailureResponse) {
         console.log("Payment failed:", response.error);
         await markPaymentAsFailed(bookingId, response.error.description || "Payment failed");
   

@@ -18,6 +18,21 @@ export interface RazorpayOptions {
       ondismiss?: () => void;
     };
   }
+
+
+  export interface RazorpayFailureResponse {
+    error: {
+      code: string;
+      description: string;
+      source: string;
+      step: string;
+      reason: string;
+      metadata: {
+        order_id: string;
+        payment_id: string;
+      };
+    };
+  }
   
   export interface RazorpayResponse {
     razorpay_payment_id: string;
@@ -30,7 +45,7 @@ export interface RazorpayOptions {
 
   export interface RazorpayInstance {
     open(): void;
-    on(event: "payment.failed", callback: (response: any) => void): void;
+    on(event: "payment.failed", callback: (response: RazorpayFailureResponse) => void): void;
     
   }
   
@@ -46,7 +61,7 @@ export interface RazorpayOptions {
       this.razorpayInstance.open();
     }
 
-    on(event: "payment.failed", callback: (response: any) => void): void {
+    on(event: "payment.failed", callback: (response: RazorpayFailureResponse) => void): void {
       this.razorpayInstance.on(event, callback); 
     }
   }

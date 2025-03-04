@@ -26,11 +26,17 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useBookingStore } from "@/store/bookingStore";
 import { toast } from "react-toastify";
+import Pagination from "@/components/Pagination";
 
 const TutorBookings = () => {
   const [bookings, setBookings] = useState<tutorBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { setBookingDetails } = useBookingStore();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 5;
 
   const [activeBookingId, setActiveBookingId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
@@ -39,14 +45,17 @@ const TutorBookings = () => {
 
   useEffect(() => {
     fetchTutorBookings();
-  }, []);
+  }, [currentPage]);
 
   const fetchTutorBookings = async () => {
     try {
       setIsLoading(true);
-      const response = await getTutorBookings();
+      const response = await getTutorBookings(currentPage, itemsPerPage);
       console.log("response from backend ", response);
-      setBookings(response.result);
+      setBookings(response.bookings);
+      setTotalItems(response.meta.totalItems);
+      setTotalPages(response.meta.totalPages);
+      setCurrentPage(response.meta.currentPage);
     } catch (error) {
       console.error("Error fetching bookings:", error);
     } finally {
@@ -54,12 +63,19 @@ const TutorBookings = () => {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   useEffect(() => {
     const initialTimeLeft: { [key: string]: number } = {};
     bookings.forEach((booking) => {
       const parseTime = (timeStr: string) => {
         const [time, modifier] = timeStr.split(" ");
-        let [hours, minutes] = time.split(":").map(Number);
+        const [h, m] = time.split(":").map(Number);
+        let hours = h; 
+        const minutes = m;
+        // let [hours, minutes] = time.split(":").map(Number);
         if (modifier === "PM" && hours !== 12) hours += 12;
         if (modifier === "AM" && hours === 12) hours = 0;
 
@@ -89,7 +105,12 @@ const TutorBookings = () => {
     bookings.forEach((booking) => {
       const parseTime = (timeStr: string) => {
         const [time, modifier] = timeStr.split(" ");
-        let [hours, minutes] = time.split(":").map(Number);
+
+        const [h, m] = time.split(":").map(Number);
+        let hours = h; 
+        const minutes = m;
+
+        // let [hours, minutes] = time.split(":").map(Number);
 
         if (modifier === "PM" && hours !== 12) hours += 12;
         if (modifier === "AM" && hours === 12) hours = 0;
@@ -155,7 +176,11 @@ const TutorBookings = () => {
         bookings.forEach((booking) => {
           const parseTime = (timeStr: string) => {
             const [time, modifier] = timeStr.split(" ");
-            let [hours, minutes] = time.split(":").map(Number);
+            // const [hours, minutes] = time.split(":").map(Number);
+
+            const [h, m] = time.split(":").map(Number);
+            let hours = h; 
+            const minutes = m;
 
             if (modifier === "PM" && hours !== 12) hours += 12;
             if (modifier === "AM" && hours === 12) hours = 0;
@@ -167,7 +192,6 @@ const TutorBookings = () => {
           const sessionStart = new Date(booking.selectedDate);
           sessionStart.setHours(hours, minutes, 0, 0);
 
-          
           const activationTime = new Date(
             sessionStart.getTime() - 10 * 60 * 1000
           );
@@ -303,7 +327,6 @@ const TutorBookings = () => {
                             height={56}
                             className="object-cover"
                             unoptimized
-                           
                           />
                         ) : (
                           <div className="h-full w-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
@@ -364,8 +387,6 @@ const TutorBookings = () => {
                     </div>
                   </div>
 
-                
-
                   <div className="mt-8 flex items-center justify-between">
                     {(booking.status === "confirmed" ||
                       booking.status === "in-progress") && (
@@ -418,6 +439,14 @@ const TutorBookings = () => {
                 </p>
               </div>
             )}
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+            />
           </div>
         </div>
       </div>

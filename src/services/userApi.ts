@@ -531,13 +531,18 @@ export const userbookingDetails = async (page:number=1,limit:number=5) => {
 };
 
 
-export const fetchUserWallet=async()=>{
+export const fetchUserWallet=async(page:number,limit:number)=>{
   try {
-    const response=await userAxiosInstance.get(`/wallet`)
+    const response=await userAxiosInstance.get(`/wallet`,{
+      params:{
+        page,
+        limit
+      }
+    })
     console.log("response from user wallet",response)
     return response.data
   } catch (error) {
-  
+    console.error("Error in fetching user user wallet:", error)
     throw new Error("Error fetching wallet details");
   }
   
@@ -553,3 +558,31 @@ export const logoutUser = async () => {
     throw new Error("Logout failed.");
   }
 };
+
+
+
+export const cancelUserBooking= async (bookingId:string,cancellationReason:string)=>{
+  try {
+    const response=await userAxiosInstance.post(`/booking/cancellation/${bookingId}`,{
+     cancellationReason
+    })
+    return response.data;
+    
+  } catch (error) {
+    console.error("Error in cancel the session:", error);
+    throw new Error("error in cancel the session");
+  }
+}
+  export const fetchWalletUser=async()=>{
+    try {
+      const response=await userAxiosInstance.get(`/userwallet`)
+      console.log("response from user wallet",response)
+      return response.data
+    } catch (error) {
+      console.error("Error in fecthing wallet details:", error);
+      throw new Error("Error fetching wallet details");
+    }
+    
+  }
+
+

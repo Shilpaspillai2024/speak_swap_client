@@ -5,7 +5,7 @@ import AdminNavbar from "@/components/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
 import { ITutor } from "@/types/tutor";
 import { useState } from "react";
-import { getPendingTutors, tutorVerify } from "@/services/adminApi";
+import { getPendingTutors} from "@/services/adminApi";
 import protectedRoute from "@/HOC/AdminProtectedRoute";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";

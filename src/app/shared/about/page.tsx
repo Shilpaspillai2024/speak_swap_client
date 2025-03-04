@@ -27,7 +27,7 @@ const AboutPage = () => {
           <div className="bg-white rounded-xl shadow-md overflow-hidden mb-12">
             <div className="p-8">
               <p className="text-gray-700 text-lg leading-relaxed">
-                SpeakSwap is a cutting-edge language-sharing and learning platform designed to connect users with native speakers worldwide. Whether you're looking to enhance your speaking skills, meet new people, or dive into a new language, SpeakSwap provides the ideal environment for immersive and effective learning.
+               ${`SpeakSwap is a cutting-edge language-sharing and learning platform designed to connect users with native speakers worldwide. Whether you're looking to enhance your speaking skills, meet new people, or dive into a new language, SpeakSwap provides the ideal environment for immersive and effective learning`}.
               </p>
             </div>
           </div>
@@ -86,7 +86,7 @@ const AboutPage = () => {
                   Tutor Sessions
                 </h2>
                 <p className="text-gray-700 leading-relaxed">
-                  SpeakSwap offers a seamless <span className="font-semibold">tutor booking system</span>, allowing users to schedule <span className="font-semibold">1-hour sessions</span> with experienced and certified tutors. Whether you're seeking structured lessons or casual practice, our platform ensures a flexible and personalized learning experience tailored to your goals.
+                  ${`SpeakSwap offers a seamless <span className="font-semibold">tutor booking system</span>, allowing users to schedule <span className="font-semibold">1-hour sessions</span> with experienced and certified tutors. Whether you're seeking structured lessons or casual practice, our platform ensures a flexible and personalized learning experience tailored to your goals.`}
                 </p>
               </div>
             </div>
@@ -95,7 +95,7 @@ const AboutPage = () => {
           {/* Bottom Quote */}
           <div className="bg-white rounded-xl shadow-md overflow-hidden text-center p-8">
             <blockquote className="text-xl italic text-gray-700">
-              "Language is the road map of a culture. It tells you where its people come from and where they are going."
+              {`"Language is the road map of a culture. It tells you where its people come from and where they are going."`}
             </blockquote>
             <p className="mt-2 text-gray-500">- Rita Mae Brown</p>
           </div>

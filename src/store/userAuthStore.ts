@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { jwtDecode } from "jwt-decode"
-import { refreshToken,logoutUser} from "@/services/userApi";
+import { jwtDecode } from "jwt-decode";
+import { refreshToken, logoutUser } from "@/services/userApi";
 import { IUser } from "@/types/user";
 
 interface UserAuthState {
@@ -13,8 +13,8 @@ interface UserAuthState {
   setUser: (user: IUser) => void;
   Logout: () => void;
   initAuth: () => Promise<void>;
-  refreshAccessToken:()=>Promise<boolean>
-  checkTokenValidity: () =>Promise<boolean>;
+  refreshAccessToken: () => Promise<boolean>;
+  checkTokenValidity: () => Promise<boolean>;
 }
 
 interface DecodedToken {
@@ -34,7 +34,7 @@ const userAuthStore = create<UserAuthState>()(
 
         setUserAuth: (user, token) => {
           if (token) {
-          console.log("setting user:",{user,token});
+            console.log("setting user:", { user, token });
             set({
               user,
               token,
@@ -45,16 +45,14 @@ const userAuthStore = create<UserAuthState>()(
             console.error("No token provided.");
           }
         },
-      
 
         setUser: (user) => {
           set({ user });
         },
-        Logout:async() => {
+        Logout: async () => {
           console.log("Logging out...");
           await logoutUser();
 
-         
           set({
             user: null,
             token: null,
@@ -66,43 +64,45 @@ const userAuthStore = create<UserAuthState>()(
         },
 
         initAuth: async () => {
-        const{token,checkTokenValidity,refreshAccessToken,user,Logout}=get();
-        console.log("Initializing user Auth. Current Token:", token);
+          const {
+            token,
+            checkTokenValidity,
+            refreshAccessToken,
+            user,
+            Logout,
+          } = get();
+          console.log("Initializing user Auth. Current Token:", token);
 
-
-        if(!token){
-          console.warn("No token found.Logging out....");
-          Logout();
-          return;
-        }
-
-        const isValid=await checkTokenValidity();
-        if(!isValid){
-          const isRefreshed=await refreshAccessToken()
-          if(!isRefreshed){
+          if (!token) {
+            console.warn("No token found.Logging out....");
             Logout();
             return;
           }
-        }
+
+          const isValid = await checkTokenValidity();
+          if (!isValid) {
+            const isRefreshed = await refreshAccessToken();
+            if (!isRefreshed) {
+              Logout();
+              return;
+            }
+          }
           set({
-           
-            isUserAuthenticated:true,
-            isLoading:false,
+            user,
+            isUserAuthenticated: true,
+            isLoading: false,
           });
         },
 
-        checkTokenValidity:async () => {
-         const {token}=get();
-         
+        checkTokenValidity: async () => {
+          const { token } = get();
+
           if (!token) {
-           // console.error("Token is missing");
             return false;
           }
 
           try {
-          
-
-           const decodedToken = jwtDecode<DecodedToken>(token);
+            const decodedToken = jwtDecode<DecodedToken>(token);
             const currentTime = Date.now() / 1000;
             return decodedToken.exp > currentTime;
           } catch (error) {
@@ -111,26 +111,20 @@ const userAuthStore = create<UserAuthState>()(
           }
         },
 
-
-
-        refreshAccessToken:async()=>{
+        refreshAccessToken: async () => {
           try {
-            const data=await refreshToken()
-            if(data?.accessToken){
-              set({token:data.accessToken,
-                isUserAuthenticated:true
-              });
+            const data = await refreshToken();
+            if (data?.accessToken) {
+              set({ token: data.accessToken, isUserAuthenticated: true });
               return true;
             }
             return false;
-            
           } catch (error) {
             console.error("Token refresh error:", error);
             get().Logout();
             return false;
-            
           }
-        }
+        },
       }),
       {
         name: "user-auth",

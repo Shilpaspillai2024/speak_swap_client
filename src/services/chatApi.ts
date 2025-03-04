@@ -4,9 +4,7 @@ import userAuthStore from "@/store/userAuthStore";
 import tutorAuthStore from "@/store/tutorAuthStore";
 import { AxiosError } from "axios";
 
-interface UnreadCountResponse {
-  totalUnread: number;
-}
+
 
 export const createChat = async (
   participants: { participantId: string; role: "user" | "tutor" }[],

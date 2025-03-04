@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { IUser } from "@/types/user";
-import { fetchProfile, updateProfileDetails, fetchUserWallet } from "@/services/userApi";
+import { fetchProfile, updateProfileDetails,fetchWalletUser} from "@/services/userApi";
 import UserNavbar from "@/components/UserNavbar";
 import { toast } from "react-toastify";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
@@ -72,6 +72,11 @@ const EditableField: React.FC<EditableFieldProps> = ({
   </div>
 );
 
+interface Transaction {
+  type: string;
+  description?: string;
+}
+
 const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<IUser | null>(null);
   const [hasWallet, setHasWallet] = useState(false);
@@ -95,13 +100,13 @@ const ProfilePage: React.FC = () => {
         
        
         try {
-          const walletData = await fetchUserWallet();
+          const walletData = await fetchWalletUser();
           
           if (walletData?.data?.transactions?.length > 0) {
             setHasWallet(true);
             
             const hasCancellation = walletData.data.transactions.some(
-              (txn: any) => 
+              (txn: Transaction) => 
                 txn.type === 'refund' && 
                 txn.description?.toLowerCase().includes('cancel')
             );
@@ -110,7 +115,7 @@ const ProfilePage: React.FC = () => {
           }
         } catch (walletErr) {
         
-          console.log("Wallet not found or error fetching wallet");
+          console.log("Wallet not found or error fetching wallet",walletErr);
           setHasWallet(false);
           setHasCanceledSession(false);
         }

@@ -95,7 +95,7 @@ const TutorDashboard = () => {
               Welcome back, {tutor?.name || "Tutor"}!
             </h1>
             <p className="text-gray-600 mt-1">
-              Here's an overview of your teaching activity
+              ${`Here's an overview of your teaching activity`}
             </p>
           </div>
 

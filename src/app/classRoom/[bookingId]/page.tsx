@@ -27,11 +27,11 @@ interface ChatMessage{
 const ClassRoom = () => {
   const { bookingId } = useParams();
   const [error, setError] = useState("");
-  const [isSessionReady, setIsSessionReady] = useState(false);
+  //const [isSessionReady,setIsSessionReady] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [participantCount, setParticipantCount] = useState(1);
-  const [remoteUserJoined, setRemoteUserJoined] = useState(false);
+ // const [remoteUserJoined, setRemoteUserJoined] = useState(false);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -97,7 +97,7 @@ const ClassRoom = () => {
         const stream = await initializeLocalStream();
         if (stream) {
           console.log("Local stream initialized successfully");
-          setIsSessionReady(true);
+         // setIsSessionReady(true);
         }
       } catch (err) {
         console.error("Error initializing media:", err);
@@ -150,7 +150,7 @@ const ClassRoom = () => {
           remoteVideoRef.current.srcObject = remoteStream.current;
         }
         setParticipantCount(2);
-        setRemoteUserJoined(true);
+        //setRemoteUserJoined(true);
       };
 
       // Ensure local stream exists and add tracks
@@ -209,7 +209,7 @@ const ClassRoom = () => {
 
     const handleUserJoined = async ({ userRole }: { userRole: string }) => {
       console.log("Remote user joined:", userRole);
-      setRemoteUserJoined(true);
+     // setRemoteUserJoined(true);
 
       if (isInitiator.current) {
         console.log("Initializing connection as initiator");
@@ -451,9 +451,9 @@ const ClassRoom = () => {
     }
 
     // Reset state
-    setRemoteUserJoined(false);
+   // setRemoteUserJoined(false);
     setParticipantCount(1);
-    setIsSessionReady(false);
+  //  setIsSessionReady(false);
     setIsScreenSharing(false);
   };
 

@@ -13,13 +13,13 @@ import {
 } from "lucide-react";
 import UserNavbar from "@/components/UserNavbar";
 import { IBooking } from "@/types/booking";
-import { userbookingDetails } from "@/services/userApi";
+import { userbookingDetails, cancelUserBooking } from "@/services/userApi";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useBookingStore } from "@/store/bookingStore";
 import Pagination from "@/components/Pagination";
-
+import { toast } from "react-toastify";
 
 const UserBookings = () => {
   const [bookings, setBookings] = useState<IBooking[]>([]);
@@ -28,13 +28,16 @@ const UserBookings = () => {
   const [activeBookingId, setActiveBookingId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
 
-
+  const [cancellationReason, setCancellationReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelBookingId, setCancelBookingId] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 5;
-
 
   const router = useRouter();
 
@@ -45,8 +48,8 @@ const UserBookings = () => {
   const fetchUserBookings = async () => {
     try {
       setIsLoading(true);
-      const response = await userbookingDetails(currentPage,itemsPerPage);
-      console.log("bookings",response)
+      const response = await userbookingDetails(currentPage, itemsPerPage);
+      console.log("bookings", response);
       setBookings(response.result.bookings);
       setTotalItems(response.result.totalItems);
       setTotalPages(Math.ceil(response.result.totalItems / itemsPerPage));
@@ -56,7 +59,6 @@ const UserBookings = () => {
       setIsLoading(false);
     }
   };
-
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -87,7 +89,10 @@ const UserBookings = () => {
     bookings.forEach((booking) => {
       const parseTime = (timeStr: string) => {
         const [time, modifier] = timeStr.split(" ");
-        let [hours, minutes] = time.split(":").map(Number);
+        // let [hours, minutes] = time.split(":").map(Number);
+        const [h, m] = time.split(":").map(Number);
+        let hours = h;
+        const minutes = m;
 
         if (modifier === "PM" && hours !== 12) hours += 12;
         if (modifier === "AM" && hours === 12) hours = 0;
@@ -100,12 +105,9 @@ const UserBookings = () => {
       const sessionStart = new Date(booking.selectedDate);
       sessionStart.setHours(hours, minutes, 0, 0);
 
-     
       const activationTime = new Date(sessionStart.getTime() - 5 * 60 * 1000);
-     
-      const currentTime = new Date();
 
-     
+      const currentTime = new Date();
 
       // if (currentTime >= activationTime && currentTime <= sessionStart) {
       if (currentTime >= activationTime) {
@@ -135,10 +137,14 @@ const UserBookings = () => {
         const newTimeLeft: { [key: string]: number } = { ...prevTimeLeft };
 
         bookings.forEach((booking) => {
-          // Function to parse 12-hour AM/PM time format
+         
           const parseTime = (timeStr: string) => {
             const [time, modifier] = timeStr.split(" ");
-            let [hours, minutes] = time.split(":").map(Number);
+            //let [hours, minutes] = time.split(":").map(Number);
+
+            const [h, m] = time.split(":").map(Number);
+            let hours = h; 
+            const minutes = m;
 
             if (modifier === "PM" && hours !== 12) hours += 12;
             if (modifier === "AM" && hours === 12) hours = 0;
@@ -148,11 +154,10 @@ const UserBookings = () => {
 
           const { hours, minutes } = parseTime(booking.selectedSlot.startTime);
 
-        
           const sessionStart = new Date(booking.selectedDate);
           sessionStart.setHours(hours, minutes, 0, 0);
 
-          // Calculate activation time (5 minutes before session starts)
+         
           const activationTime = new Date(
             sessionStart.getTime() - 5 * 60 * 1000
           );
@@ -175,18 +180,50 @@ const UserBookings = () => {
 
   const formatTimeLeft = (milliseconds: number) => {
     if (milliseconds <= 0) return "0m 0s";
-    
+
     const hours = Math.floor(milliseconds / (60 * 60 * 1000));
     const minutes = Math.floor((milliseconds % (60 * 60 * 1000)) / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m ${seconds}s`;
     } else {
       return `${minutes}m ${seconds}s`;
     }
   };
-  
+
+  const handleCancelBooking = async () => {
+    if (!cancelBookingId || !cancellationReason.trim()) return;
+
+    try {
+      setIsCancelling(true);
+      await cancelUserBooking(cancelBookingId, cancellationReason);
+
+      await fetchUserBookings();
+
+      setShowCancelModal(false);
+
+      setCancelBookingId(null);
+      toast.success("session cencelled");
+    } catch (error:unknown) {
+
+      //console.error("Error cancelling booking:", error);
+      const errorMessage =
+      error instanceof Error ? error.message : "Failed to cancel booking. Please try again.";
+      setCancelError(errorMessage)
+      toast.error(errorMessage);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const openCancelModal = (bookingId: string) => {
+    setCancelBookingId(bookingId);
+    setShowCancelModal(true);
+    setCancellationReason("");
+    setCancelError(null);
+  };
+
   const getStatusBadge = (status: string) => {
     const badges = {
       pending: {
@@ -337,12 +374,12 @@ const UserBookings = () => {
                   </div>
                 </div>
 
-
                 {booking.status === "payment_failed" && (
                   <div className="mt-8">
                     <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-4">
                       <p className="text-red-700 text-sm">
-                        Payment for this session failed. Please retry payment to confirm your booking.
+                        Payment for this session failed. Please retry payment to
+                        confirm your booking.
                       </p>
                     </div>
                     <button
@@ -355,7 +392,8 @@ const UserBookings = () => {
                   </div>
                 )}
 
-                {(booking.status === "confirmed" || booking.status === "in-progress") && (
+                {(booking.status === "confirmed" ||
+                  booking.status === "in-progress") && (
                   <div className="mt-8 flex items-center space-x-4">
                     <button
                       onClick={() => handleJoinSession(booking)}
@@ -369,6 +407,15 @@ const UserBookings = () => {
                       <Video className="w-5 h-5 mr-2" />
                       Join Session
                     </button>
+
+                    <button
+                      onClick={() => openCancelModal(booking._id)}
+                      className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium shadow-sm hover:shadow"
+                    >
+                      <XCircle className="w-5 h-5 mr-2" />
+                      Cancel Booking
+                    </button>
+
                     {timeLeft[booking._id] > 0 && (
                       <div className="flex items-center text-red-600 font-semibold bg-gray-100 p-2 rounded-lg shadow-md w-fit">
                         <Clock className="w-5 h-5 text-red-500 animate-pulse mr-2" />
@@ -400,7 +447,6 @@ const UserBookings = () => {
           )}
         </div>
 
-
         {totalItems > 0 && (
           <Pagination
             currentPage={currentPage}
@@ -411,6 +457,59 @@ const UserBookings = () => {
           />
         )}
       </div>
+
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Cancel Booking
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Are you sure you want to cancel this booking? This action cannot
+                be undone.
+              </p>
+              {cancelError && (
+                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
+                  {cancelError}
+                </div>
+              )}
+            </div>
+
+            {/* Text area for cancellation reason */}
+            <textarea
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-red-200"
+              placeholder="Enter your cancellation reason..."
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+            ></textarea>
+
+            <div className="flex justify-end space-x-3 mt-4">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                disabled={isCancelling}
+                className="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCancelBooking}
+                disabled={isCancelling || !cancellationReason.trim()} // Prevent empty submission
+                className="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white transition-colors font-medium flex items-center"
+              >
+                {isCancelling ? (
+                  <>
+                    <RefreshCcw className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "Confirm Cancellation"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
