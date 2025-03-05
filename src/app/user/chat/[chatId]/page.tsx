@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Send, User, Video } from "lucide-react";
+import { Send, User, Video, Image as ImageIcon } from "lucide-react";
 import socketStore, { Message } from "@/store/socketStore";
 import { toast } from "react-toastify";
 import format from "date-fns/format";
@@ -11,7 +11,6 @@ import userAuthStore from "@/store/userAuthStore";
 import ChatList from "../page";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 import Image from "next/image";
-
 
 interface Participant {
   participantId: {
@@ -26,7 +25,11 @@ const ChatPage = () => {
   const { chatId } = useParams();
   const router = useRouter();
   const [formatDistanceToNowFn, setFormatDistanceToNowFn] = useState<
-    ((date: Date, options?: { addSuffix?: boolean,locale?: Locale}) => string) | null
+    | ((
+        date: Date,
+        options?: { addSuffix?: boolean; locale?: Locale }
+      ) => string)
+    | null
   >(null);
   const [message, setMessage] = useState("");
   const [recipientDetails, setRecipientDetails] = useState({
@@ -39,8 +42,8 @@ const ChatPage = () => {
   const loggedInUserId = loggedInUser?._id;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
- // const chatMarkedAsReadRef = useRef(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     socket,
@@ -50,6 +53,20 @@ const ChatPage = () => {
     currentChatId,
     markAsRead,
   } = socketStore();
+
+  useEffect(() => {
+    const loadFormatDistanceToNow = async () => {
+      try {
+        const module = await import("date-fns/formatDistanceToNow");
+        setFormatDistanceToNowFn(() => module.formatDistanceToNow);
+      } catch (error) {
+        console.error("Failed to import formatDistanceToNow:", error);
+        toast.error("Failed to load time formatting function");
+      }
+    };
+
+    loadFormatDistanceToNow();
+  }, []);
 
   useEffect(() => {
     if (chatId && (!currentChatId || currentChatId !== chatId)) {
@@ -120,12 +137,6 @@ const ChatPage = () => {
   }, [chatId, loggedInUserId]);
 
   useEffect(() => {
-    import("date-fns/formatDistanceToNow").then((module) => {
-      setFormatDistanceToNowFn(() => module.formatDistanceToNow);
-    });
-  }, []);
-
-  useEffect(() => {
     if (socket) {
       const handleNewMessage = (newMessage: Message) => {
         console.log("New message received:", newMessage);
@@ -141,20 +152,52 @@ const ChatPage = () => {
     }
   }, [socket, chatId]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+      ];
+      const maxSize = 5 * 1024 * 1024;
+
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Invalid file type. Only images are allowed.");
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast.error("File is too large. Maximum size is 5MB.");
+        return;
+      }
+
+      setSelectedFile(file);
+    }
+  };
+
   const handleSendMessage = async () => {
-    if (!message.trim() || !chatId) return;
+    if ((!message.trim() && !selectedFile) || !chatId) return;
 
     try {
-      await sendMessageFn(chatId as string, message.trim());
+      await sendMessageFn(
+        chatId as string,
+        message.trim(),
+        selectedFile || undefined
+      );
       await markAsRead(chatId as string);
       setMessage("");
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (error) {
       toast.error("Failed to send message");
       console.error("Error sending message:", error);
     }
   };
-
-  
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -204,7 +247,6 @@ const ChatPage = () => {
               <div>
                 <h2 className="font-semibold">{recipientDetails.name}</h2>
                 <p className="text-sm text-gray-500">
-
                   {recipientDetails.isOnline
                     ? "Online"
                     : recipientDetails.lastActive && formatDistanceToNowFn
@@ -247,7 +289,23 @@ const ChatPage = () => {
                       : "bg-gray-200"
                   }`}
                 >
-                  <p className="break-words">{msg.message}</p>
+                  {/* Render text message if exists */}
+                  {msg.message && <p className="break-words">{msg.message}</p>}
+
+                  {/* Render image if exists */}
+                  {msg.imageUrl && (
+                    <div className="mt-2">
+                      <Image
+                        src={msg.imageUrl}
+                        alt="Uploaded image"
+                        width={200}
+                        height={200}
+                        className="rounded-lg max-w-full object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  )}
+                  {/* <p className="break-words">{msg.message}</p> */}
                   <span className="text-xs opacity-70">
                     {msg.timestamp
                       ? format(new Date(msg.timestamp), "MM/dd/yyyy hh:mm a")
@@ -263,6 +321,47 @@ const ChatPage = () => {
 
         <div className="border-t p-4 bg-white">
           <div className="flex items-center gap-2">
+            {/* File input (hidden) */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              className="hidden"
+            />
+
+            {/* Image upload button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+            >
+              <ImageIcon className="w-5 h-5" />
+            </button>
+
+            {/* Selected file preview */}
+            {selectedFile && (
+              <div className="flex items-center mr-2">
+                <Image
+                  src={URL.createObjectURL(selectedFile)}
+                  alt="Selected file"
+                  width={40}
+                  height={40}
+                  className="rounded-md object-cover mr-2"
+                />
+                <button
+                  onClick={() => {
+                    setSelectedFile(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
+                  }}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             <input
               type="text"
               value={message}
@@ -273,7 +372,7 @@ const ChatPage = () => {
             />
             <button
               onClick={handleSendMessage}
-              disabled={!message.trim()}
+              disabled={!message.trim() && !selectedFile}
               className="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="w-5 h-5" />

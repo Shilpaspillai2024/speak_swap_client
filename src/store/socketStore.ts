@@ -8,6 +8,7 @@ import {
   createChat,
   getChatUsers,
   updateLastMessage,
+  uploadMessageImage,
 } from "@/services/chatApi";
 import userAuthStore from "./userAuthStore";
 import tutorAuthStore from "./tutorAuthStore";
@@ -20,6 +21,7 @@ export interface Message {
   timestamp: string;
   chatId: string;
   isRead?: boolean;
+  imageUrl?:string;
 }
 
 interface Chat {
@@ -52,7 +54,7 @@ interface SocketState {
   disconnectSocket: () => void;
   fetchChatList: () => Promise<void>;
   fetchMessages: (chatId: string) => Promise<void>;
-  sendMessage: (chatId: string, message: string) => Promise<void>;
+  sendMessage: (chatId: string, message: string,file?:File) => Promise<void>;
   markAsRead: (chatId: string) => Promise<void>;
   updateChatList: (message: Message) => void;
   cleanup: () => void;
@@ -311,7 +313,7 @@ const socketStore = create<SocketState>()((set, get) => ({
     }
   },
 
-  sendMessage: async (chatId: string, message: string) => {
+  sendMessage: async (chatId: string, message: string,file?:File) => {
     try {
       const role = get().getRole();
       const socket = get().socket;
@@ -320,9 +322,17 @@ const socketStore = create<SocketState>()((set, get) => ({
       const userId = user?._id ?? "";
       console.log("userId", userId);
 
+
+
+       let imageUrl:string | undefined;
+      if(file){
+        imageUrl=await uploadMessageImage(file,role)
+      }
       const timestamp = new Date().toISOString();
 
-      const newMessage = await sendMessage({ chatId, message }, role);
+      const lastMessage = message || (imageUrl ? "Sent an image" : "");
+
+      const newMessage = await sendMessage({ chatId, message,imageUrl}, role);
 
       set((state) => {
         return {
@@ -344,6 +354,7 @@ const socketStore = create<SocketState>()((set, get) => ({
           {
             chatId,
             message,
+            imageUrl,
             senderId,
             timestamp,
           },
@@ -355,7 +366,7 @@ const socketStore = create<SocketState>()((set, get) => ({
         console.warn("Socket not connected for real-time message");
       }
 
-      await updateLastMessage(chatId, message, role, timestamp, userId);
+      await updateLastMessage(chatId, lastMessage, role, timestamp, userId);
 
       get().updateChatList(newMessage);
     } catch (error) {

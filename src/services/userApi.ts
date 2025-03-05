@@ -5,6 +5,7 @@ import { ITutor } from "@/types/tutor";
 import { RazorpayResponse } from "@/types/razorpay";
 import { HttpStatus } from "@/constants/httpStatus";
 import { TutorResponse } from "@/types/tutor";
+import axiosInstance from "./axiosInstance";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export interface signupBasicDetails {
@@ -579,5 +580,8 @@ export const cancelUserBooking= async (bookingId:string,cancellationReason:strin
     }
     
   }
+
+
+ 
 
 

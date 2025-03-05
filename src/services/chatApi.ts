@@ -116,6 +116,7 @@ export const sendMessage = async (
   data: {
     chatId: string;
     message: string;
+    imageUrl?:string;
     
   },
   role: "user" | "tutor"
@@ -152,6 +153,33 @@ export const sendMessage = async (
     }
   }
 };
+
+
+export const uploadMessageImage=async(
+  file:File,
+  role:"user"|"tutor"
+)=>{
+  try {
+    const instance = role === "user" ? userAxiosInstance : tutorAxiosInstance;
+    
+
+    const formData=new FormData();
+    formData.append('image',file);
+    const response=await instance.post(`/message/upload-image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data.imageUrl;
+  } catch (error:unknown) {
+    if (error instanceof AxiosError) {
+      throw error.response?.data?.error || "Error uploading image";
+    } else {
+      console.error("Unexpected error:", error);
+      throw "An unexpected error occurred while uploading the image";
+    } 
+  }
+}
 
 export const fetchMessages = async (chatId: string, role: "user" | "tutor") => {
   try {
@@ -239,5 +267,8 @@ export const getChatUsers=async(chatId:string,role:"user" | "tutor")=>{
   }
 
 }
+
+
+
 
 
