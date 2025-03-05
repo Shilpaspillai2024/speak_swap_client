@@ -5,7 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import { blockUnblockUser, getAllUser } from "@/services/adminApi";
 import { IUser } from "@/types/user";
 import { toast } from "react-toastify";
-import protectedRoute from "@/HOC/AdminProtectedRoute";
+import AdminProtectedRoute from "@/HOC/AdminProtectedRoute";
 import Pagination from "@/components/Pagination";
 
 
@@ -164,4 +164,4 @@ const AdminUserPage = () => {
   );
 };
 
-export default protectedRoute(AdminUserPage);
+export default AdminProtectedRoute(AdminUserPage);

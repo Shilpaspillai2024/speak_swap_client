@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowLeft, RefreshCcw, Clock, Calendar, User, DollarSign
 import UserNavbar from '@/components/UserNavbar';
 import { getBookingDetails } from '@/services/userApi';
 import { IBooking } from '@/types/booking';
+import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 
 const PaymentFailedPage = () => {
   const [booking, setBooking] = useState<IBooking | null>(null);
@@ -152,4 +153,4 @@ const PaymentFailedPage = () => {
   );
 };
 
-export default PaymentFailedPage;
+export default UserProtectedRoute(PaymentFailedPage);

@@ -6,7 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import { getTutors, blockUnblockTutor } from "@/services/adminApi";
 import { ITutor } from "@/types/tutor";
 import { toast } from "react-toastify";
-import protectedRoute from "@/HOC/AdminProtectedRoute";
+import AdminProtectedRoute from "@/HOC/AdminProtectedRoute";
 import Pagination from "@/components/Pagination";
 
 const AdminTutorPage = () => {
@@ -158,4 +158,4 @@ const AdminTutorPage = () => {
   );
 };
 
-export default protectedRoute(AdminTutorPage);
+export default AdminProtectedRoute(AdminTutorPage);

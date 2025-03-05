@@ -431,14 +431,9 @@ export const createBooking = async (
     console.log("Error in booking creation");
 
     if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.error || "Error occurred while booking"
-      );
-    } else if (error instanceof Error) {
-      throw new Error(error.message);
-    } else {
-      throw new Error("An unknown error occurred while booking");
+      return { success: false, message: error.response.data.error };
     }
+    return { success: false, message: "An unknown error occurred while booking" };
   }
 };
 
@@ -542,7 +537,7 @@ export const fetchUserWallet=async(page:number,limit:number)=>{
     console.log("response from user wallet",response)
     return response.data
   } catch (error) {
-    console.error("Error in fetching user user wallet:", error)
+    console.log("no user wallet",error)
     throw new Error("Error fetching wallet details");
   }
   
@@ -579,7 +574,7 @@ export const cancelUserBooking= async (bookingId:string,cancellationReason:strin
       console.log("response from user wallet",response)
       return response.data
     } catch (error) {
-      console.error("Error in fecthing wallet details:", error);
+      console.log("no user wallet",error)
       throw new Error("Error fetching wallet details");
     }
     

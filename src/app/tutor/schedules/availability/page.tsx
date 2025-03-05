@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Clock,Plus, Trash2,Calendar } from "lucide-react";
+import { Clock, Plus, Trash2, Calendar } from "lucide-react";
 import TutorNavbar from "@/components/TutorNavbar";
 import TutorSidebar from "@/components/TutorSidebar";
 import {
@@ -21,22 +21,24 @@ interface DaySchedule {
   slots: TimeSlot[];
 }
 
-const saveTutorAvailability = async (data: { schedule: DaySchedule[]; timeZone: string }) => {
-  const { schedule,timeZone} = data;
+const saveTutorAvailability = async (data: {
+  schedule: DaySchedule[];
+  timeZone: string;
+}) => {
+  const { schedule, timeZone } = data;
 
+  const tutor = tutorAuthStore.getState().tutor;
+  const tutorId = tutor?._id ?? "";
 
-  const tutor=tutorAuthStore.getState().tutor 
-  const tutorId=tutor?._id ?? ""
-   
   console.log("tutorID", tutorId);
 
   console.log("Schedule", schedule);
   try {
-     const response = await setAvailability(tutorId, { schedule, timeZone });
+    const response = await setAvailability(tutorId, { schedule, timeZone });
     console.log("availability set success fully");
     return response;
   } catch (error) {
-    console.log("something went wrong try againg",error);
+    console.log("something went wrong try againg", error);
     throw new Error("Failed to save tutor availability");
   }
 };
@@ -53,12 +55,9 @@ const TutorSchedule = () => {
   const [endTime, setEndTime] = useState<string>("");
   const [timeZone, setTimeZone] = useState<string>("");
 
-  
-
-  const tutor=tutorAuthStore.getState().tutor 
-  const tutorId=tutor?._id ?? ""
-   console.log("tutorId", tutorId);
-  
+  const tutor = tutorAuthStore.getState().tutor;
+  const tutorId = tutor?._id ?? "";
+  console.log("tutorId", tutorId);
 
   useEffect(() => {
     console.log("Fetching availability for tutorId:", tutorId);
@@ -86,11 +85,9 @@ const TutorSchedule = () => {
     fetchTutorAvailability();
   }, [tutorId]);
 
- 
-
   const addTimeSlot = () => {
     if (!selectedDate || !startTime || !endTime) {
-      alert("Please select a date and time");
+      toast.error("Please select a date and time");
       return;
     }
 
@@ -109,6 +106,18 @@ const TutorSchedule = () => {
     const formattedEndTime = formatTime(endTime);
     setSchedule((prev) => {
       const dateSchedule = prev.find((s) => s.date === selectedDate);
+      if (dateSchedule) {
+        const isDuplicateSlot = dateSchedule.slots.some(
+          (slot) =>
+            slot.startTime === formattedStartTime &&
+            slot.endTime === formattedEndTime
+        );
+
+        if (isDuplicateSlot) {
+          return prev;
+        }
+      }
+
       if (dateSchedule) {
         return prev.map((s) =>
           s.date === selectedDate
@@ -134,30 +143,42 @@ const TutorSchedule = () => {
       }
     });
 
+    const dateSchedule = schedule.find((s) => s.date === selectedDate);
+    const isDuplicateSlot = dateSchedule?.slots.some(
+      (slot) =>
+        slot.startTime === formattedStartTime &&
+        slot.endTime === formattedEndTime
+    );
+
+    if (isDuplicateSlot) {
+      toast.error("This time slot already exists for the selected day");
+    }
+
     setStartTime("");
     setEndTime("");
   };
 
+
   const removeTimeSlot = async (date: string, index: number) => {
+    setSchedule((prev) => {
+      return prev
+        .map((s) => {
+          if (s.date === date) {
+            return {
+              ...s,
+              slots: s.slots.filter((_, i) => i !== index),
+            };
+          }
+          return s;
+        })
+        .filter((s) => s.slots.length > 0);
+    });
+
     try {
       await deleteSlot(tutorId, date, index);
-      setSchedule((prev) =>
-        prev
-          .map((s) => {
-            if (s.date === date) {
-              return {
-                ...s,
-                slots: s.slots.filter((_, i) => i !== index),
-              };
-            }
-            return s;
-          })
-          .filter((s) => s.slots.length > 0)
-      );
       toast.success("Slot deleted successfully");
     } catch (error) {
-      toast.error("Failed to delete slot");
-      console.log("failed to delete slot",error)
+      console.log("failed to delete slot", error);
     }
   };
 
@@ -167,7 +188,7 @@ const TutorSchedule = () => {
       toast.success("Schedule saved successfully!");
     } catch (error) {
       toast.error("Failed to save schedule");
-      console.log("failed to save schedule",error)
+      console.log("failed to save schedule", error);
     }
   };
 
@@ -175,19 +196,17 @@ const TutorSchedule = () => {
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
-
   return (
-<div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <TutorNavbar />
       <div className="flex">
-       
-          <TutorSidebar />
-  
+        <TutorSidebar />
+
         <div className="flex-1 p-4 md:p-8 w-full max-w-full overflow-x-hidden">
           <div className="max-w-5xl mx-auto">
             <div className="bg-white rounded-2xl shadow-xl p-4 md:p-8 backdrop-blur-lg backdrop-filter border border-gray-100">
               <div className="mb-10">
-              <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-700 text-center">
+                <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-700 text-center">
                   Set Your Teaching Schedule
                 </h1>
                 <div className="flex items-center justify-center mt-4 text-gray-600 text-sm md:text-base">
@@ -203,7 +222,9 @@ const TutorSchedule = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Date
+                    </label>
                     <input
                       type="date"
                       value={selectedDate}
@@ -212,9 +233,11 @@ const TutorSchedule = () => {
                       className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-200 outline-none"
                     />
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Start Time
+                    </label>
                     <input
                       type="time"
                       value={startTime}
@@ -224,7 +247,9 @@ const TutorSchedule = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      End Time
+                    </label>
                     <input
                       type="time"
                       value={endTime}
@@ -246,15 +271,20 @@ const TutorSchedule = () => {
               </div>
 
               <div>
-              <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-6 flex items-center">
                   <Clock size={20} className="mr-2 text-blue-500" />
                   Your Schedule
                 </h2>
                 {sortedSchedule.length === 0 ? (
                   <div className="text-center py-8 md:py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                  <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-500 text-base md:text-lg">No time slots added yet</p>
-                </div>
+                    <Calendar
+                      size={48}
+                      className="mx-auto text-gray-400 mb-4"
+                    />
+                    <p className="text-gray-500 text-base md:text-lg">
+                      No time slots added yet
+                    </p>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                     {sortedSchedule.map((entry, index) => (
@@ -264,10 +294,10 @@ const TutorSchedule = () => {
                       >
                         <h3 className="font-semibold text-lg text-gray-800 mb-4 pb-2 border-b">
                           {new Date(entry.date).toLocaleDateString(undefined, {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
                           })}
                         </h3>
                         <div className="space-y-3">
@@ -314,4 +344,3 @@ const TutorSchedule = () => {
 };
 
 export default TutorProtectedRoute(TutorSchedule);
-

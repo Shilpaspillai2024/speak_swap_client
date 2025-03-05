@@ -6,7 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import { ITutor } from "@/types/tutor";
 import { useState } from "react";
 import { getPendingTutors} from "@/services/adminApi";
-import protectedRoute from "@/HOC/AdminProtectedRoute";
+import AdminProtectedRoute from "@/HOC/AdminProtectedRoute";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
 
@@ -160,4 +160,4 @@ const PendingTutor = () => {
   );
 };
 
-export default protectedRoute(PendingTutor);
+export default AdminProtectedRoute(PendingTutor);

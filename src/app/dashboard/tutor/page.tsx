@@ -16,6 +16,7 @@ const TutorsPage = () => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [navigatingToTutor, setNavigatingToTutor] = React.useState<string | null>(null);
 
 
 
@@ -69,6 +70,7 @@ const TutorsPage = () => {
     };
 
   const viewProfile=(tutorId:string)=>{
+    setNavigatingToTutor(tutorId);
     router.push(`/dashboard/tutor/${tutorId}`);
   }
 
@@ -87,6 +89,14 @@ const TutorsPage = () => {
     return (
       <>
         <UserNavbar />
+
+        {navigatingToTutor && (
+        <div className="fixed inset-0 bg-purple-50 bg-opacity-80 flex flex-col items-center justify-center z-50">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mb-4"></div>
+          <p className="text-purple-800 text-lg font-medium">Loading tutor profile...</p>
+        </div>
+      )}
+        
         <div className="flex items-center justify-center min-h-screen bg-purple-50">
           <div className="text-center">
             <p className="text-red-500 text-lg mb-4">{error}</p>

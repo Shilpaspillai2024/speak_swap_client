@@ -220,7 +220,7 @@ const TutorProfilePage = () => {
       razorpay.open();
     } catch (error) {
       toast.error("Error confirming booking:");
-      console.error("something went wrong", error);
+     console.log("something went wrong",error)
     }
   };
 

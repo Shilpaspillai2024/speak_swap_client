@@ -5,7 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import { getAllBookings } from "@/services/adminApi";
 import { IBooking } from "@/types/booking";
 import { useRouter } from "next/navigation";
-import protectedRoute from "@/HOC/AdminProtectedRoute";
+import AdminProtectedRoute from "@/HOC/AdminProtectedRoute";
 import Pagination from "@/components/Pagination";
 
 const AdminBookingPage = () => {
@@ -242,4 +242,4 @@ const AdminBookingPage = () => {
   );
 };
 
-export default protectedRoute(AdminBookingPage);
+export default AdminProtectedRoute(AdminBookingPage);
