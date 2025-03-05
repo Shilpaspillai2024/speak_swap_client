@@ -93,12 +93,12 @@ const useAdminAuthStore = create<AdminAuthState>()(
         checkTokenValidity:async () => {
          const {token} =get();
           if (!token) {
-            console.error("Token is missing");
+            console.warn("Token is missing, user is likely not authenticated.");
             return false;
           }
 
           try {
-          //  const decodedToken: any = jwtDecode(token);
+        
           const decodedToken: { exp: number } = jwtDecode(token);
             const currentTime = Date.now() / 1000;
             console.log("Current Time:", currentTime, "Token Expiry Time:", decodedToken.exp);

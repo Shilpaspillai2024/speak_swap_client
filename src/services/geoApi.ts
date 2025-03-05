@@ -14,7 +14,7 @@ export const fetchCountries=async ():Promise<Country[]>=>{
             headers:{
                 'Content-Type':'application/json',
             },
-            withCredentials:true,
+           // withCredentials:true,
         })
         console.log("countries",response.data)
         return response.data

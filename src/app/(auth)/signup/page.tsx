@@ -247,7 +247,7 @@ const UserSignup: React.FC = () => {
       
     } catch (error) {
       toast.error("something went wrong when uploading profile picture");
-      console.error("something went wrong",error)
+      console.log("something went wrong",error)
     }
   }
 
