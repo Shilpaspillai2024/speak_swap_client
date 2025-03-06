@@ -5,7 +5,7 @@ import { Send, User, Video, Image as ImageIcon } from "lucide-react";
 import socketStore, { Message } from "@/store/socketStore";
 import { toast } from "react-toastify";
 import format from "date-fns/format";
-import { Locale } from "date-fns/locale";
+import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { getChatById } from "@/services/chatApi";
 import userAuthStore from "@/store/userAuthStore";
 import ChatList from "../page";
@@ -24,13 +24,7 @@ interface Participant {
 const ChatPage = () => {
   const { chatId } = useParams();
   const router = useRouter();
-  const [formatDistanceToNowFn, setFormatDistanceToNowFn] = useState<
-    | ((
-        date: Date,
-        options?: { addSuffix?: boolean; locale?: Locale }
-      ) => string)
-    | null
-  >(null);
+  
   const [message, setMessage] = useState("");
   const [recipientDetails, setRecipientDetails] = useState({
     name: "",
@@ -54,19 +48,7 @@ const ChatPage = () => {
     markAsRead,
   } = socketStore();
 
-  useEffect(() => {
-    const loadFormatDistanceToNow = async () => {
-      try {
-        const module = await import("date-fns/formatDistanceToNow");
-        setFormatDistanceToNowFn(() => module.formatDistanceToNow);
-      } catch (error) {
-        console.error("Failed to import formatDistanceToNow:", error);
-        toast.error("Failed to load time formatting function");
-      }
-    };
-
-    loadFormatDistanceToNow();
-  }, []);
+ 
 
   useEffect(() => {
     if (chatId && (!currentChatId || currentChatId !== chatId)) {
@@ -249,8 +231,8 @@ const ChatPage = () => {
                 <p className="text-sm text-gray-500">
                   {recipientDetails.isOnline
                     ? "Online"
-                    : recipientDetails.lastActive && formatDistanceToNowFn
-                    ? `last seen: ${formatDistanceToNowFn(
+                    : recipientDetails.lastActive
+                    ? `last seen: ${formatDistanceToNow(
                         new Date(recipientDetails.lastActive),
                         { addSuffix: true }
                       )}`
