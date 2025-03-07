@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getBookingDetails } from '@/services/adminApi';
-import { IBooking } from '@/types/booking';
+import IBooking from '@/types/booking';
 import AdminNavbar from '@/components/AdminNavbar';
 import Sidebar from '@/components/Sidebar';
 import AdminProtectedRoute from '@/HOC/AdminProtectedRoute';

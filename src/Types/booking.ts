@@ -50,7 +50,7 @@ export interface tutorBooking {
     createdAt: string;
   }
 
-  export interface IBooking {
+  export default interface IBooking {
     _id: string;
     userId: {
       _id:string;
