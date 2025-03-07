@@ -11,7 +11,7 @@ export interface Booking {
     startTime: string;
     endTime: string;
   };
-  status: 'pending' | 'confirmed' |'in-progress'| 'completed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'in-progress'| 'completed' | 'cancelled'|'payment_failed';
   sessionFee: number;
   paymentStatus: 'paid' | 'pending' | 'failed';
   bookingDate: string;
