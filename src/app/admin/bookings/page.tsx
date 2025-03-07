@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "@/components/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
 import { getAllBookings } from "@/services/adminApi";
-import { IBooking } from "@/types/ibooking";
+import { IBooking } from "@/types/booking";
 import { useRouter } from "next/navigation";
 import AdminProtectedRoute from "@/HOC/AdminProtectedRoute";
 import Pagination from "@/components/Pagination";

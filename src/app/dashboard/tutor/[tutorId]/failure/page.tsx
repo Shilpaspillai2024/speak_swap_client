@@ -4,7 +4,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { AlertTriangle, ArrowLeft, RefreshCcw, Clock, Calendar, User, DollarSign } from 'lucide-react';
 import UserNavbar from '@/components/UserNavbar';
 import { getBookingDetails } from '@/services/userApi';
-import { IBooking } from '@/types/ibooking';
+import { IBooking } from '@/types/booking';
 import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 
 const PaymentFailedPage = () => {

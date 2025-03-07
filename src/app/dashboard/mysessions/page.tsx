@@ -12,7 +12,7 @@ import {
   RefreshCcw,
 } from "lucide-react";
 import UserNavbar from "@/components/UserNavbar";
-import { IBooking } from "@/types/ibooking";
+import { IBooking } from "@/types/booking";
 import { userbookingDetails, cancelUserBooking } from "@/services/userApi";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 import Image from "next/image";
