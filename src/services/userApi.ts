@@ -1,10 +1,9 @@
 import axios from "axios";
 import userAxiosInstance from "./userAxiosInstance";
 import { IUser } from "@/types/user";
-import { ITutor } from "@/types/tutor";
 import { RazorpayResponse } from "@/types/razorpay";
 import { HttpStatus } from "@/constants/httpStatus";
-import { TutorResponse } from "@/types/tutor";
+import { ITutor, TutorResponse } from "@/types/tutor";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export interface signupBasicDetails {
