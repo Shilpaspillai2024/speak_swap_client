@@ -42,7 +42,7 @@ tutorAxiosInstance.interceptors.response.use(
         const originalRequest=error.config;
 
 
-        if(error.response.status ===HttpStatus.UNAUTHORIZED && !originalRequest._retry){
+        if(error.response?.status ===HttpStatus.UNAUTHORIZED && !originalRequest._retry){
            
             originalRequest._retry=true;
 
@@ -55,6 +55,7 @@ tutorAxiosInstance.interceptors.response.use(
             }else{
                 console.log("Refresh token failed. Logging out...");
                 tutorAuth.Logout();
+                return Promise.reject(error);
             }
         }
 
