@@ -27,7 +27,7 @@ import { useRouter } from "next/navigation";
 import { useBookingStore } from "@/store/bookingStore";
 import { toast } from "react-toastify";
 import Pagination from "@/components/Pagination";
-import tutorAuthStore from "@/store/tutorAuthStore";
+
 
 const TutorBookings = () => {
   const [bookings, setBookings] = useState<tutorBooking[]>([]);
@@ -39,7 +39,7 @@ const TutorBookings = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 5;
-  const {token}=tutorAuthStore.getState();
+  
 
   const [activeBookingId, setActiveBookingId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
