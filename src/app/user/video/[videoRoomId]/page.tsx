@@ -9,6 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { Video, Mic, MicOff, VideoOff, PhoneOff, Users } from "lucide-react";
 import socketStore from "@/store/socketStore";
+import UserProtectedRoute from "@/HOC/UserProtectedRoute";
 
 const VideoCallPage = () => {
   const { videoRoomId } = useParams();
@@ -453,8 +454,7 @@ const VideoCallPage = () => {
           console.log("🔌 [SOCKET] Joining room:", videoRoomId);
           socket.emit("joinRoom", videoRoomId);
           
-          // For non-initiator, no need to wait for callAccepted event
-          // The responder will wait for an offer
+        
           setIsConnecting(true);
         }
       } catch (error) {
@@ -590,4 +590,4 @@ const VideoCallPage = () => {
   );
 };
 
-export default VideoCallPage;
+export default UserProtectedRoute(VideoCallPage);
