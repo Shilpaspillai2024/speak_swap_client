@@ -20,7 +20,7 @@ import {
 import { toast } from "react-toastify";
 import userAuthStore from "@/store/userAuthStore";
 import UserProtectedRoute from "@/HOC/UserProtectedRoute";
-import { RazorpayResponse,RazorpayFailureResponse} from "@/types/razorpay";
+import { RazorpayResponse,RazorpayFailureResponse } from "@/types/razorpay";
 import Image from "next/image";
 import { markPaymentAsFailed } from "@/services/userApi";
 

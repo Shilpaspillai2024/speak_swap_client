@@ -31,11 +31,6 @@ const Features = () => {
                 <div className="bg-white p-8 rounded-lg shadow-lg">
                   <div className="flex flex-col items-center">
                     <div className="mb-6">
-                      {/* <img
-                        src="/assets/icon1.png"
-                        alt="Video chat feature"
-                        className="w-24 h-24 object-contain"
-                      /> */}
                       <Image
                         src="/assets/icon1.png"
                         alt="Video chat feature"

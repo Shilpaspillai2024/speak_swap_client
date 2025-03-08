@@ -50,18 +50,12 @@ const Testimonials = () => {
 
         <div className="mt-16 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="md:w-1/2">
-            {/* <img
-                src="/assets/img3.png"
-                alt="Global community illustration"
-                className="w-full h-auto object-contain max-w-md mx-auto"
-              /> */}
-
             <Image
               src="/assets/img3.png"
               alt="Global community illustration"
               className="w-full h-auto object-contain max-w-md mx-auto"
-              width={500} 
-              height={500} 
+              width={500}
+              height={500}
             />
           </div>
           <div className="md:w-1/2 text-white">

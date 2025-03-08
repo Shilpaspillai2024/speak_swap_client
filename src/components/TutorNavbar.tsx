@@ -1,13 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import tutorAuthStore from '@/store/tutorAuthStore';
-import { useRouter } from 'next/navigation';
-import { FaUserCircle } from 'react-icons/fa';
-import { ITutor } from '@/types/tutor';
-
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import tutorAuthStore from "@/store/tutorAuthStore";
+import { useRouter } from "next/navigation";
+import { FaUserCircle } from "react-icons/fa";
+import { ITutor } from "@/types/tutor";
 
 const TutorNavbar = () => {
   const router = useRouter();
@@ -15,18 +14,14 @@ const TutorNavbar = () => {
   const [mounted, setMounted] = useState(false);
   const [tutorData, setTutorData] = useState<ITutor | null>(null);
 
-  
   useEffect(() => {
     const tutor = tutorAuthStore.getState().tutor;
     setTutorData(tutor);
     setMounted(true);
 
-    
-    const unsubscribe = tutorAuthStore.subscribe(
-      (state) => {
-        setTutorData(state.tutor);
-      }
-    );
+    const unsubscribe = tutorAuthStore.subscribe((state) => {
+      setTutorData(state.tutor);
+    });
 
     return () => {
       unsubscribe();
@@ -36,10 +31,9 @@ const TutorNavbar = () => {
   const handleLogout = () => {
     const clearTutorAuth = tutorAuthStore.getState().Logout;
     clearTutorAuth();
-    router.push('/tutor');
+    router.push("/tutor");
   };
 
-  
   if (!mounted) {
     return (
       <div className="flex justify-between items-center p-1 bg-teal-600">
@@ -70,8 +64,8 @@ const TutorNavbar = () => {
 
       <div className="flex space-x-6 text-white mr-10 font-bold">
         <div className="relative">
-          <div 
-            className="flex flex-col items-center cursor-pointer" 
+          <div
+            className="flex flex-col items-center cursor-pointer"
             onClick={() => setMenuOpen((prev) => !prev)}
           >
             {tutorData?.profilePhoto ? (

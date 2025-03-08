@@ -11,16 +11,12 @@ const GlobalSection = () => {
             </p>
           </div>
           <div className="flex justify-center">
-            {/* <img
-              src="/assets/com.jpg"
-              alt="Global community illustration"
-              className="rounded-lg shadow-lg"
-            /> */}
+           
             <Image
             src="/assets/com.jpg"
             alt="Global community illustration"
-            width={600} // Set appropriate width
-            height={400} // Set appropriate height
+            width={600} 
+            height={400} 
             className="rounded-lg shadow-lg"
           />
           </div>

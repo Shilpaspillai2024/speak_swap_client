@@ -2,14 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { Globe, Languages, Clock, Search } from 'lucide-react';
 import { listTutorsForUser } from '@/services/userApi';
-import { ITutor } from '@/types/tutor';
+import { ITutor,TutorResponse } from '@/types/tutor';
 import UserNavbar from '@/components/UserNavbar';
 import { useRouter } from 'next/navigation';
 import UserProtectedRoute from '@/HOC/UserProtectedRoute';
 import Image from 'next/image';
 import { debounce } from 'lodash';
 import Pagination from '@/components/Pagination';
-import { TutorResponse } from '@/types/tutor';
+
 
 const TutorsPage = () => {
   const [tutors, setTutors] = React.useState<ITutor[]>([]);

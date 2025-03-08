@@ -41,11 +41,6 @@ const Hero = () => {
               />
             </div>
             <div>
-              {/* <img
-                src="/assets/fifth.png"
-                alt="Happy language learner"
-                className="rounded-lg w-[500px] h-auto object-contain"
-              /> */}
                <Image
               src="/assets/fifth.png"
               alt="Happy language learner"
