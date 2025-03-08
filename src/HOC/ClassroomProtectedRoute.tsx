@@ -13,6 +13,7 @@ const ClassroomProtectedRoute = <P extends object>(
     const router = useRouter();
     const params = useParams();
     const bookingId = params?.bookingId;
+    console.log("bookingId",bookingId);
 
     const {
       isUserAuthenticated,
@@ -22,6 +23,7 @@ const ClassroomProtectedRoute = <P extends object>(
       Logout: userLogout,
     } = userAuthStore();
 
+    console.log("userAuthstore",userAuthStore);
     const {
       isTutorAuthenticated,
       isLoading: isTutorLoading,
@@ -31,6 +33,8 @@ const ClassroomProtectedRoute = <P extends object>(
     } = tutorAuthStore();
 
     const { bookingDetails } = useBookingStore();
+
+    console.log("bookingDetails",bookingDetails)
 
     useEffect(() => {
       const checkAuth = async () => {
