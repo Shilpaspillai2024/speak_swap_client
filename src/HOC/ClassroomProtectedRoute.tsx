@@ -1,112 +1,83 @@
 import { useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import userAuthStore from "@/store/userAuthStore";
+import { useRouter } from "next/navigation";
 import tutorAuthStore from "@/store/tutorAuthStore";
-import { useBookingStore } from "@/store/bookingStore";
+import userAuthStore from "@/store/userAuthStore";
 import Loading from "@/components/Loading";
-import { toast } from "react-toastify";
 
-const ClassroomProtectedRoute = <P extends object>(
-  WrappedComponent: React.ComponentType<P>
-) => {
+const ClassroomProtectedRoute = <P extends object>(WrappedComponent: React.ComponentType<P>) => {
   return function ProtectedComponent(props: P) {
-    const router = useRouter();
-    const params = useParams();
-    const bookingId = params?.bookingId;
+    const {
+      isTutorAuthenticated,
+      isLoading: isTutorLoading,
+      initAuth: initTutorAuth,
+      Logout: tutorLogout,
+      checkTokenValidity: checkTutorTokenValidity,
+    } = tutorAuthStore();
 
     const {
       isUserAuthenticated,
       isLoading: isUserLoading,
       initAuth: initUserAuth,
-      checkTokenValidity: checkUserTokenValidity,
       Logout: userLogout,
+      checkTokenValidity: checkUserTokenValidity,
     } = userAuthStore();
 
-    const {
-      isTutorAuthenticated,
-      isLoading: isTutorLoading,
-      initAuth: initTutorAuth,
-      checkTokenValidity: checkTutorTokenValidity,
-      Logout: tutorLogout,
-    } = tutorAuthStore();
-
-    const { bookingDetails } = useBookingStore();
+    const router = useRouter();
 
     useEffect(() => {
       const checkAuth = async () => {
-        await Promise.all([initUserAuth(), initTutorAuth()]);
+        await Promise.all([initTutorAuth(), initUserAuth()]);
       };
       checkAuth();
-    }, [initUserAuth, initTutorAuth]);
+    }, [initTutorAuth, initUserAuth]);
 
+   
     useEffect(() => {
-      if (!isUserLoading && !isTutorLoading) {
-      
-        if (!isUserAuthenticated && !isTutorAuthenticated) {
-          toast.error("Please login to access the classroom");
+      const tokenCheckInterval = setInterval(() => {
+        if (isTutorAuthenticated && !checkTutorTokenValidity()) {
+          console.log("Tutor token is expired or invalid");
+          tutorLogout();
+          router.push("/tutor");
+        } else if (isUserAuthenticated && !checkUserTokenValidity()) {
+          console.log("User token is expired or invalid");
+          userLogout();
           router.push("/");
-          return;
         }
+      }, 60000);
 
-        
-        if (bookingDetails && bookingId) {
-          if (bookingDetails.bookingId !== bookingId) {
-            toast.error("Invalid session access");
-            router.push(
-              isUserAuthenticated ? "/dashboard" : "/tutor/schedules/myschedules"
-            );
-          }
-        } else {
-          toast.error("No session details found");
-          router.push(
-            isUserAuthenticated ? "/dashboard" : "/tutor/schedules/myschedules"
-          );
-        }
-      }
+      return () => clearInterval(tokenCheckInterval);
     }, [
-      bookingId,
-      bookingDetails,
-      isUserLoading,
-      isTutorLoading,
-      isUserAuthenticated,
-      isTutorAuthenticated,
-      router,
+      isTutorAuthenticated, 
+      isUserAuthenticated, 
+      checkTutorTokenValidity, 
+      checkUserTokenValidity, 
+      tutorLogout, 
+      userLogout, 
+      router
     ]);
 
+    
     useEffect(() => {
-      if (isUserAuthenticated || isTutorAuthenticated) {
-        const tokenCheckInterval = setInterval(() => {
-          if (isUserAuthenticated && !checkUserTokenValidity()) {
-            userLogout();
-            router.push("/");
-          }
-          if (isTutorAuthenticated && !checkTutorTokenValidity()) {
-            tutorLogout();
-            router.push("/tutor");
-          }
-        }, 60000);
-
-        return () => clearInterval(tokenCheckInterval);
+      const isLoading = isTutorLoading || isUserLoading;
+      const isAuthenticated = isTutorAuthenticated || isUserAuthenticated;
+      
+      if (!isLoading && !isAuthenticated) {
+        router.push("/");
       }
-    }, [
-      isUserAuthenticated,
-      isTutorAuthenticated,
-      checkUserTokenValidity,
-      checkTutorTokenValidity,
-      userLogout,
-      tutorLogout,
-      router,
-    ]);
+    }, [isTutorLoading, isUserLoading, isTutorAuthenticated, isUserAuthenticated, router]);
 
-    if (isUserLoading || isTutorLoading) {
+    
+    if (isTutorLoading || isUserLoading) {
       return <Loading />;
     }
 
-    if (!isUserAuthenticated && !isTutorAuthenticated) {
-      return null;
+   
+    if (isTutorAuthenticated || isUserAuthenticated) {
+      return <WrappedComponent {...props} />;
     }
 
-    return <WrappedComponent {...props} />;
+   
+    return null;
   };
 };
 
