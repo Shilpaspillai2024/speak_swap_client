@@ -27,16 +27,19 @@ import { useRouter } from "next/navigation";
 import { useBookingStore } from "@/store/bookingStore";
 import { toast } from "react-toastify";
 import Pagination from "@/components/Pagination";
+import tutorAuthStore from "@/store/tutorAuthStore";
 
 const TutorBookings = () => {
   const [bookings, setBookings] = useState<tutorBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { setBookingDetails } = useBookingStore();
 
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 5;
+  const {token}=tutorAuthStore.getState();
 
   const [activeBookingId, setActiveBookingId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: number }>({});
@@ -243,6 +246,8 @@ const TutorBookings = () => {
   }
 
   const handleJoinSession = async (booking: tutorBooking) => {
+
+   
     setBookingDetails({
       bookingId: booking._id,
       userId: booking.userId._id,

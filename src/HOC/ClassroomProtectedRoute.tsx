@@ -13,7 +13,6 @@ const ClassroomProtectedRoute = <P extends object>(
     const router = useRouter();
     const params = useParams();
     const bookingId = params?.bookingId;
-    console.log("bookingId",bookingId);
 
     const {
       isUserAuthenticated,
@@ -23,7 +22,6 @@ const ClassroomProtectedRoute = <P extends object>(
       Logout: userLogout,
     } = userAuthStore();
 
-    console.log("userAuthstore",userAuthStore);
     const {
       isTutorAuthenticated,
       isLoading: isTutorLoading,
@@ -34,8 +32,6 @@ const ClassroomProtectedRoute = <P extends object>(
 
     const { bookingDetails } = useBookingStore();
 
-    console.log("bookingDetails",bookingDetails)
-
     useEffect(() => {
       const checkAuth = async () => {
         await Promise.all([initUserAuth(), initTutorAuth()]);
@@ -44,23 +40,23 @@ const ClassroomProtectedRoute = <P extends object>(
     }, [initUserAuth, initTutorAuth]);
 
     useEffect(() => {
-      if (
-        !isUserLoading &&
-        !isTutorLoading &&
-        (isUserAuthenticated || isTutorAuthenticated)
-      ) {
-        if (
-          bookingDetails &&
-          bookingId &&
-          bookingDetails.bookingId !== bookingId
-        ) {
-          toast.error("Invalid session access");
-          router.push(
-            isUserAuthenticated ? "/dashboard" : "/tutor/schedules/myschedules"
-          );
+      if (!isUserLoading && !isTutorLoading) {
+      
+        if (!isUserAuthenticated && !isTutorAuthenticated) {
+          toast.error("Please login to access the classroom");
+          router.push("/");
+          return;
         }
 
-        if (!bookingDetails && bookingId) {
+        
+        if (bookingDetails && bookingId) {
+          if (bookingDetails.bookingId !== bookingId) {
+            toast.error("Invalid session access");
+            router.push(
+              isUserAuthenticated ? "/dashboard" : "/tutor/schedules/myschedules"
+            );
+          }
+        } else {
           toast.error("No session details found");
           router.push(
             isUserAuthenticated ? "/dashboard" : "/tutor/schedules/myschedules"
@@ -78,18 +74,20 @@ const ClassroomProtectedRoute = <P extends object>(
     ]);
 
     useEffect(() => {
-      const tokenCheckInterval = setInterval(() => {
-        if (isUserAuthenticated && !checkUserTokenValidity()) {
-          userLogout();
-          router.push("/");
-        }
-        if (isTutorAuthenticated && !checkTutorTokenValidity()) {
-          tutorLogout();
-          router.push("/tutor");
-        }
-      }, 60000);
+      if (isUserAuthenticated || isTutorAuthenticated) {
+        const tokenCheckInterval = setInterval(() => {
+          if (isUserAuthenticated && !checkUserTokenValidity()) {
+            userLogout();
+            router.push("/");
+          }
+          if (isTutorAuthenticated && !checkTutorTokenValidity()) {
+            tutorLogout();
+            router.push("/tutor");
+          }
+        }, 60000);
 
-      return () => clearInterval(tokenCheckInterval);
+        return () => clearInterval(tokenCheckInterval);
+      }
     }, [
       isUserAuthenticated,
       isTutorAuthenticated,
@@ -100,44 +98,12 @@ const ClassroomProtectedRoute = <P extends object>(
       router,
     ]);
 
-    useEffect(() => {
-      if (
-        !isUserLoading &&
-        !isTutorLoading &&
-        !isUserAuthenticated &&
-        !isTutorAuthenticated
-      ) {
-        toast.error("Please login to access the classroom");
-        router.push("/");
-      }
-    }, [
-      isUserLoading,
-      isTutorLoading,
-      isUserAuthenticated,
-      isTutorAuthenticated,
-      router,
-    ]);
-
     if (isUserLoading || isTutorLoading) {
       return <Loading />;
     }
 
     if (!isUserAuthenticated && !isTutorAuthenticated) {
       return null;
-    }
-
-    if (
-      !bookingDetails ||
-      !bookingDetails.bookingId ||
-      bookingDetails.bookingId !== bookingId
-    ) {
-      toast.error("Invalid classroom access");
-      setTimeout(() => {
-        router.push(
-          isUserAuthenticated ? "/dashboard" : "/tutor/schedules/myschedules"
-        );
-      }, 1000);
-      return <Loading />;
     }
 
     return <WrappedComponent {...props} />;
