@@ -14,6 +14,8 @@ const ClassroomProtectedRoute = <P extends object>(WrappedComponent: React.Compo
       checkTokenValidity: checkTutorTokenValidity,
     } = tutorAuthStore();
 
+    console.log("tutorAuthStore",tutorAuthStore)
+
     const {
       isUserAuthenticated,
       isLoading: isUserLoading,

@@ -71,9 +71,7 @@ const LoginPage = () => {
         router.push("/tutor/dashboard");
       }
     } catch (error: unknown) {
-      // const errorMessage = error.message || "An unexpected error occurred. Please try again.";
-      // setErrors({ general: errorMessage });
-      // toast.error(errorMessage);
+    
       let errorMessage: string;
 
       if (error instanceof Error) {
