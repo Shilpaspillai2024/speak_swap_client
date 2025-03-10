@@ -85,78 +85,146 @@ const TutorSchedule = () => {
     fetchTutorAvailability();
   }, [tutorId]);
 
+  // const addTimeSlot = () => {
+  //   if (!selectedDate || !startTime || !endTime) {
+  //     toast.error("Please select a date and time");
+  //     return;
+  //   }
+
+  //   const formatTime = (time: string) => {
+  //     const date = new Date();
+  //     const [hours, minutes] = time.split(":").map(Number);
+  //     date.setHours(hours, minutes);
+  //     return date.toLocaleTimeString([], {
+  //       hour: "2-digit",
+  //       minute: "2-digit",
+  //       hour12: true,
+  //     });
+  //   };
+
+  //   const formattedStartTime = formatTime(startTime);
+  //   const formattedEndTime = formatTime(endTime);
+  //   setSchedule((prev) => {
+  //     const dateSchedule = prev.find((s) => s.date === selectedDate);
+  //     if (dateSchedule) {
+  //       const isDuplicateSlot = dateSchedule.slots.some(
+  //         (slot) =>
+  //           slot.startTime === formattedStartTime &&
+  //           slot.endTime === formattedEndTime
+  //       );
+
+  //       if (isDuplicateSlot) {
+  //         return prev;
+  //       }
+  //     }
+
+  //     if (dateSchedule) {
+  //       return prev.map((s) =>
+  //         s.date === selectedDate
+  //           ? {
+  //               ...s,
+  //               slots: [
+  //                 ...s.slots,
+  //                 { startTime: formattedStartTime, endTime: formattedEndTime },
+  //               ],
+  //             }
+  //           : s
+  //       );
+  //     } else {
+  //       return [
+  //         ...prev,
+  //         {
+  //           date: selectedDate,
+  //           slots: [
+  //             { startTime: formattedStartTime, endTime: formattedEndTime },
+  //           ],
+  //         },
+  //       ];
+  //     }
+  //   });
+
+  //   const dateSchedule = schedule.find((s) => s.date === selectedDate);
+  //   const isDuplicateSlot = dateSchedule?.slots.some(
+  //     (slot) =>
+  //       slot.startTime === formattedStartTime &&
+  //       slot.endTime === formattedEndTime
+  //   );
+
+  //   if (isDuplicateSlot) {
+  //     toast.error("This time slot already exists for the selected day");
+  //   }
+
+  //   setStartTime("");
+  //   setEndTime("");
+  // };
+
   const addTimeSlot = () => {
-    if (!selectedDate || !startTime || !endTime) {
-      toast.error("Please select a date and time");
-      return;
-    }
+  if (!selectedDate || !startTime || !endTime) {
+    toast.error("Please select a date and time");
+    return;
+  }
 
-    const formatTime = (time: string) => {
-      const date = new Date();
-      const [hours, minutes] = time.split(":").map(Number);
-      date.setHours(hours, minutes);
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
-    };
-
-    const formattedStartTime = formatTime(startTime);
-    const formattedEndTime = formatTime(endTime);
-    setSchedule((prev) => {
-      const dateSchedule = prev.find((s) => s.date === selectedDate);
-      if (dateSchedule) {
-        const isDuplicateSlot = dateSchedule.slots.some(
-          (slot) =>
-            slot.startTime === formattedStartTime &&
-            slot.endTime === formattedEndTime
-        );
-
-        if (isDuplicateSlot) {
-          return prev;
-        }
-      }
-
-      if (dateSchedule) {
-        return prev.map((s) =>
-          s.date === selectedDate
-            ? {
-                ...s,
-                slots: [
-                  ...s.slots,
-                  { startTime: formattedStartTime, endTime: formattedEndTime },
-                ],
-              }
-            : s
-        );
-      } else {
-        return [
-          ...prev,
-          {
-            date: selectedDate,
-            slots: [
-              { startTime: formattedStartTime, endTime: formattedEndTime },
-            ],
-          },
-        ];
-      }
-    });
-
-    const dateSchedule = schedule.find((s) => s.date === selectedDate);
-    const isDuplicateSlot = dateSchedule?.slots.some(
-      (slot) =>
-        slot.startTime === formattedStartTime &&
-        slot.endTime === formattedEndTime
-    );
-
-    if (isDuplicateSlot) {
-      toast.error("This time slot already exists for the selected day");
-    }
-
-    setStartTime("");
-    setEndTime("");
+  
+  const getMinutes = (time: string) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes; 
   };
+
+  const startMinutes = getMinutes(startTime);
+  const endMinutes = getMinutes(endTime);
+
+  if (startMinutes >= endMinutes) {
+    toast.error("Start time must be before end time");
+    return;
+  }
+
+  setSchedule((prev) => {
+    const dateSchedule = prev.find((s) => s.date === selectedDate);
+
+    if (dateSchedule) {
+     
+      const isOverlapping = dateSchedule.slots.some((slot) => {
+        const slotStart = getMinutes(slot.startTime);
+        const slotEnd = getMinutes(slot.endTime);
+        
+        return (
+          (startMinutes >= slotStart && startMinutes < slotEnd) || 
+          (endMinutes > slotStart && endMinutes <= slotEnd) || 
+          (startMinutes <= slotStart && endMinutes >= slotEnd) 
+        );
+      });
+
+      if (isOverlapping) {
+        toast.error("This time slot overlaps with an existing slot");
+        return prev; 
+      }
+
+      return prev.map((s) =>
+        s.date === selectedDate
+          ? {
+              ...s,
+              slots: [
+                ...s.slots,
+                { startTime, endTime }, 
+              ],
+            }
+          : s
+      );
+    } else {
+      return [
+        ...prev,
+        {
+          date: selectedDate,
+          slots: [{ startTime, endTime }],
+        },
+      ];
+    }
+  });
+
+  setStartTime("");
+  setEndTime("");
+};
+
 
 
   const removeTimeSlot = async (date: string, index: number) => {
