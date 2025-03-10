@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import userAuthStore from "@/store/userAuthStore";
 import { useRouter } from "next/navigation";
-import { FaUserCircle, FaBell, FaEnvelope } from "react-icons/fa";
+import { FaUserCircle, FaEnvelope } from "react-icons/fa";
 import { IUser } from "@/types/user";
 
 const UserNavbar = () => {
