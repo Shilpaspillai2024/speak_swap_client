@@ -138,13 +138,7 @@ const UserNavbar = () => {
               >
                 My Profile
               </Link>
-              <Link
-                href="/dashboard/settings"
-                className="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left"
-                onClick={() => setMenuOpen(false)}
-              >
-                Settings
-              </Link>
+
               <hr className="my-1" />
               <button
                 onClick={handleLogout}
