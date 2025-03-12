@@ -209,7 +209,11 @@ export const postLogin = async (email: string, password: string) => {
 
 export const refreshToken = async () => {
   try {
-    const response = await userAxiosInstance.post(`/refresh-token`);
+     const response = await axios.post(
+          `${BACKEND_URL}/refresh-token`,
+          {},
+          { withCredentials: true } 
+        );
     return response.data;
   } catch (error) {
     console.error("Errror refreshing token:", error);

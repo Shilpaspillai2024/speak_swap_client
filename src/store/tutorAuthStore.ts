@@ -4,6 +4,9 @@ import { jwtDecode } from "jwt-decode";
 import { logoutTutor, refreshToken } from "@/services/tutorApi";
 import { ITutor } from "@/types/tutor";
 
+let refreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
 interface TutorAuthState {
   tutor: ITutor | null;
   token: string | null;
@@ -108,24 +111,55 @@ const tutorAuthStore = create<TutorAuthState>()(
         },
 
 
-        refreshAccessToken:async()=>{
-          try {
-            const data=await refreshToken()
-            if(data?.accessToken){
-              set({token:data.accessToken,
-                isTutorAuthenticated:true
-              });
-              return true;
-            }
-            return false;
+        // refreshAccessToken:async()=>{
+        //   try {
+        //     const data=await refreshToken()
+        //     if(data?.accessToken){
+        //       set({token:data.accessToken,
+        //         isTutorAuthenticated:true
+        //       });
+        //       return true;
+        //     }
+        //     return false;
             
-          } catch (error) {
-            console.error("Token refresh error:", error);
-            get().Logout();
-            return false;
+        //   } catch (error) {
+        //     console.error("Token refresh error:", error);
+        //     get().Logout();
+        //     return false;
             
-          }
-        }
+        //   }
+        // }
+
+          refreshAccessToken: async () => {
+                  if (refreshing && refreshPromise) {
+                   
+                    return refreshPromise;
+                  }
+                  
+                  refreshing = true;
+                  refreshPromise = (async () => {
+                    try {
+                      const response = await refreshToken();
+                      if (response?.accessToken) {
+                        set({
+                          token: response.accessToken,
+                          isTutorAuthenticated:true
+                        });
+                        return true;
+                      }
+                      return false;
+                    } catch (error) {
+                      console.error("Token refresh error:", error);
+                      get().Logout();
+                      return false;
+                    } finally {
+                      refreshing = false;
+                      refreshPromise = null;
+                    }
+                  })();
+                  
+                  return refreshPromise;
+                },
       }),
       {
         name: "tutor-auth",

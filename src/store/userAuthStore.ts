@@ -4,6 +4,9 @@ import { jwtDecode } from "jwt-decode";
 import { refreshToken, logoutUser } from "@/services/userApi";
 import { IUser } from "@/types/user";
 
+let refreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
 interface UserAuthState {
   user: IUser | null;
   token: string | null;
@@ -111,19 +114,49 @@ const userAuthStore = create<UserAuthState>()(
           }
         },
 
+        // refreshAccessToken: async () => {
+        //   try {
+        //     const data = await refreshToken();
+        //     if (data?.accessToken) {
+        //       set({ token: data.accessToken, isUserAuthenticated: true });
+        //       return true;
+        //     }
+        //     return false;
+        //   } catch (error) {
+        //     console.error("Token refresh error:", error);
+        //     get().Logout();
+        //     return false;
+        //   }
+        // },
+
         refreshAccessToken: async () => {
-          try {
-            const data = await refreshToken();
-            if (data?.accessToken) {
-              set({ token: data.accessToken, isUserAuthenticated: true });
-              return true;
-            }
-            return false;
-          } catch (error) {
-            console.error("Token refresh error:", error);
-            get().Logout();
-            return false;
+          if (refreshing && refreshPromise) {
+            return refreshPromise;
           }
+
+          refreshing = true;
+          refreshPromise = (async () => {
+            try {
+              const response = await refreshToken();
+              if (response?.accessToken) {
+                set({
+                  token: response.accessToken,
+                  isUserAuthenticated: true,
+                });
+                return true;
+              }
+              return false;
+            } catch (error) {
+              console.error("Token refresh error:", error);
+              get().Logout();
+              return false;
+            } finally {
+              refreshing = false;
+              refreshPromise = null;
+            }
+          })();
+
+          return refreshPromise;
         },
       }),
       {
