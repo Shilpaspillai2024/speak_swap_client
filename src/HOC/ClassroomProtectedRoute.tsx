@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react"; 
 import { useRouter } from "next/navigation";
 import userAuthStore from "@/store/userAuthStore";
 import tutorAuthStore from "@/store/tutorAuthStore";
@@ -19,22 +19,27 @@ const ClassroomProtectedRoute = <P extends object>(WrappedComponent: React.Compo
     } = tutorAuthStore();
 
     const router = useRouter();
+    const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
     useEffect(() => {
       const checkAuth = async () => {
         await initUserAuth();
         await initTutorAuth();
+        setHasCheckedAuth(true);
       };
-      checkAuth();
-    }, [initUserAuth, initTutorAuth]);
+
+      if (!hasCheckedAuth) {
+        checkAuth();
+      }
+    }, [hasCheckedAuth, initUserAuth, initTutorAuth]);
 
     useEffect(() => {
-      if (!isUserLoading && !isTutorLoading && !isUserAuthenticated && !isTutorAuthenticated) {
+      if (hasCheckedAuth && !isUserLoading && !isTutorLoading && !isUserAuthenticated && !isTutorAuthenticated) {
         router.push("/");
       }
-    }, [isUserLoading, isTutorLoading, isUserAuthenticated, isTutorAuthenticated, router]);
+    }, [hasCheckedAuth, isUserLoading, isTutorLoading, isUserAuthenticated, isTutorAuthenticated, router]);
 
-    if (isUserLoading || isTutorLoading) {
+    if (!hasCheckedAuth || isUserLoading || isTutorLoading) {
       return <Loading />;
     }
 
@@ -47,3 +52,4 @@ const ClassroomProtectedRoute = <P extends object>(WrappedComponent: React.Compo
 };
 
 export default ClassroomProtectedRoute;
+

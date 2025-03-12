@@ -71,8 +71,9 @@ const tutorAuthStore = create<TutorAuthState>()(
           const{token,checkTokenValidity,refreshAccessToken,tutor,Logout}=get()
           if (!token) {
             console.warn("No token found during initAuth.");
-            Logout(); 
+            set({ isLoading: false, isTutorAuthenticated: false }); 
             return;
+           
           }
         
          
@@ -80,7 +81,7 @@ const tutorAuthStore = create<TutorAuthState>()(
           if(!isValid){
             const isRefreshed=await refreshAccessToken()
             if(!isRefreshed){
-              Logout();
+              set({ isTutorAuthenticated: false, isLoading: false, token: null });
               return;
             }
           }
@@ -147,10 +148,12 @@ const tutorAuthStore = create<TutorAuthState>()(
                         });
                         return true;
                       }
+                      console.warn("Refresh token request failed, marking as unauthenticated.");
+                      set({ isTutorAuthenticated: false, token: null });
                       return false;
                     } catch (error) {
                       console.error("Token refresh error:", error);
-                      get().Logout();
+                      set({ isTutorAuthenticated: false, token: null });
                       return false;
                     } finally {
                       refreshing = false;
