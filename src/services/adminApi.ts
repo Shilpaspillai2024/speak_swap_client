@@ -1,6 +1,9 @@
+import axios from "axios";
 import axiosInstance from "./axiosInstance";
 import { AxiosError } from "axios";
 import { HttpStatus } from "@/constants/httpStatus";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 interface ErrorResponse {
   message?: string;
@@ -37,7 +40,11 @@ export const loginAdmin = async (email: string, password: string) => {
 
 export const refreshToken = async () => {
   try {
-    const response = await axiosInstance.post(`/admin/refresh-token`);
+    const response = await axios.post(
+      `${BACKEND_URL}/admin/refresh-token`,
+      {},
+      { withCredentials: true } 
+    );
     return response.data;
   } catch (error) {
     console.error("Errror refreshing token:", error);

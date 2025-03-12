@@ -5,20 +5,22 @@ import { refreshToken } from "@/services/adminApi";
 import { logoutAdmin } from "@/services/adminApi";
 import { IAdmin } from "@/types/admin";
 
+
+let refreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
 interface AdminAuthState {
   admin: IAdmin | null;
   token: string | null;
   isAdminAuthenticated: boolean;
   isLoading: boolean;
-  setAdminAuth: (admin:IAdmin, token: string) => void;
-  setAdmin: (admin:IAdmin) => void;
+  setAdminAuth: (admin: IAdmin, token: string) => void;
+  setAdmin: (admin: IAdmin) => void;
   adminLogout: () => void;
   initAdminAuth: () => Promise<void>;
-  refreshAccessToken:()=>Promise<boolean>;
-  checkTokenValidity: () =>Promise<boolean>;
+  refreshAccessToken: () => Promise<boolean>;
+  checkTokenValidity: () => Promise<boolean>;
 }
-
-
 
 const useAdminAuthStore = create<AdminAuthState>()(
   devtools(
@@ -34,7 +36,7 @@ const useAdminAuthStore = create<AdminAuthState>()(
             set({
               admin,
               token,
-              isAdminAuthenticated:true,
+              isAdminAuthenticated: true,
               isLoading: false,
             });
           } else {
@@ -45,10 +47,10 @@ const useAdminAuthStore = create<AdminAuthState>()(
         setAdmin: (admin) => {
           set({ admin });
         },
-        adminLogout: async() => {
+        adminLogout: async () => {
           console.log("Logging out...");
           await logoutAdmin();
-        
+
           set({
             admin: null,
             token: null,
@@ -58,80 +60,87 @@ const useAdminAuthStore = create<AdminAuthState>()(
           localStorage.removeItem("admin-auth");
         },
 
-      
-
         initAdminAuth: async () => {
-          const { token, checkTokenValidity, refreshAccessToken, admin } = get();
+          const { token, checkTokenValidity, refreshAccessToken, admin } =
+            get();
           console.log("Initializing Admin Auth. Current Token:", token);
 
           if (!token) {
-              console.warn("No token found. Logging out...");
+            console.warn("No token found. Logging out...");
+            get().adminLogout();
+            return;
+          }
+
+          const isValid = await checkTokenValidity();
+
+          if (!isValid) {
+            const isRefreshed = await refreshAccessToken();
+            if (!isRefreshed) {
               get().adminLogout();
               return;
+            }
           }
-      
-          const isValid = await checkTokenValidity();
-      
-          if (!isValid) {
-             
-              const isRefreshed = await refreshAccessToken();
-              if (!isRefreshed) {
-                 
-                  get().adminLogout();
-                  return;
-              }
-          }
-      
-          set({
-              admin,
-              isAdminAuthenticated: true,
-              isLoading: false,
-          });
-      },
-      
 
-        checkTokenValidity:async () => {
-         const {token} =get();
+          set({
+            admin,
+            isAdminAuthenticated: true,
+            isLoading: false,
+          });
+        },
+
+        checkTokenValidity: async () => {
+          const { token } = get();
           if (!token) {
             console.warn("Token is missing, user is likely not authenticated.");
             return false;
           }
 
           try {
-        
-          const decodedToken: { exp: number } = jwtDecode(token);
+            const decodedToken: { exp: number } = jwtDecode(token);
             const currentTime = Date.now() / 1000;
-            console.log("Current Time:", currentTime, "Token Expiry Time:", decodedToken.exp);
-            return decodedToken.exp > currentTime
-             
-           
-       
+            console.log(
+              "Current Time:",
+              currentTime,
+              "Token Expiry Time:",
+              decodedToken.exp
+            );
+            return decodedToken.exp > currentTime;
           } catch (error) {
             console.error("Error decoding token:", error);
             return false;
           }
         },
 
-
-        refreshAccessToken:async()=>{
-          try {
-            const response=await refreshToken()
-            if(response?.accessToken){
-              set({
-                token:response.accessToken,
-                isAdminAuthenticated:true
-             
-            });
-            return true;
+        refreshAccessToken: async () => {
+          if (refreshing && refreshPromise) {
+           
+            return refreshPromise;
           }
-          return false;
-          } catch (error) {
-            console.error("Token refresh error:", error);
-            get().adminLogout();
-            return false;
-            
-          }
-        }
+          
+          refreshing = true;
+          refreshPromise = (async () => {
+            try {
+              const response = await refreshToken();
+              if (response?.accessToken) {
+                set({
+                  token: response.accessToken,
+                  isAdminAuthenticated: true,
+                });
+                return true;
+              }
+              return false;
+            } catch (error) {
+              console.error("Token refresh error:", error);
+              get().adminLogout();
+              return false;
+            } finally {
+              refreshing = false;
+              refreshPromise = null;
+            }
+          })();
+          
+          return refreshPromise;
+        },
       }),
       {
         name: "admin-auth",
