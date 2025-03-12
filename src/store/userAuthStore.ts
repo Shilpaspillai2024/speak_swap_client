@@ -114,21 +114,6 @@ const userAuthStore = create<UserAuthState>()(
           }
         },
 
-        // refreshAccessToken: async () => {
-        //   try {
-        //     const data = await refreshToken();
-        //     if (data?.accessToken) {
-        //       set({ token: data.accessToken, isUserAuthenticated: true });
-        //       return true;
-        //     }
-        //     return false;
-        //   } catch (error) {
-        //     console.error("Token refresh error:", error);
-        //     get().Logout();
-        //     return false;
-        //   }
-        // },
-
         refreshAccessToken: async () => {
           if (refreshing && refreshPromise) {
             return refreshPromise;

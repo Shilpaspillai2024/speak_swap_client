@@ -12,11 +12,11 @@ interface TutorAuthState {
   token: string | null;
   isTutorAuthenticated: boolean;
   isLoading: boolean;
-  setTutorAuth: (tutor:ITutor, token: string) => void;
-  setTutor: (tutor:ITutor) => void;
+  setTutorAuth: (tutor: ITutor, token: string) => void;
+  setTutor: (tutor: ITutor) => void;
   Logout: () => void;
   initAuth: () => Promise<void>;
-  refreshAccessToken:()=>Promise<boolean>;
+  refreshAccessToken: () => Promise<boolean>;
   checkTokenValidity: () => Promise<boolean>;
 }
 
@@ -37,7 +37,6 @@ const tutorAuthStore = create<TutorAuthState>()(
 
         setTutorAuth: (tutor, token) => {
           if (token) {
-           
             set({
               tutor,
               token,
@@ -52,7 +51,7 @@ const tutorAuthStore = create<TutorAuthState>()(
         setTutor: (tutor) => {
           set({ tutor });
         },
-        Logout: async() => {
+        Logout: async () => {
           console.log("Logging out...");
           await logoutTutor();
           set({
@@ -65,43 +64,44 @@ const tutorAuthStore = create<TutorAuthState>()(
           localStorage.removeItem("tutor-auth");
         },
 
-
         initAuth: async () => {
-       
-          const{token,checkTokenValidity,refreshAccessToken,tutor}=get()
+          const {
+            token,
+            checkTokenValidity,
+            refreshAccessToken,
+            tutor,
+            Logout,
+          } = get();
           if (!token) {
             console.warn("No token found during initAuth.");
-            set({ isLoading: false, isTutorAuthenticated: false }); 
+            Logout();
             return;
-           
           }
-        
-         
-          const isValid=await checkTokenValidity();
-          if(!isValid){
-            const isRefreshed=await refreshAccessToken()
-            if(!isRefreshed){
-              set({ isTutorAuthenticated: false, isLoading: false, token: null });
+
+          const isValid = await checkTokenValidity();
+          if (!isValid) {
+            const isRefreshed = await refreshAccessToken();
+            if (!isRefreshed) {
+              Logout();
               return;
             }
           }
-            set({
-              tutor,
-              isTutorAuthenticated:true,
-              isLoading:false,
-            });
-          },
-  
-        checkTokenValidity:async () => {
-          const {token}=get();
-         
+          set({
+            tutor,
+            isTutorAuthenticated: true,
+            isLoading: false,
+          });
+        },
+
+        checkTokenValidity: async () => {
+          const { token } = get();
+
           if (!token) {
             console.error("Token is missing");
             return false;
           }
 
           try {
-         
             const decodedToken = jwtDecode<DecodedToken>(token);
             const currentTime = Date.now() / 1000;
             return decodedToken.exp > currentTime;
@@ -111,58 +111,35 @@ const tutorAuthStore = create<TutorAuthState>()(
           }
         },
 
+        refreshAccessToken: async () => {
+          if (refreshing && refreshPromise) {
+            return refreshPromise;
+          }
 
-        // refreshAccessToken:async()=>{
-        //   try {
-        //     const data=await refreshToken()
-        //     if(data?.accessToken){
-        //       set({token:data.accessToken,
-        //         isTutorAuthenticated:true
-        //       });
-        //       return true;
-        //     }
-        //     return false;
-            
-        //   } catch (error) {
-        //     console.error("Token refresh error:", error);
-        //     get().Logout();
-        //     return false;
-            
-        //   }
-        // }
+          refreshing = true;
+          refreshPromise = (async () => {
+            try {
+              const response = await refreshToken();
+              if (response?.accessToken) {
+                set({
+                  token: response.accessToken,
+                  isTutorAuthenticated: true,
+                });
+                return true;
+              }
+              return false;
+            } catch (error) {
+              console.error("Token refresh error:", error);
+              get().Logout();
+              return false;
+            } finally {
+              refreshing = false;
+              refreshPromise = null;
+            }
+          })();
 
-          refreshAccessToken: async () => {
-                  if (refreshing && refreshPromise) {
-                   
-                    return refreshPromise;
-                  }
-                  
-                  refreshing = true;
-                  refreshPromise = (async () => {
-                    try {
-                      const response = await refreshToken();
-                      if (response?.accessToken) {
-                        set({
-                          token: response.accessToken,
-                          isTutorAuthenticated:true
-                        });
-                        return true;
-                      }
-                      console.warn("Refresh token request failed, marking as unauthenticated.");
-                      set({ isTutorAuthenticated: false, token: null });
-                      return false;
-                    } catch (error) {
-                      console.error("Token refresh error:", error);
-                      set({ isTutorAuthenticated: false, token: null });
-                      return false;
-                    } finally {
-                      refreshing = false;
-                      refreshPromise = null;
-                    }
-                  })();
-                  
-                  return refreshPromise;
-                },
+          return refreshPromise;
+        },
       }),
       {
         name: "tutor-auth",

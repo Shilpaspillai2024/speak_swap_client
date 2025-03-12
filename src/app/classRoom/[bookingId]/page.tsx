@@ -5,24 +5,32 @@ import { useParams } from "next/navigation";
 import { useBookingStore } from "@/store/bookingStore";
 import socketStore from "@/store/socketStore";
 import { completeSession } from "@/services/tutorApi";
-import ClassroomProtectedRoute from "@/HOC/ClassroomProtectedRoute";
+
 import {
-    Mic, MicOff, Video as VideoIcon, VideoOff,
-    PhoneOff, Users, MessageCircle, X, Send,
-    Monitor,MonitorOff
-  } from "lucide-react";
+  Mic,
+  MicOff,
+  Video as VideoIcon,
+  VideoOff,
+  PhoneOff,
+  Users,
+  MessageCircle,
+  X,
+  Send,
+  Monitor,
+  MonitorOff,
+} from "lucide-react";
 import { toast } from "react-toastify";
 
 interface Message {
   message: string;
 }
 
-interface ChatMessage{
-    id:string;
-    sender:string;
-    text:string;
-    timestamp:string;
-    senderRole:'tutor' | 'student'
+interface ChatMessage {
+  id: string;
+  sender: string;
+  text: string;
+  timestamp: string;
+  senderRole: "tutor" | "student";
 }
 
 const ClassRoom = () => {
@@ -32,15 +40,13 @@ const ClassRoom = () => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [participantCount, setParticipantCount] = useState(1);
- // const [remoteUserJoined, setRemoteUserJoined] = useState(false);
+  // const [remoteUserJoined, setRemoteUserJoined] = useState(false);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
-
-
 
   const iceCandidatesQueue = useRef<RTCIceCandidateInit[]>([]);
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -53,13 +59,10 @@ const ClassRoom = () => {
   const makingOffer = useRef<boolean>(false);
   const ignoreOffer = useRef<boolean>(false);
 
-  const chatEndRef=useRef<HTMLDivElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const { bookingDetails } = useBookingStore();
   const socket = socketStore.getState().socket;
-
-  
-
 
   useEffect(() => {
     if (bookingDetails?.userRole === "tutor") {
@@ -98,7 +101,7 @@ const ClassRoom = () => {
         const stream = await initializeLocalStream();
         if (stream) {
           console.log("Local stream initialized successfully");
-         // setIsSessionReady(true);
+          // setIsSessionReady(true);
         }
       } catch (err) {
         console.error("Error initializing media:", err);
@@ -210,7 +213,7 @@ const ClassRoom = () => {
 
     const handleUserJoined = async ({ userRole }: { userRole: string }) => {
       console.log("Remote user joined:", userRole);
-     // setRemoteUserJoined(true);
+      // setRemoteUserJoined(true);
 
       if (isInitiator.current) {
         console.log("Initializing connection as initiator");
@@ -319,7 +322,6 @@ const ClassRoom = () => {
       userRole: bookingDetails.userRole,
     });
 
-
     socket.on("sessionEnded", handleSessionEnded);
     socket.on("userJoinedSession", handleUserJoined);
     socket.on("receivevideoOffer", handleOffer);
@@ -327,7 +329,6 @@ const ClassRoom = () => {
     socket.on("candidate", handleCandidate);
 
     return () => {
-     
       socket.off("userJoinedSession", handleUserJoined);
       socket.off("receivevideoOffer", handleOffer);
       socket.off("receivevideoAnswer", handleAnswer);
@@ -336,8 +337,6 @@ const ClassRoom = () => {
       cleanup();
     };
   }, [socket, bookingId, bookingDetails]);
-
-  
 
   const startScreenShare = async () => {
     try {
@@ -348,7 +347,6 @@ const ClassRoom = () => {
 
       screenStream.current = stream;
 
-      
       if (peerConnection.current) {
         const senders = peerConnection.current.getSenders();
         const videoSender = senders.find(
@@ -359,14 +357,12 @@ const ClassRoom = () => {
           videoSender.replaceTrack(stream.getVideoTracks()[0]);
         }
 
-       
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
 
         setIsScreenSharing(true);
 
-        
         stream.getVideoTracks()[0].onended = () => {
           stopScreenShare();
         };
@@ -384,7 +380,6 @@ const ClassRoom = () => {
         screenStream.current = null;
       }
 
-    
       if (localStream.current && peerConnection.current) {
         const senders = peerConnection.current.getSenders();
         const videoSender = senders.find(
@@ -398,7 +393,6 @@ const ClassRoom = () => {
           }
         }
 
-        
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = localStream.current;
         }
@@ -452,18 +446,18 @@ const ClassRoom = () => {
     }
 
     // Reset state
-   // setRemoteUserJoined(false);
+    // setRemoteUserJoined(false);
     setParticipantCount(1);
-  //  setIsSessionReady(false);
+    //  setIsSessionReady(false);
     setIsScreenSharing(false);
   };
 
-  const endCall = async() => {
+  const endCall = async () => {
     if (!bookingId || Array.isArray(bookingId)) {
       console.error("Invalid bookingId:", bookingId);
       return;
     }
-    await completeSession(bookingId)
+    await completeSession(bookingId);
     socket?.emit("endSession", { bookingId });
     toast.warning("you have ended the session");
     setTimeout(() => {
@@ -477,34 +471,34 @@ const ClassRoom = () => {
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
-    
+
     const message: ChatMessage = {
       id: Date.now().toString(),
-      sender: bookingDetails?.userRole === 'tutor' ? 'Tutor' : 'Student',
+      sender: bookingDetails?.userRole === "tutor" ? "Tutor" : "Student",
       text: newMessage,
       timestamp: new Date().toLocaleTimeString(),
-      senderRole: bookingDetails?.userRole === 'tutor' ? 'tutor' : 'student'
+      senderRole: bookingDetails?.userRole === "tutor" ? "tutor" : "student",
     };
 
-    socket?.emit('chatMessage', { message, bookingId });
-    setMessages(prev => [...prev, message]);
+    socket?.emit("chatMessage", { message, bookingId });
+    setMessages((prev) => [...prev, message]);
     setNewMessage("");
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('chatMessage', (message: ChatMessage) => {
-      setMessages(prev => [...prev, message]);
+    socket.on("chatMessage", (message: ChatMessage) => {
+      setMessages((prev) => [...prev, message]);
       if (!isChatOpen) {
-        setUnreadCount(prev => prev + 1);
+        setUnreadCount((prev) => prev + 1);
       }
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     });
 
     return () => {
-      socket.off('chatMessage');
+      socket.off("chatMessage");
     };
   }, [socket, isChatOpen]);
 
@@ -513,7 +507,6 @@ const ClassRoom = () => {
       setUnreadCount(0);
     }
   }, [isChatOpen]);
-
 
   const toggleAudio = () => {
     if (localStream.current) {
@@ -537,87 +530,91 @@ const ClassRoom = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 overflow-hidden relative">
-    <div className="h-screen flex flex-col md:flex-row">
-      {/* Main content area */}
-      <div className="flex-1 p-4 flex flex-col">
-        <div className="h-full bg-gray-800 rounded-xl shadow-2xl p-6 flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-white">Classroom</h1>
-              <div className="flex items-center bg-gray-700/50 px-3 py-1.5 rounded-lg">
-                <Users className="w-4 h-4 text-gray-300 mr-2" />
-                <span className="text-gray-300">{participantCount}</span>
+      <div className="h-screen flex flex-col md:flex-row">
+        {/* Main content area */}
+        <div className="flex-1 p-4 flex flex-col">
+          <div className="h-full bg-gray-800 rounded-xl shadow-2xl p-6 flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <h1 className="text-2xl font-bold text-white">Classroom</h1>
+                <div className="flex items-center bg-gray-700/50 px-3 py-1.5 rounded-lg">
+                  <Users className="w-4 h-4 text-gray-300 mr-2" />
+                  <span className="text-gray-300">{participantCount}</span>
+                </div>
               </div>
+              <button
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                className="relative bg-gray-700/50 p-2.5 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                <MessageCircle className="w-5 h-5 text-gray-300" />
+                {!isChatOpen && unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
             </div>
-            <button
-              onClick={() => setIsChatOpen(!isChatOpen)}
-              className="relative bg-gray-700/50 p-2.5 rounded-lg hover:bg-gray-600 transition-colors"
-            >
-              <MessageCircle className="w-5 h-5 text-gray-300" />
-              {!isChatOpen && unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-          </div>
-  
-          {/* Video container */}
-          <div className="flex-1 flex flex-col items-center justify-center bg-gray-900/50 rounded-xl p-4 overflow-hidden">
+
+            {/* Video container */}
+            <div className="flex-1 flex flex-col items-center justify-center bg-gray-900/50 rounded-xl p-4 overflow-hidden">
               <div className="relative w-full h-full flex items-center justify-center">
                 <div className="w-full h-full flex items-center justify-center">
-              <video
-                      ref={remoteVideoRef}
-                      autoPlay
-                      playsInline
-                      className="w-full h-full max-h-[70vh] rounded-xl object-contain bg-gray-800"
-                    />
-              </div>
-  
-              {/* Local video */}
-              <div className="absolute bottom-4 right-4 w-48 md:w-64 shadow-2xl rounded-xl overflow-hidden border-2 border-gray-700/50">
-                <div className="aspect-video">
                   <video
-                    ref={localVideoRef}
+                    ref={remoteVideoRef}
                     autoPlay
                     playsInline
-                    muted
-                    className="w-full h-full object-cover bg-gray-800"
+                    className="w-full h-full max-h-[70vh] rounded-xl object-contain bg-gray-800"
                   />
+                </div>
+
+                {/* Local video */}
+                <div className="absolute bottom-4 right-4 w-48 md:w-64 shadow-2xl rounded-xl overflow-hidden border-2 border-gray-700/50">
+                  <div className="aspect-video">
+                    <video
+                      ref={localVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover bg-gray-800"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-  
-          {/* Controls */}
-          <div className="flex items-center justify-center space-x-4 mt-6">
-            <button
-              onClick={toggleAudio}
-              className={`p-3 rounded-full transition-colors ${
-                isAudioEnabled ? "bg-gray-700/50 hover:bg-gray-600" : "bg-red-500/90 hover:bg-red-600"
-              }`}
-            >
-              {isAudioEnabled ? (
-                <Mic className="w-6 h-6 text-white" />
-              ) : (
-                <MicOff className="w-6 h-6 text-white" />
-              )}
-            </button>
-            <button
-              onClick={toggleVideo}
-              className={`p-3 rounded-full transition-colors ${
-                isVideoEnabled ? "bg-gray-700/50 hover:bg-gray-600" : "bg-red-500/90 hover:bg-red-600"
-              }`}
-            >
-              {isVideoEnabled ? (
-                <VideoIcon className="w-6 h-6 text-white" />
-              ) : (
-                <VideoOff className="w-6 h-6 text-white" />
-              )}
-            </button>
 
-            <button
+            {/* Controls */}
+            <div className="flex items-center justify-center space-x-4 mt-6">
+              <button
+                onClick={toggleAudio}
+                className={`p-3 rounded-full transition-colors ${
+                  isAudioEnabled
+                    ? "bg-gray-700/50 hover:bg-gray-600"
+                    : "bg-red-500/90 hover:bg-red-600"
+                }`}
+              >
+                {isAudioEnabled ? (
+                  <Mic className="w-6 h-6 text-white" />
+                ) : (
+                  <MicOff className="w-6 h-6 text-white" />
+                )}
+              </button>
+              <button
+                onClick={toggleVideo}
+                className={`p-3 rounded-full transition-colors ${
+                  isVideoEnabled
+                    ? "bg-gray-700/50 hover:bg-gray-600"
+                    : "bg-red-500/90 hover:bg-red-600"
+                }`}
+              >
+                {isVideoEnabled ? (
+                  <VideoIcon className="w-6 h-6 text-white" />
+                ) : (
+                  <VideoOff className="w-6 h-6 text-white" />
+                )}
+              </button>
+
+              <button
                 onClick={isScreenSharing ? stopScreenShare : startScreenShare}
                 className={`p-3 rounded-full transition-colors ${
                   isScreenSharing
@@ -631,92 +628,96 @@ const ClassRoom = () => {
                   <Monitor className="w-6 h-6 text-white" />
                 )}
               </button>
-            <button
-              onClick={endCall}
-              className="p-3 rounded-full bg-red-500/90 hover:bg-red-600 transition-colors"
-            >
-              <PhoneOff className="w-6 h-6 text-white" />
-            </button>
-          </div>
-        </div>
-      </div>
-  
-      {/* Chat sidebar */}
-      <div
-        className={`w-96 bg-gray-800 transform transition-transform duration-300 fixed right-0 top-0 bottom-0 shadow-2xl ${
-          isChatOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex flex-col h-full">
-          {/* Chat header */}
-          <div className="p-4 border-b border-gray-700/50 flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-white">Chat</h2>
-            <button
-              onClick={() => setIsChatOpen(false)}
-              className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
-  
-          {/* Chat messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.senderRole === bookingDetails?.userRole ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    message.senderRole === bookingDetails?.userRole
-                      ? 'bg-blue-600/90 text-white'
-                      : 'bg-gray-700/50 text-white'
-                  }`}
-                >
-                  <p className="text-sm font-medium mb-1">{message.sender}</p>
-                  <p>{message.text}</p>
-                  <p className="text-xs opacity-70 mt-1">{message.timestamp}</p>
-                </div>
-              </div>
-            ))}
-            <div ref={chatEndRef} />
-          </div>
-  
-          {/* Chat input */}
-          <div className="p-4 border-t border-gray-700/50">
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Type a message..."
-                className="flex-1 bg-gray-700/50 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
               <button
-                onClick={handleSendMessage}
-                className="bg-blue-600/90 hover:bg-blue-700 text-white rounded-lg p-2.5 transition-colors"
+                onClick={endCall}
+                className="p-3 rounded-full bg-red-500/90 hover:bg-red-600 transition-colors"
               >
-                <Send className="w-5 h-5" />
+                <PhoneOff className="w-6 h-6 text-white" />
               </button>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  
-    {/* Error message */}
-    {error && (
-      <div className="fixed bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-md">
-        <div className="bg-red-500/10 border border-red-500 rounded-lg p-4">
-          <p className="text-red-500 text-sm">{error}</p>
+
+        {/* Chat sidebar */}
+        <div
+          className={`w-96 bg-gray-800 transform transition-transform duration-300 fixed right-0 top-0 bottom-0 shadow-2xl ${
+            isChatOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="flex flex-col h-full">
+            {/* Chat header */}
+            <div className="p-4 border-b border-gray-700/50 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-white">Chat</h2>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            {/* Chat messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${
+                    message.senderRole === bookingDetails?.userRole
+                      ? "justify-end"
+                      : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`max-w-[80%] rounded-lg p-3 ${
+                      message.senderRole === bookingDetails?.userRole
+                        ? "bg-blue-600/90 text-white"
+                        : "bg-gray-700/50 text-white"
+                    }`}
+                  >
+                    <p className="text-sm font-medium mb-1">{message.sender}</p>
+                    <p>{message.text}</p>
+                    <p className="text-xs opacity-70 mt-1">
+                      {message.timestamp}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Chat input */}
+            <div className="p-4 border-t border-gray-700/50">
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                  placeholder="Type a message..."
+                  className="flex-1 bg-gray-700/50 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleSendMessage}
+                  className="bg-blue-600/90 hover:bg-blue-700 text-white rounded-lg p-2.5 transition-colors"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    )}
-  </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="fixed bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-md">
+          <div className="bg-red-500/10 border border-red-500 rounded-lg p-4">
+            <p className="text-red-500 text-sm">{error}</p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default ClassroomProtectedRoute(ClassRoom);
+export default ClassRoom;
