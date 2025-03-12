@@ -26,12 +26,27 @@ const ClassroomProtectedRoute = <P extends object>(WrappedComponent: React.Compo
 
     const router = useRouter();
 
-    useEffect(() => {
       const checkAuth = async () => {
         await Promise.all([initTutorAuth(), initUserAuth()]);
       };
+
+      useEffect(()=>{
       checkAuth();
     }, [initTutorAuth, initUserAuth]);
+
+    useEffect(() => {
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === "tutorToken" || event.key === "userToken") {
+          checkAuth();
+        }
+      };
+
+      window.addEventListener("storage", handleStorageChange);
+
+      return () => {
+        window.removeEventListener("storage", handleStorageChange);
+      };
+    }, [checkAuth]);
 
    
     useEffect(() => {
