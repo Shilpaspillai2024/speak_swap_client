@@ -68,7 +68,7 @@ const tutorAuthStore = create<TutorAuthState>()(
 
         initAuth: async () => {
        
-          const{token,checkTokenValidity,refreshAccessToken,tutor,Logout}=get()
+          const{token,checkTokenValidity,refreshAccessToken,tutor}=get()
           if (!token) {
             console.warn("No token found during initAuth.");
             set({ isLoading: false, isTutorAuthenticated: false }); 
