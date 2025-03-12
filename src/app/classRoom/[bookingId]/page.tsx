@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useBookingStore } from "@/store/bookingStore";
 import socketStore from "@/store/socketStore";
 import { completeSession } from "@/services/tutorApi";
-import ClassroomProtectedRoute from "@/HOC/ClassroomProtectedRoute";
+//import ClassroomProtectedRoute from "@/HOC/ClassroomProtectedRoute";
 import {
     Mic, MicOff, Video as VideoIcon, VideoOff,
     PhoneOff, Users, MessageCircle, X, Send,
@@ -719,4 +719,4 @@ const ClassRoom = () => {
   );
 };
 
-export default ClassroomProtectedRoute(ClassRoom);
+export default ClassRoom;
