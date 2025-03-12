@@ -1,100 +1,48 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import tutorAuthStore from "@/store/tutorAuthStore";
 import userAuthStore from "@/store/userAuthStore";
+import tutorAuthStore from "@/store/tutorAuthStore";
 import Loading from "@/components/Loading";
 
 const ClassroomProtectedRoute = <P extends object>(WrappedComponent: React.ComponentType<P>) => {
   return function ProtectedComponent(props: P) {
     const {
-      isTutorAuthenticated,
-      isLoading: isTutorLoading,
-      initAuth: initTutorAuth,
-      Logout: tutorLogout,
-      checkTokenValidity: checkTutorTokenValidity,
-    } = tutorAuthStore();
-
-    console.log("tutorAuthStore",tutorAuthStore)
-
-    const {
       isUserAuthenticated,
       isLoading: isUserLoading,
       initAuth: initUserAuth,
-      Logout: userLogout,
-      checkTokenValidity: checkUserTokenValidity,
     } = userAuthStore();
+
+    const {
+      isTutorAuthenticated,
+      isLoading: isTutorLoading,
+      initAuth: initTutorAuth,
+    } = tutorAuthStore();
 
     const router = useRouter();
 
+    useEffect(() => {
       const checkAuth = async () => {
-        await Promise.all([initTutorAuth(), initUserAuth()]);
+        await initUserAuth();
+        await initTutorAuth();
       };
-
-      useEffect(()=>{
       checkAuth();
-    }, [initTutorAuth, initUserAuth]);
+    }, [initUserAuth, initTutorAuth]);
 
     useEffect(() => {
-      const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === "tutorToken" || event.key === "userToken") {
-          checkAuth();
-        }
-      };
-
-      window.addEventListener("storage", handleStorageChange);
-
-      return () => {
-        window.removeEventListener("storage", handleStorageChange);
-      };
-    }, [checkAuth]);
-
-   
-    useEffect(() => {
-      const tokenCheckInterval = setInterval(() => {
-        if (isTutorAuthenticated && !checkTutorTokenValidity()) {
-          console.log("Tutor token is expired or invalid");
-          tutorLogout();
-          router.push("/tutor");
-        } else if (isUserAuthenticated && !checkUserTokenValidity()) {
-          console.log("User token is expired or invalid");
-          userLogout();
-          router.push("/");
-        }
-      }, 60000);
-
-      return () => clearInterval(tokenCheckInterval);
-    }, [
-      isTutorAuthenticated, 
-      isUserAuthenticated, 
-      checkTutorTokenValidity, 
-      checkUserTokenValidity, 
-      tutorLogout, 
-      userLogout, 
-      router
-    ]);
-
-    
-    useEffect(() => {
-      const isLoading = isTutorLoading || isUserLoading;
-      const isAuthenticated = isTutorAuthenticated || isUserAuthenticated;
-      
-      if (!isLoading && !isAuthenticated) {
+      if (!isUserLoading && !isTutorLoading && !isUserAuthenticated && !isTutorAuthenticated) {
         router.push("/");
       }
-    }, [isTutorLoading, isUserLoading, isTutorAuthenticated, isUserAuthenticated, router]);
+    }, [isUserLoading, isTutorLoading, isUserAuthenticated, isTutorAuthenticated, router]);
 
-    
-    if (isTutorLoading || isUserLoading) {
+    if (isUserLoading || isTutorLoading) {
       return <Loading />;
     }
 
-   
-    if (isTutorAuthenticated || isUserAuthenticated) {
-      return <WrappedComponent {...props} />;
+    if (!isUserAuthenticated && !isTutorAuthenticated) {
+      return null;
     }
 
-   
-    return null;
+    return <WrappedComponent {...props} />;
   };
 };
 
